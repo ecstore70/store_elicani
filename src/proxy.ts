@@ -69,7 +69,10 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   } = await supabase.auth.getUser();
 
   const isProtectedRoute = pathname === "/app" || pathname.startsWith("/app/");
-  const isAuthPage = pathname === "/login" || pathname === "/signup";
+  const isAuthPage =
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/forgot-password";
 
   // ── 4a. área logada exige sessão ──────────────────────────────────────
   if (isProtectedRoute && !user) {
@@ -80,7 +83,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     return NextResponse.redirect(loginUrl);
   }
 
-  // ── 4b. já logado não precisa ver login/signup ────────────────────────
+  // ── 4b. já logado não precisa ver login/signup/forgot-password ────────
   if (isAuthPage && user) {
     const next = request.nextUrl.searchParams.get("next");
     const url = request.nextUrl.clone();

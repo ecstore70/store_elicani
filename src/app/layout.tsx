@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { getSiteUrl } from "@/lib/env";
+import { getMarketingUrl } from "@/lib/env";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,7 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(getSiteUrl()),
+  // Metadados absolutos (OG) apontam para o site de marketing — nunca
+  // para o domínio de autenticação nem para lojas individuais.
+  metadataBase: new URL(getMarketingUrl()),
   title: {
     default: "Elicani — Sell online, take orders on WhatsApp",
     template: "%s · Elicani",

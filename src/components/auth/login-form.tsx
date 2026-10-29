@@ -53,6 +53,15 @@ export function LoginForm({ locale, next }: { locale: Locale; next?: string }) {
           required
         />
 
+        <p className="text-right text-sm">
+          <Link
+            href="/forgot-password"
+            className="text-muted-foreground underline-offset-4 hover:underline"
+          >
+            {t("auth.forgotPassword")}
+          </Link>
+        </p>
+
         <Button type="submit" size="lg" className="w-full" disabled={pending}>
           {pending && (
             <Loader2 aria-hidden="true" data-icon="inline-start" className="animate-spin" />

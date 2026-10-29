@@ -46,9 +46,9 @@ Ver `.env.example` (fonte única; sincronizado com `src/lib/env.ts`):
 | `NEXT_PUBLIC_SUPABASE_URL` | browser + server | URL do projeto Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser + server | chave pública; segura no browser porque o RLS limita tudo |
 | `SUPABASE_SERVICE_ROLE_KEY` | só scripts (`test:rls`) | privilegiada; nunca vai para o bundle |
-| `NEXT_PUBLIC_SITE_URL` | server | domínio do marketing (`elicani.site`) |
-| `NEXT_PUBLIC_APP_URL` | server | domínio do painel (`app.elicani.site`) |
-| `NEXT_PUBLIC_STORE_DOMAIN` | server | base do wildcard: `elicani.site` em produção, `localhost` em dev |
+| `NEXT_PUBLIC_SITE_URL` | server | **base da aplicação/auth**: `https://app.elicani.site` em produção, `http://localhost:3000` em dev — todos os redirects do Supabase Auth derivam dela |
+| `NEXT_PUBLIC_MARKETING_URL` | server | site de marketing: `https://elicani.site` em produção (apenas metadados/OG; nunca participa de Auth) |
+| `NEXT_PUBLIC_STORE_DOMAIN` | server | base do wildcard das vitrines: `elicani.site` em produção, `localhost` em dev |
 
 ## Rotas
 
@@ -56,6 +56,8 @@ Ver `.env.example` (fonte única; sincronizado com `src/lib/env.ts`):
 | --- | --- |
 | `/` | landing page do Elicani (marketing) |
 | `/signup`, `/login` | autenticação por e-mail + senha |
+| `/forgot-password` | pedido de redefinição de senha (envia link por e-mail) |
+| `/reset-password` | destino do link de recuperação; troca o `?code=` (PKCE) por sessão e grava a nova senha |
 | `/app` | painel (protegido) — Dashboard com dados reais da loja |
 | `/app/onboarding` | criação da loja (nome, slug, WhatsApp, país, idioma, moeda) |
 | `/app/settings` | edição da loja (funcional) |
@@ -65,14 +67,49 @@ Ver `.env.example` (fonte única; sincronizado com `src/lib/env.ts`):
 
 ## Autenticação
 
+### Arquitetura de domínios
+
+| Domínio | Papel |
+| --- | --- |
+| `elicani.site` | site de **marketing** |
+| `app.elicani.site` | **aplicação do lojista**: signup, login, confirmação de e-mail, recuperação de senha, painel |
+| `*.elicani.site` | **vitrines públicas** (`{slug}`) — nunca participam de redirects de Auth |
+
+A base de autenticação em produção é `NEXT_PUBLIC_SITE_URL=https://app.elicani.site`;
+em desenvolvimento, `http://localhost:3000`. O wildcard de vitrines é arquitetura
+DNS/Vercel, **não** configuração de Auth — nenhum loja individual aparece na
+allowlist de redirects do Supabase.
+
+### Configuração do Supabase Auth (produção)
+
+- **Site URL**: `https://app.elicani.site`
+- **Redirect URLs (allowlist)**: `https://app.elicani.site/**`, `http://localhost:3000/**`
+- **Confirm Email**: **ATIVADO** (`mailer_autoconfirm=false`) — signup não cria
+  sessão; o formulário exibe "check your email" e o lojista só entra após confirmar.
+- O e-mail de confirmação de signup redireciona para `${NEXT_PUBLIC_SITE_URL}/login`
+  (`emailRedirectTo` em `signupAction`); o de recuperação, para
+  `${NEXT_PUBLIC_SITE_URL}/reset-password` (`redirectTo` em `forgotPasswordAction`).
+
+### Fluxos
+
 - **Fase 1: e-mail + senha.** Telefone/WhatsApp é **dado de negócio** (contato da
   loja), nunca credencial. A confirmação de e-mail está ativa no Supabase: após o
   signup o usuário vê o aviso "check your email" e só entra depois de confirmar.
+- **Recuperação de senha**: `/forgot-password` → `resetPasswordForEmail` (resposta
+  genérica, sem enumerar contas) → link do e-mail cai em `/reset-password?code=`
+  (PKCE) → a server action troca o `code` por sessão (lê o verificador no cookie
+  do browser), grava a nova senha e manda para `/app`. Link expirado/inválido
+  mostra erro + pedido de novo link.
 - Sessão em cookies via `@supabase/ssr`; o **proxy** (`src/proxy.ts`, no Next 16 o
   middleware chama-se `proxy`) renova o token a cada requisição.
 - Visitante sem sessão em `/app*` → redirect para `/login?next=...`; usuário logado
-  em `/login` ou `/signup` → redirect para `/app` (ou para `next`, se interno).
-  Quem chega sem `next` e já tem loja cai direto no Dashboard; sem loja, no onboarding.
+  em `/login`, `/signup` ou `/forgot-password` → redirect para `/app` (ou para
+  `next`, se interno). Quem chega sem `next` e já tem loja cai direto no Dashboard;
+  sem loja, no onboarding. `/reset-password` fica de fora de propósito: um lojista
+  logado ainda precisa poder concluir o link de recuperação.
+- Redirects pós-login validam `next` no proxy **e** nas server actions
+  (`isSafeInternalPath`: só caminhos internos iniciados por `/`, sem `//` nem
+  `://`) — open redirect é impossível e storefront nunca vira destino de Auth.
 - Defesa em profundidade: proxy **e** layouts/server actions validam a sessão
   (`requireUser()`), nunca filtrando no frontend.
 - Para adicionar OTP por telefone no futuro: basta um novo método de autenticação —
@@ -150,9 +187,11 @@ Validação no cliente e no servidor rejeita códigos fora da lista.
 ## Deploy (Vercel)
 
 1. Importe o repositório no Vercel e configure as variáveis de `.env.example`
-   (produção: `NEXT_PUBLIC_SITE_URL=https://elicani.site`,
-   `NEXT_PUBLIC_APP_URL=https://app.elicani.site`,
-   `NEXT_PUBLIC_STORE_DOMAIN=elicani.site`).
+   (produção: `NEXT_PUBLIC_SITE_URL=https://app.elicani.site`,
+   `NEXT_PUBLIC_MARKETING_URL=https://elicani.site`,
+   `NEXT_PUBLIC_STORE_DOMAIN=elicani.site`) e no Supabase Auth (Site URL
+   `https://app.elicani.site`, allowlist `https://app.elicani.site/**` e
+   `http://localhost:3000/**`, Confirm Email ativado — ver seção Autenticação).
 2. No provedor de DNS de `elicani.site`, aponte um **wildcard** para o deploy:
    - `*.elicani.site` → CNAME `cname.vercel-dns.com`
    - `app.elicani.site` → CNAME `cname.vercel-dns.com` (o wildcard não cobre subdomínios de dois níveis)

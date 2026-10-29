@@ -26,10 +26,29 @@ export function getSupabaseAnonKey(): string {
   );
 }
 
+/**
+ * Base da APLICAÇÃO do lojista: autenticação e painel.
+ *
+ *   produção: https://app.elicani.site
+ *   desenvolvimento: http://localhost:3000
+ *
+ * Todos os redirects do Supabase Auth (confirmação de e-mail, recuperação
+ * de senha) derivam desta base — nunca de um domínio de loja
+ * (`*.elicani.site`), que é exclusivamente vitrine pública.
+ */
 export function getSiteUrl(): string {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 }
 
-export function getAppUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL ?? `${getSiteUrl()}/app`;
+/**
+ * Domínio do site de MARKETING.
+ *
+ *   produção: https://elicani.site
+ *   desenvolvimento: http://localhost:3000
+ *
+ * Usado apenas para resolver URLs absolutas de metadados (OpenGraph).
+ * Nunca participa de redirects de autenticação.
+ */
+export function getMarketingUrl(): string {
+  return process.env.NEXT_PUBLIC_MARKETING_URL ?? getSiteUrl();
 }

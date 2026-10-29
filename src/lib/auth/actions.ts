@@ -146,3 +146,96 @@ export async function signOutAction(): Promise<void> {
   revalidatePath("/", "layout");
   redirect("/login");
 }
+
+/**
+ * Recuperação de senha: envia o link de redefinição para o e-mail.
+ *
+ * O link do Supabase redireciona de volta para `/reset-password` NA BASE DA
+ * APLICAÇÃO (`NEXT_PUBLIC_SITE_URL` = app.elicani.site em produção) — nunca
+ * para um domínio de loja. A URL precisa estar na allowlist de Redirect URLs
+ * do Supabase.
+ *
+ * Resposta é sempre genérica (sem enumerar contas existentes).
+ */
+export async function forgotPasswordAction(
+  _prevState: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const t = await getTranslator();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+
+  if (!email) {
+    return { error: t("auth.error.emailRequired"), notice: null };
+  }
+  if (!isEmailLike(email)) {
+    return { error: t("auth.error.invalidEmail"), notice: null };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${getSiteUrl()}/reset-password`,
+  });
+
+  if (error) {
+    return {
+      error: mapAuthError(error, t, "auth.error.passwordResetFailed"),
+      notice: null,
+    };
+  }
+
+  return { error: null, notice: t("auth.forgot.checkEmail") };
+}
+
+/**
+ * Redefinição de senha: troca o `?code=` do link por sessão (PKCE) e
+ * grava a nova senha. Só funciona com uma sessão de recuperação válida —
+ * não é um endpoint de troca de senha de qualquer usuário autenticado.
+ */
+export async function resetPasswordAction(
+  _prevState: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const t = await getTranslator();
+  const code = String(formData.get("code") ?? "");
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+
+  if (!password || !confirm) {
+    return { error: t("auth.error.required"), notice: null };
+  }
+  if (password.length < 8) {
+    return { error: t("auth.error.weakPassword"), notice: null };
+  }
+  if (password !== confirm) {
+    return { error: t("auth.reset.mismatch"), notice: null };
+  }
+
+  const supabase = await createClient();
+
+  // O link de recuperação traz ?code=... (flow PKCE). A sessão de
+  // recuperação é de uso único; se já trocada, aproveita a sessão atual.
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    if (!code) {
+      return { error: t("auth.reset.invalidLink"), notice: null };
+    }
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+    if (exchangeError) {
+      return { error: t("auth.reset.invalidLink"), notice: null };
+    }
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return {
+      error: mapAuthError(error, t, "auth.error.updatePasswordFailed"),
+      notice: null,
+    };
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/app");
+}

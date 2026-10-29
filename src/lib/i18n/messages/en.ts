@@ -41,6 +41,20 @@ export const en = {
   "auth.haveAccount": "Already have an account?",
   "auth.checkEmail":
     "Account created. Open the confirmation link we sent to {email}, then sign in.",
+  "auth.forgotPassword": "Forgot your password?",
+  "auth.forgot.title": "Reset your password",
+  "auth.forgot.subtitle": "Enter your email and we'll send you a reset link.",
+  "auth.forgot.submit": "Send reset link",
+  "auth.forgot.checkEmail": "Check your email for the password reset link.",
+  "auth.forgot.backToLogin": "Back to sign in",
+  "auth.reset.title": "Choose a new password",
+  "auth.reset.subtitle": "Enter and confirm your new password.",
+  "auth.reset.newPassword": "New password",
+  "auth.reset.confirmPassword": "Confirm new password",
+  "auth.reset.submit": "Update password",
+  "auth.reset.mismatch": "Passwords do not match.",
+  "auth.reset.invalidLink":
+    "This link is invalid or has expired. Request a new one.",
   "auth.marketingTagline": "Sell online. Take orders on WhatsApp.",
 
   // ── mensagens de erro de autenticação ──────────────────────────────────
@@ -54,6 +68,11 @@ export const en = {
   "auth.error.rateLimited": "Too many attempts. Wait a few minutes and try again.",
   "auth.error.loginFailed": "Could not sign in. Please try again.",
   "auth.error.signupFailed": "Could not create the account. Please try again.",
+  "auth.error.emailRequired": "Enter your email address.",
+  "auth.error.passwordResetFailed":
+    "Could not send the reset email. Please try again.",
+  "auth.error.updatePasswordFailed":
+    "Could not update the password. Please try again.",
 
   // ── onboarding / criação de loja ───────────────────────────────────────
   "onboarding.title": "Create your store",
