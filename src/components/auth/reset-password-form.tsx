@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { Loader2 } from "lucide-react";
+import { PasswordField } from "@/components/auth/password-field";
 import { FormAlert } from "@/components/shared/form-alert";
-import { TextField } from "@/components/store/fields";
 import { Button } from "@/components/ui/button";
 import { resetPasswordAction } from "@/lib/auth/actions";
 import { INITIAL_AUTH_STATE } from "@/lib/auth/types";
@@ -14,6 +15,9 @@ import { createTranslator } from "@/lib/i18n/translate";
  * Formulário de nova senha. O `?code=` do link de recuperação viaja como
  * campo oculto e é trocado por sessão dentro da server action — o link
  * só é válido para esta finalização de redefinição.
+ *
+ * Em caso de link expirado/inválido (troca falhou na action), o alerta
+ * explica o problema e o link abaixo leva a um novo pedido de recuperação.
  */
 export function ResetPasswordForm({ locale, code }: { locale: Locale; code?: string }) {
   const t = createTranslator(locale);
@@ -38,20 +42,23 @@ export function ResetPasswordForm({ locale, code }: { locale: Locale; code?: str
 
         {state.error && <FormAlert tone="error">{state.error}</FormAlert>}
 
-        <TextField
+        <PasswordField
           label={t("auth.reset.newPassword")}
           name="password"
-          type="password"
           autoComplete="new-password"
+          showLabel={t("auth.showPassword")}
+          hideLabel={t("auth.hidePassword")}
           hint={t("auth.passwordHint")}
+          minLength={8}
           required
         />
 
-        <TextField
+        <PasswordField
           label={t("auth.reset.confirmPassword")}
           name="confirm"
-          type="password"
           autoComplete="new-password"
+          showLabel={t("auth.showPassword")}
+          hideLabel={t("auth.hidePassword")}
           required
         />
 
@@ -62,6 +69,22 @@ export function ResetPasswordForm({ locale, code }: { locale: Locale; code?: str
           {t("auth.reset.submit")}
         </Button>
       </form>
+
+      <p className="text-sm text-muted-foreground">
+        <Link
+          href="/forgot-password"
+          className="font-medium text-foreground underline-offset-4 hover:underline"
+        >
+          {t("auth.forgot.submit")}
+        </Link>
+        {" · "}
+        <Link
+          href="/login"
+          className="font-medium text-foreground underline-offset-4 hover:underline"
+        >
+          {t("auth.forgot.backToLogin")}
+        </Link>
+      </p>
     </div>
   );
 }

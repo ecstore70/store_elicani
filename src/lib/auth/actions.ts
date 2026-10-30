@@ -6,6 +6,7 @@ import { getSiteUrl } from "@/lib/env";
 import { getTranslator } from "@/lib/i18n/locale";
 import type { MessageKey } from "@/lib/i18n/messages/en";
 import type { Translator } from "@/lib/i18n/translate";
+import { resolveSafeNext } from "@/lib/safe-redirect";
 import { createClient } from "@/lib/supabase/server";
 import type { AuthState } from "./types";
 
@@ -51,13 +52,9 @@ function isEmailLike(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
 }
 
-/** Redireciona apenas para caminhos internos (bloqueia open redirect). */
+/** Redireciona apenas para caminhos internos (guarda compartilhada). */
 function safeNext(value: FormDataEntryValue | null): string {
-  if (typeof value !== "string") return "/app";
-  if (!value.startsWith("/") || value.startsWith("//") || value.includes("://")) {
-    return "/app";
-  }
-  return value;
+  return resolveSafeNext(typeof value === "string" ? value : null);
 }
 
 export async function loginAction(
@@ -93,6 +90,36 @@ export async function loginAction(
   redirect(safeNext(formData.get("next")));
 }
 
+/**
+ * Login via Google OAuth.
+ *
+ * Usa o provider já configurado no projeto Supabase (nada de configuração
+ * nova). O `redirectTo` volta para /auth/callback NA BASE DE APLICAÇÃO
+ * (NEXT_PUBLIC_SITE_URL) — nunca para um domínio de loja. O callback
+ * conclui a sessão e roteia: com store → /app; sem store → onboarding.
+ */
+export async function loginWithGoogleAction(
+  _prevState: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const t = await getTranslator();
+  const supabase = await createClient();
+  const next = safeNext(formData.get("next"));
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${getSiteUrl()}/auth/callback?next=${encodeURIComponent(next)}`,
+    },
+  });
+
+  if (error) {
+    return { error: t("auth.error.oauth"), notice: null };
+  }
+
+  redirect(data.url);
+}
+
 export async function signupAction(
   _prevState: AuthState,
   formData: FormData,
@@ -100,8 +127,9 @@ export async function signupAction(
   const t = await getTranslator();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
 
-  if (!email || !password) {
+  if (!email || !password || !confirm) {
     return { error: t("auth.error.required"), notice: null };
   }
   if (!isEmailLike(email)) {
@@ -109,6 +137,11 @@ export async function signupAction(
   }
   if (password.length < 8) {
     return { error: t("auth.error.weakPassword"), notice: null };
+  }
+  // A confirmação é validação EXCLUSIVA da aplicação — nunca chega ao
+  // Supabase (só email + password vão para signUp).
+  if (password !== confirm) {
+    return { error: t("auth.error.passwordsMismatch"), notice: null };
   }
 
   const supabase = await createClient();
@@ -207,7 +240,7 @@ export async function resetPasswordAction(
     return { error: t("auth.error.weakPassword"), notice: null };
   }
   if (password !== confirm) {
-    return { error: t("auth.reset.mismatch"), notice: null };
+    return { error: t("auth.error.passwordsMismatch"), notice: null };
   }
 
   const supabase = await createClient();
@@ -236,6 +269,9 @@ export async function resetPasswordAction(
     };
   }
 
+  // Sucesso: encerra a sessão de recuperação e leva o usuário ao LOGIN
+  // com a mensagem de sucesso — ele entra com a nova senha.
+  await supabase.auth.signOut();
   revalidatePath("/", "layout");
-  redirect("/app");
+  redirect("/login?reset=1");
 }

@@ -10,7 +10,7 @@ próximas fases.
 
 - **Next.js 16** (App Router, Cache Components, Partial Prerender) + **TypeScript** estrito
 - **Tailwind CSS** + **shadcn/ui**
-- **Supabase**: Auth (e-mail + senha), Postgres + RLS, Storage
+- **Supabase**: Auth (e-mail + senha e Google OAuth), Postgres + RLS, Storage
 - **Vercel** para deploy (build Turbopack; ver nota sobre Termux abaixo)
 
 Fora do escopo desta fase (e deliberadamente ausente): Redis, Docker, microserviços,
@@ -55,7 +55,8 @@ Ver `.env.example` (fonte única; sincronizado com `src/lib/env.ts`):
 | Rota | Descrição |
 | --- | --- |
 | `/` | landing page do Elicani (marketing) |
-| `/signup`, `/login` | autenticação por e-mail + senha |
+| `/signup`, `/login` | autenticação por e-mail + senha ou Google OAuth |
+| `/auth/callback` | callback do OAuth: troca o `?code=` por sessão e roteia (com store → `/app`; sem store → onboarding) |
 | `/forgot-password` | pedido de redefinição de senha (envia link por e-mail) |
 | `/reset-password` | destino do link de recuperação; troca o `?code=` (PKCE) por sessão e grava a nova senha |
 | `/app` | painel (protegido) — Dashboard com dados reais da loja |
@@ -92,9 +93,16 @@ allowlist de redirects do Supabase.
 
 ### Fluxos
 
-- **Fase 1: e-mail + senha.** Telefone/WhatsApp é **dado de negócio** (contato da
-  loja), nunca credencial. A confirmação de e-mail está ativa no Supabase: após o
-  signup o usuário vê o aviso "check your email" e só entra depois de confirmar.
+- **Fase 1: e-mail + senha e Google OAuth.** Telefone/WhatsApp é **dado de
+  negócio** (contato da loja), nunca credencial. A confirmação de e-mail está
+  ativa no Supabase: após o signup o usuário vê o aviso "check your email" e só
+  entra depois de confirmar.
+- **Google OAuth**: botão "Continuar com Google" (login e signup) → provider já
+  configurado no Supabase → `/auth/callback?next=...` (na base de aplicação) →
+  troca o `?code=` por sessão → quem já tem store vai para `/app` (ou o `next`
+  interno original), quem não tem vai para o onboarding. O callback **nunca cria
+  store** (o RLS + `owner_id UNIQUE` garantem uma store por usuário), então
+  logins repetidos não duplicam nada.
 - **Recuperação de senha**: `/forgot-password` → `resetPasswordForEmail` (resposta
   genérica, sem enumerar contas) → link do e-mail cai em `/reset-password?code=`
   (PKCE) → a server action troca o `code` por sessão (lê o verificador no cookie

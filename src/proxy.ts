@@ -15,16 +15,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/database.types";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
+import { isSafeInternalPath } from "@/lib/safe-redirect";
 import { extractStoreSlug, getStoreDomain } from "@/lib/stores/resolve";
-
-function isSafeInternalPath(value: string | null): value is string {
-  return (
-    typeof value === "string" &&
-    value.startsWith("/") &&
-    !value.startsWith("//") &&
-    !value.includes("://")
-  );
-}
 
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname, search } = request.nextUrl;
