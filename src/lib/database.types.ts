@@ -39,6 +39,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -63,60 +101,159 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean
+          is_featured: boolean
+          name: string
+          price: number
+          promo_price: number | null
+          sort_order: number
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          is_featured?: boolean
+          name: string
+          price: number
+          promo_price?: number | null
+          sort_order?: number
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          is_featured?: boolean
+          name?: string
+          price?: number
+          promo_price?: number | null
+          sort_order?: number
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
+          accent_color: string | null
+          background_color: string | null
+          banner_url: string | null
+          button_color: string | null
+          button_style: string
+          card_style: string
           country: string | null
           created_at: string
           currency: string
           description: string | null
+          facebook_url: string | null
           id: string
+          image_ratio: string
+          instagram_url: string | null
           is_active: boolean
           language: string
           logo_url: string | null
           name: string
+          opening_hours: string | null
           owner_id: string
           phone: string | null
           phone_country_code: string | null
           primary_color: string | null
+          product_layout: string
           slug: string
+          template: string
           timezone: string | null
           updated_at: string
           whatsapp_number: string | null
         }
         Insert: {
+          accent_color?: string | null
+          background_color?: string | null
+          banner_url?: string | null
+          button_color?: string | null
+          button_style?: string
+          card_style?: string
           country?: string | null
           created_at?: string
           currency?: string
           description?: string | null
+          facebook_url?: string | null
           id?: string
+          image_ratio?: string
+          instagram_url?: string | null
           is_active?: boolean
           language?: string
           logo_url?: string | null
           name: string
+          opening_hours?: string | null
           owner_id: string
           phone?: string | null
           phone_country_code?: string | null
           primary_color?: string | null
+          product_layout?: string
           slug: string
+          template?: string
           timezone?: string | null
           updated_at?: string
           whatsapp_number?: string | null
         }
         Update: {
+          accent_color?: string | null
+          background_color?: string | null
+          banner_url?: string | null
+          button_color?: string | null
+          button_style?: string
+          card_style?: string
           country?: string | null
           created_at?: string
           currency?: string
           description?: string | null
+          facebook_url?: string | null
           id?: string
+          image_ratio?: string
+          instagram_url?: string | null
           is_active?: boolean
           language?: string
           logo_url?: string | null
           name?: string
+          opening_hours?: string | null
           owner_id?: string
           phone?: string | null
           phone_country_code?: string | null
           primary_color?: string | null
+          product_layout?: string
           slug?: string
+          template?: string
           timezone?: string | null
           updated_at?: string
           whatsapp_number?: string | null

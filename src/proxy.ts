@@ -4,6 +4,7 @@
  * Responsabilidades da Fase 1:
  *  1. Encaminhar {slug}.{NEXT_PUBLIC_STORE_DOMAIN}/ → /store/[slug]
  *     (arquitetura de wildcard pronta para o storefront público);
+ *  1b. Responder 404 real para loja inativa/inexistente (ver nota no ramo 2);
  *  2. Redirecionar www → domínio principal;
  *  3. Renovar a sessão Supabase (refresh dos cookies);
  *  4. Proteger rotas /app e redirecionar usuário logado fora de /login.
@@ -17,6 +18,30 @@ import type { Database } from "@/lib/database.types";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 import { isSafeInternalPath } from "@/lib/safe-redirect";
 import { extractStoreSlug, getStoreDomain } from "@/lib/stores/resolve";
+
+/**
+ * Consulta pública (chave anon, RLS de leitura) que responde se a loja existe
+ * e está ativa. Usada só pelo proxy para decidir o status HTTP — a página da
+ * vitrine continua buscando os dados completos por conta própria.
+ */
+async function isStoreActive(slug: string): Promise<boolean> {
+  try {
+    const publicClient = createServerClient<Database>(getSupabaseUrl(), getSupabaseAnonKey(), {
+      // O proxy não tem cookies a manipular nesta consulta.
+      cookies: { getAll: () => [], setAll: () => {} },
+    });
+    const { data, error } = await publicClient
+      .from("stores")
+      .select("id")
+      .eq("slug", slug)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (error) return true; // falha em aberto: a página revalida
+    return Boolean(data);
+  } catch {
+    return true; // falha em aberto: a página revalida
+  }
+}
 
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname, search } = request.nextUrl;
@@ -32,11 +57,29 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   }
 
   // ── 2. storefront: {slug}.{domain}/ → /store/{slug} ───────────────────
+  //
+  // Loja inativa ou inexistente recebe 404 REAL aqui, antes do render. Com
+  // cacheComponents/PPR, o Next envia o shell estático com status 200 e o
+  // notFound() da página cai dentro do hole dinâmico — o cliente veria o
+  // conteúdo 404 com status 200 (soft-404), ruim para o SEO das lojas.
+  // O check é falho em aberto: erro de rede/DB não derruba a vitrine, pois a
+  // página continua validando a loja por conta própria.
   const storeSlug = extractStoreSlug(host, domain);
-  if (storeSlug && pathname === "/") {
-    return NextResponse.rewrite(
-      new URL(`/store/${encodeURIComponent(storeSlug)}`, request.url),
-    );
+  const pathMatch = /^\/store\/([^/]+)\/?$/.exec(pathname);
+  const storefrontSlug = storeSlug && pathname === "/" ? storeSlug : (pathMatch?.[1] ?? null);
+
+  if (storefrontSlug) {
+    if (!(await isStoreActive(storefrontSlug))) {
+      // Rewrite para a rota interna de not-found (conteúdo 404 branded com
+      // noindex) mantendo status HTTP 404 real na resposta do proxy.
+      const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
+      return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
+    }
+    if (storeSlug && pathname === "/") {
+      return NextResponse.rewrite(
+        new URL(`/store/${encodeURIComponent(storefrontSlug)}`, request.url),
+      );
+    }
   }
 
   // ── 3. refresh da sessão Supabase ─────────────────────────────────────

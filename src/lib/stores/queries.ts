@@ -80,7 +80,7 @@ export async function getPublicStoreBySlug(slug: string): Promise<PublicStore | 
   const { data, error } = await supabase
     .from("stores")
     .select(
-      "id, name, slug, description, logo_url, whatsapp_number, primary_color, currency, language, is_active, created_at",
+      "id, name, slug, description, logo_url, banner_url, whatsapp_number, primary_color, template, button_color, accent_color, background_color, product_layout, image_ratio, button_style, card_style, opening_hours, instagram_url, facebook_url, currency, language, is_active, created_at",
     )
     .eq("slug", slug)
     .maybeSingle();

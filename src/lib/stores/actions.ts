@@ -11,6 +11,15 @@ import { getTranslator } from "@/lib/i18n/locale";
 import type { Translator } from "@/lib/i18n/translate";
 import { createClient } from "@/lib/supabase/server";
 import {
+  BUTTON_STYLES,
+  CARD_STYLES,
+  IMAGE_RATIOS,
+  PRODUCT_LAYOUTS,
+  STORE_TEMPLATES,
+  isOneOf,
+  isValidHexColor,
+} from "./appearance";
+import {
   SLUG_MAX_LENGTH,
   SLUG_MESSAGE_KEYS,
   SLUG_MIN_LENGTH,
@@ -23,12 +32,15 @@ import {
   type StoreFormState,
   type StoreFormValues,
 } from "./types";
+import type { AppearanceFormState } from "@/lib/catalog/types";
 
 // ── padrões de validação ───────────────────────────────────────────────────
 const WHATSAPP_PATTERN = /^\+?\d{7,15}$/;
 const PHONE_CODE_PATTERN = /^\+[1-9]\d{0,4}$/;
 const COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
 const TIMEZONE_PATTERN = /^[A-Za-z0-9_+\-/]{1,64}$/;
+const URL_PATTERN = /^https?:\/\/\S{4,2048}$/;
+const OPENING_HOURS_MAX_LENGTH = 300;
 const NAME_MIN_LENGTH = 2;
 const NAME_MAX_LENGTH = 80;
 const DESCRIPTION_MAX_LENGTH = 500;
@@ -61,6 +73,10 @@ function readFormValues(formData: FormData): StoreFormValues {
     description: read("description"),
     timezone: read("timezone"),
     primary_color: read("primary_color"),
+    banner_url: read("banner_url"),
+    opening_hours: read("opening_hours"),
+    instagram_url: read("instagram_url"),
+    facebook_url: read("facebook_url"),
   };
 }
 
@@ -128,6 +144,17 @@ function validateStoreValues(
     errors.primary_color = t("store.error.primaryColorInvalid");
   }
 
+  for (const field of ["banner_url", "instagram_url", "facebook_url"] as const) {
+    const url = values[field].trim();
+    if (url && !URL_PATTERN.test(url)) {
+      errors[field] = t("store.error.urlInvalid");
+    }
+  }
+
+  if (values.opening_hours.trim().length > OPENING_HOURS_MAX_LENGTH) {
+    errors.opening_hours = t("store.error.openingHoursTooLong");
+  }
+
   return errors;
 }
 
@@ -145,6 +172,10 @@ function toStoreUpdatePayload(
     description: values.description.trim() || null,
     timezone: values.timezone.trim() || null,
     primary_color: values.primary_color.trim() || null,
+    banner_url: values.banner_url.trim() || null,
+    opening_hours: values.opening_hours.trim() || null,
+    instagram_url: values.instagram_url.trim() || null,
+    facebook_url: values.facebook_url.trim() || null,
   };
 }
 
@@ -285,4 +316,89 @@ export async function updateStoreAction(
 
   revalidatePath("/app", "layout");
   return withValues(values, { notice: t("settings.saved") });
+}
+
+// ── aparência da vitrine ──────────────────────────────────────────────────
+
+/**
+ * Grava a aparência da vitrine (template, cores, layout, estilos).
+ *
+ * Customização CONTROLADA: os valores vêm de listas fechadas validadas
+ * aqui no servidor (e de novo pelo CHECK do banco). Nada de CSS/HTML
+ * arbitrário — a estrutura da vitrine é sempre a Elicani.
+ */
+export async function updateAppearanceAction(
+  _prevState: AppearanceFormState,
+  formData: FormData,
+): Promise<AppearanceFormState> {
+  const user = await requireUser();
+  const t = await getTranslator();
+
+  const read = (name: string): string =>
+    String(formData.get(name) ?? "").trim();
+
+  const template = read("template");
+  const product_layout = read("product_layout");
+  const image_ratio = read("image_ratio");
+  const button_style = read("button_style");
+  const card_style = read("card_style");
+
+  if (
+    !isOneOf(template, STORE_TEMPLATES) ||
+    !isOneOf(product_layout, PRODUCT_LAYOUTS) ||
+    !isOneOf(image_ratio, IMAGE_RATIOS) ||
+    !isOneOf(button_style, BUTTON_STYLES) ||
+    !isOneOf(card_style, CARD_STYLES)
+  ) {
+    return { error: t("appearance.error.optionInvalid"), notice: null };
+  }
+
+  const color = (name: string): string | null => {
+    const value = read(name);
+    if (!value) return null;
+    return isValidHexColor(value) ? value.toLowerCase() : null;
+  };
+
+  const primary_color = color("primary_color");
+  const button_color = color("button_color");
+  const accent_color = color("accent_color");
+  const background_color = color("background_color");
+
+  if (
+    (read("primary_color") && !primary_color) ||
+    (read("button_color") && !button_color) ||
+    (read("accent_color") && !accent_color) ||
+    (read("background_color") && !background_color)
+  ) {
+    return { error: t("appearance.error.colorInvalid"), notice: null };
+  }
+
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("stores")
+    .update({
+      template,
+      product_layout,
+      image_ratio,
+      button_style,
+      card_style,
+      primary_color,
+      button_color,
+      accent_color,
+      background_color,
+    })
+    .eq("owner_id", user.id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return { error: t("store.error.saveFailed"), notice: null };
+  }
+  if (!data) {
+    return { error: t("store.error.sessionInvalid"), notice: null };
+  }
+
+  revalidatePath("/app", "layout");
+  return { error: null, notice: t("appearance.saved") };
 }

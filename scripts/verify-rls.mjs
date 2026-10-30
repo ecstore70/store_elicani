@@ -353,6 +353,113 @@ try {
     .from("store-logos")
     .upload(`anon/${SLUG_A}.png`, png, { contentType: "image/png" });
   assert("anônimo NÃO envia logo", !!anonUpload.error, errorDetail(anonUpload));
+
+  // ── 8. Catálogo: produtos e categorias isolados por loja ────────────────
+  const categoryA = await A.from("categories")
+    .insert({ store_id: idA, name: `Cat A ${RUN_ID}` })
+    .select("id").single();
+  assert("A cria categoria na própria loja", !categoryA.error && !!categoryA.data, errorDetail(categoryA));
+
+  const productA = await A.from("products")
+    .insert({
+      store_id: idA,
+      category_id: categoryA.data?.id ?? null,
+      name: `Produto A ${RUN_ID}`,
+      price: 100,
+      is_featured: true,
+    })
+    .select("id").single();
+  assert("A cria produto na própria loja", !productA.error && !!productA.data, errorDetail(productA));
+
+  // B: leitura cruzada negativa (mesma técnica da secção 4).
+  const crossProducts = await B.from("products").select("id, name").eq("id", productA.data?.id);
+  assert(
+    "B NÃO lê o produto de A (por UUID direto)",
+    !crossProducts.error && crossProducts.data?.length === 0,
+    `linhas devolvidas: ${JSON.stringify(crossProducts.data)}`,
+  );
+
+  const crossCategories = await B.from("categories").select("id, name").eq("id", categoryA.data?.id);
+  assert(
+    "B NÃO lê a categoria de A",
+    !crossCategories.error && crossCategories.data?.length === 0,
+    `linhas devolvidas: ${JSON.stringify(crossCategories.data)}`,
+  );
+
+  const crossProductUpdate = await B.from("products")
+    .update({ name: "INVADIDO" })
+    .eq("id", productA.data?.id)
+    .select("id");
+  assert(
+    "B NÃO atualiza o produto de A",
+    !crossProductUpdate.error && crossProductUpdate.data?.length === 0,
+    `linhas afetadas: ${JSON.stringify(crossProductUpdate.data)}`,
+  );
+
+  const crossProductDelete = await B.from("products").delete().eq("id", productA.data?.id);
+  assert("B NÃO apaga o produto de A", !crossProductDelete.error, errorDetail(crossProductDelete));
+
+  const crossCategoryDelete = await B.from("categories").delete().eq("id", categoryA.data?.id);
+  assert("B NÃO apaga a categoria de A", !crossCategoryDelete.error, errorDetail(crossCategoryDelete));
+
+  // B não injeta produto apontando para a loja A (RLS with check).
+  const forgedProduct = await B.from("products").insert({
+    store_id: idA,
+    name: `Forjado ${RUN_ID}`,
+    price: 1,
+  });
+  assert(
+    "B NÃO cria produto na loja A (RLS with check)",
+    !!forgedProduct.error && forgedProduct.error.code === "42501",
+    errorDetail(forgedProduct),
+  );
+
+  const ownProductRead = await A.from("products").select("id").eq("id", productA.data?.id).maybeSingle();
+  assert("A lê o próprio produto", !!ownProductRead.data);
+
+  // ── 9. Vitrine (anon) lê o catálogo apenas de lojas ATIVAS ──────────────
+  const anonCatalog = await asAnon.from("products").select("id").eq("id", productA.data?.id);
+  assert(
+    "anônimo lê produtos da loja ATIVA",
+    !anonCatalog.error && anonCatalog.data?.length === 1,
+    errorDetail(anonCatalog),
+  );
+
+  const anonCategory = await asAnon.from("categories").select("id").eq("id", categoryA.data?.id);
+  assert(
+    "anônimo lê categorias da loja ATIVA",
+    !anonCategory.error && anonCategory.data?.length === 1,
+    errorDetail(anonCategory),
+  );
+
+  await A.from("stores").update({ is_active: false }).eq("id", idA);
+  const anonHiddenCatalog = await asAnon.from("products").select("id").eq("id", productA.data?.id);
+  assert(
+    "anônimo NÃO lê produtos de loja INATIVA",
+    !anonHiddenCatalog.error && anonHiddenCatalog.data?.length === 0,
+    `linhas devolvidas: ${JSON.stringify(anonHiddenCatalog.data)}`,
+  );
+  await A.from("stores").update({ is_active: true }).eq("id", idA);
+
+  const anonProductWrite = await asAnon.from("products")
+    .insert({ store_id: idA, name: `Vândalo ${RUN_ID}`, price: 1 });
+  assert("anônimo NÃO cria produto", !!anonProductWrite.error, errorDetail(anonProductWrite));
+
+  const anonCategoryWrite = await asAnon.from("categories")
+    .insert({ store_id: idA, name: `Vândalo ${RUN_ID}` });
+  assert("anônimo NÃO cria categoria", !!anonCategoryWrite.error, errorDetail(anonCategoryWrite));
+
+  // Apagar categoria NÃO apaga produtos (FK on delete set null).
+  await A.from("categories").delete().eq("id", categoryA.data?.id);
+  const productAfterCategoryDelete = await A.from("products")
+    .select("id, category_id")
+    .eq("id", productA.data?.id)
+    .maybeSingle();
+  assert(
+    "apagar categoria mantém o produto (category_id → null)",
+    !!productAfterCategoryDelete.data && productAfterCategoryDelete.data.category_id === null,
+    errorDetail(productAfterCategoryDelete),
+  );
 } catch (error) {
   failed += 1;
   console.error(`\n\x1b[1;31m[rls]\x1b[0m erro inesperado: ${error.message}`);

@@ -23,6 +23,10 @@ export const STORE_FORM_FIELDS = [
   "description",
   "timezone",
   "primary_color",
+  "banner_url",
+  "opening_hours",
+  "instagram_url",
+  "facebook_url",
 ] as const;
 
 export type StoreFormField = (typeof STORE_FORM_FIELDS)[number];
@@ -49,12 +53,16 @@ export function emptyStoreFormValues(): StoreFormValues {
     description: "",
     timezone: "",
     primary_color: "",
+    banner_url: "",
+    opening_hours: "",
+    instagram_url: "",
+    facebook_url: "",
   };
 }
 
 /**
- * Colunas seguras para o storefront público.
- * `owner_id` NÃO faz parte desta lista: o UUID do lojista nunca é público.
+ * Campos SEGUROS para a vitrine pública (cliente ANON).
+ * `owner_id` NUNCA faz parte desta lista: o UUID do lojista não é público.
  */
 export type PublicStore = Pick<
   Store,
@@ -63,8 +71,20 @@ export type PublicStore = Pick<
   | "slug"
   | "description"
   | "logo_url"
+  | "banner_url"
   | "whatsapp_number"
   | "primary_color"
+  | "template"
+  | "button_color"
+  | "accent_color"
+  | "background_color"
+  | "product_layout"
+  | "image_ratio"
+  | "button_style"
+  | "card_style"
+  | "opening_hours"
+  | "instagram_url"
+  | "facebook_url"
   | "currency"
   | "language"
   | "is_active"

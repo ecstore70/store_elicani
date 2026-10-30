@@ -15,6 +15,7 @@ export type NavIconName =
   | "customers"
   | "delivery"
   | "reports"
+  | "appearance"
   | "settings";
 
 export type NavItem = {
@@ -31,11 +32,12 @@ export type NavItem = {
  */
 export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/app", labelKey: "nav.dashboard", icon: "dashboard", ready: true },
-  { href: "/app/products", labelKey: "nav.products", icon: "products", ready: false },
+  { href: "/app/products", labelKey: "nav.products", icon: "products", ready: true },
   { href: "/app/orders", labelKey: "nav.orders", icon: "orders", ready: false },
   { href: "/app/customers", labelKey: "nav.customers", icon: "customers", ready: false },
   { href: "/app/delivery", labelKey: "nav.delivery", icon: "delivery", ready: false },
   { href: "/app/reports", labelKey: "nav.reports", icon: "reports", ready: false },
+  { href: "/app/appearance", labelKey: "nav.appearance", icon: "appearance", ready: true },
   { href: "/app/settings", labelKey: "nav.settings", icon: "settings", ready: true },
 ];
 

@@ -308,6 +308,65 @@ export function StoreForm({
         )}
       </FormSection>
 
+      {mode === "update" && (
+        <FormSection
+          title={t("settings.sectionStorefront")}
+          description={t("settings.sectionStorefrontHelp")}
+        >
+          <TextField
+            className="sm:col-span-2"
+            label={t("settings.bannerUrl")}
+            name="banner_url"
+            value={values.banner_url}
+            onChange={(event) => update("banner_url", event.target.value)}
+            placeholder="https://…"
+            hint={t("common.optional")}
+            inputMode="url"
+            autoCapitalize="none"
+            spellCheck={false}
+            error={state.fieldErrors.banner_url}
+          />
+
+          <TextAreaField
+            className="sm:col-span-2"
+            label={t("settings.openingHours")}
+            name="opening_hours"
+            value={values.opening_hours}
+            onChange={(event) => update("opening_hours", event.target.value)}
+            placeholder={t("settings.openingHoursPlaceholder")}
+            hint={t("common.optional")}
+            maxLength={300}
+            error={state.fieldErrors.opening_hours}
+          />
+
+          <TextField
+            label={t("settings.instagramUrl")}
+            name="instagram_url"
+            value={values.instagram_url}
+            onChange={(event) => update("instagram_url", event.target.value)}
+            placeholder="https://instagram.com/…"
+            hint={t("common.optional")}
+            inputMode="url"
+            autoCapitalize="none"
+            spellCheck={false}
+            error={state.fieldErrors.instagram_url}
+          />
+
+          <TextField
+            label={t("settings.facebookUrl")}
+            name="facebook_url"
+            value={values.facebook_url}
+            onChange={(event) => update("facebook_url", event.target.value)}
+            placeholder="https://facebook.com/…"
+            hint={t("common.optional")}
+            inputMode="url"
+            autoCapitalize="none"
+            spellCheck={false}
+            error={state.fieldErrors.facebook_url}
+          />
+        </FormSection>
+      )}
+
       <div className="flex justify-end border-t border-border/70 pt-6">
         <Button type="submit" size="lg" disabled={pending}>
           {pending && (

@@ -3,6 +3,7 @@ import {
   BarChart3,
   LayoutDashboard,
   Package,
+  Palette,
   Settings,
   ShoppingCart,
   Truck,
@@ -24,5 +25,6 @@ export const NAV_ICONS: Record<NavIconName, LucideIcon> = {
   customers: Users,
   delivery: Truck,
   reports: BarChart3,
+  appearance: Palette,
   settings: Settings,
 };
