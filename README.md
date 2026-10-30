@@ -185,6 +185,28 @@ um `Partial<Messages>` com o que quiser traduzir (o resto cai para `en`), adicio
 a locale em `SUPPORTED_LOCALES`/`LOCALE_LABELS` e rode os testes. Nenhuma página
 precisa mudar.
 
+## Marca
+
+Identidade oficial da plataforma Elicani (símbolo do carrinho-"e" + wordmark
+"Elicani"). O wordmark é vetor real — não texto HTML — e é independente de
+idioma; qualquer tagline seria UI traduzida pelo sistema i18n, nunca embutida
+no logo.
+
+- **Tokens**: paleta centralizada em `src/app/globals.css` (`--brand-primary
+  #2563eb`, `--brand-dark #0f172a`, `--brand-muted #94a3b8`, `--brand-background
+  #f8fafc`) e em `src/lib/brand/colors.ts`. Não espalhar cores duras.
+- **Componente**: `src/components/shared/logo.tsx` — `<Logo />` (horizontal),
+  `<Logo markOnly />` (símbolo), variantes `color | dark | mono`.
+- **Assets**: `public/brand/` (SVG logo/marca/monocromático, ícones PWA 192/512,
+  apple-touch, OG 1200×630, favicon SVG/ICO). Favicon/ícones/manifest também via
+  file-conventions em `src/app/` (`icon.svg`, `apple-icon.png`, `favicon.ico`,
+  `manifest.ts`).
+- **Regenerar**: `node scripts/generate-brand.mjs` reproduz todos os assets a
+  partir do traçado do símbolo + Poppins Black (`scripts/brand/`, OFL). Rode após
+  alterar `BRAND`/geometria; os tokens CSS devem manter os mesmos hex.
+- **Marca da loja ≠ marca Elicani**: o logo/cores do comerciante (`logo_url`,
+  `primary_color`) são da loja e nunca substituem a marca da plataforma.
+
 ## Moedas
 
 ISO 4217: `USD, EUR, GBP, CAD, AUD, BRL, MZN, ZAR, AOA, NGN, KES, GHS, INR, CNY,

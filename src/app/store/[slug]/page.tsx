@@ -82,7 +82,7 @@ export default async function StorefrontPage({ params }: Props) {
 
       <footer className="border-t border-border/70">
         <div className="mx-auto flex h-14 w-full max-w-4xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Logo markClassName="bg-muted-foreground" />
+          <Logo variant="mono" className="h-5 text-muted-foreground" />
           <span className="font-mono text-xs text-muted-foreground">
             {store.currency}
           </span>
