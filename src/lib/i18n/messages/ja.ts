@@ -1,0 +1,456 @@
+/**
+ * Catálogo em japonês — cobre todas as chaves de `en.ts`.
+ * O teste em `i18n.test.ts` garante essa completude.
+ */
+import type { Messages } from "./en.ts";
+
+export const ja: Messages = {
+  // ── navegação do painel ────────────────────────────────────────────────
+  "nav.dashboard": "ダッシュボード",
+  "nav.products": "商品",
+  "nav.orders": "注文",
+  "nav.customers": "顧客",
+  "nav.delivery": "配送",
+  "nav.reports": "レポート",
+  "nav.settings": "設定",
+
+  // ── shell do painel ────────────────────────────────────────────────────
+  "shell.openMenu": "ナビゲーションを開く",
+  "shell.closeMenu": "ナビゲーションを閉じる",
+  "shell.signOut": "ログアウト",
+  "shell.signedInAs": "ログイン中:",
+  "shell.store": "ストア",
+  "shell.phase": "フェーズ 1",
+
+  // ── autenticação ───────────────────────────────────────────────────────
+  "auth.loginTitle": "Elicani にログイン",
+  "auth.loginSubtitle": "ストア・商品・注文を管理します。",
+  "auth.signupTitle": "Elicani アカウントを作成",
+  "auth.signupSubtitle": "数分でオンラインストアを開設できます。",
+  "auth.email": "メールアドレス",
+  "auth.emailPlaceholder": "you@example.com",
+  "auth.password": "パスワード",
+  "auth.passwordHint": "8 文字以上",
+  "auth.signIn": "ログイン",
+  "auth.createAccount": "アカウント作成",
+  "auth.noAccount": "アカウントをお持ちでないですか？",
+  "auth.haveAccount": "すでにアカウントをお持ちですか？",
+  "auth.checkEmail":
+    "アカウントを作成しました。{email} に送信した確認リンクを開いてからログインしてください。",
+  "auth.confirmPassword": "パスワード（確認）",
+  "auth.showPassword": "パスワードを表示",
+  "auth.hidePassword": "パスワードを非表示",
+  "auth.google": "Google で続行",
+  "auth.forgotPassword": "パスワードをお忘れですか？",
+  "auth.forgot.title": "パスワードのリセット",
+  "auth.forgot.subtitle": "メールアドレスを入力すると、リセット用のリンクを送信します。",
+  "auth.forgot.submit": "再設定リンクを送信",
+  "auth.forgot.checkEmail":
+    "このメールアドレスのアカウントが存在する場合、パスワードリセット用のリンクを送信しました。",
+  "auth.forgot.backToLogin": "ログインに戻る",
+  "auth.reset.title": "新しいパスワードを設定",
+  "auth.reset.subtitle": "新しいパスワードを入力して確認してください。",
+  "auth.reset.newPassword": "新しいパスワード",
+  "auth.reset.confirmPassword": "新しいパスワード（確認）",
+  "auth.reset.submit": "パスワードをリセット",
+  "auth.reset.success":
+    "パスワードをリセットしました。新しいパスワードでログインしてください。",
+  "auth.reset.invalidLink":
+    "このリンクは無効か期限切れです。新しくリクエストしてください。",
+  "auth.marketingTagline": "オンラインで販売。WhatsApp で注文を受け取ろう。",
+
+  // ── mensagens de erro de autenticação ──────────────────────────────────
+  "auth.error.required": "メールアドレスとパスワードを入力してください。",
+  "auth.error.invalidEmail": "有効なメールアドレスを入力してください。",
+  "auth.error.weakPassword": "8 文字以上のパスワードを使用してください。",
+  "auth.error.invalidCredentials": "メールアドレスまたはパスワードが正しくありません。",
+  "auth.error.emailNotConfirmed":
+    "ログイン前にメールアドレスを確認してください。受信トレイをご確認ください。",
+  "auth.error.userAlreadyExists":
+    "このメールアドレスのアカウントは既に存在します。ログインしてください。",
+  "auth.error.rateLimited":
+    "試行回数が多すぎます。数分待ってからもう一度お試しください。",
+  "auth.error.loginFailed": "ログインできませんでした。もう一度お試しください。",
+  "auth.error.signupFailed": "アカウントを作成できませんでした。もう一度お試しください。",
+  "auth.error.emailRequired": "メールアドレスを入力してください。",
+  "auth.error.passwordsMismatch": "パスワードが一致しません。",
+  "auth.error.oauth": "Google で続行できませんでした。もう一度お試しください。",
+  "auth.error.passwordResetFailed":
+    "再設定メールを送信できませんでした。もう一度お試しください。",
+  "auth.error.updatePasswordFailed":
+    "パスワードを更新できませんでした。もう一度お試しください。",
+
+  // ── onboarding / criação de loja ───────────────────────────────────────
+  "onboarding.title": "ストアを作成",
+  "onboarding.subtitle":
+    "名前とウェブアドレスを選んでください。あとから設定で変更できます。",
+  "onboarding.name": "ストア名",
+  "onboarding.namePlaceholder": "Maria Fashion",
+  "onboarding.slug": "ストアアドレス",
+  "onboarding.slugPlaceholder": "maria-fashion",
+  "onboarding.slugHelp": "半角英数字とハイフン。将来の URL: {url}",
+  "onboarding.whatsapp": "WhatsApp 番号",
+  "onboarding.whatsappPlaceholder": "+258841234567",
+  "onboarding.whatsappHelp": "顧客はこの番号に注文を送信します。",
+  "onboarding.country": "国",
+  "onboarding.language": "言語",
+  "onboarding.languageHelp": "ストアの言語——国や通貨とは独立しています。",
+  "onboarding.currency": "通貨",
+  "onboarding.description": "説明",
+  "onboarding.descriptionPlaceholder": "ストアでは何を販売しますか？",
+  "onboarding.timezone": "タイムゾーン",
+  "onboarding.timezonePlaceholder": "Africa/Maputo",
+  "onboarding.phoneCountryCode": "国番号",
+  "onboarding.phoneCountryCodePlaceholder": "+258",
+  "onboarding.submit": "ストアを作成",
+  "onboarding.submitting": "作成中…",
+  "onboarding.selectPlaceholder": "選択…",
+  "onboarding.none": "未設定",
+
+  // ── validação de loja (onboarding + definições) ────────────────────────
+  "store.error.nameRequired": "ストア名を入力してください（2 文字以上）。",
+  "store.error.nameTooLong": "名前は最大 80 文字です。",
+  "store.error.slugEmpty": "ストアアドレスを入力してください。",
+  "store.error.slugTooShort": "{min} 文字以上使用してください。",
+  "store.error.slugTooLong": "{max} 文字以下使用してください。",
+  "store.error.slugInvalid":
+    "半角小文字・数字・ハイフンのみ使用できます（スペース不可、先頭・末尾にハイフン不可）。",
+  "store.error.slugReserved": "このアドレスは予約済みです。別のアドレスを選んでください。",
+  "store.error.slugTaken": "このアドレスは既に使用されています。別のアドレスを選んでください。",
+  "store.error.whatsappInvalid":
+    "WhatsApp 番号が無効です。数字のみを使用してください（例: +258841234567）。",
+  "store.error.phoneInvalid": "電話番号が無効です。",
+  "store.error.phoneCodeInvalid": "国番号が無効です（例: +258）。",
+  "store.error.countryInvalid": "有効な国を選択してください。",
+  "store.error.languageInvalid": "有効な言語を選択してください。",
+  "store.error.currencyInvalid": "有効な通貨を選択してください。",
+  "store.error.timezoneInvalid": "タイムゾーンが無効です（例: Africa/Maputo）。",
+  "store.error.descriptionTooLong": "説明は最大 500 文字です。",
+  "store.error.primaryColorInvalid": "#0f172a のような 16 進カラーを使用してください。",
+  "store.sectionOptional": "任意の詳細",
+  "store.error.createFailed": "ストアを作成できませんでした。もう一度お試しください。",
+  "store.error.alreadyExists": "既にストアをお持ちです。",
+  "store.error.saveFailed": "変更を保存できませんでした。もう一度お試しください。",
+  "store.error.sessionInvalid": "セッションが切れました。再度ログインしてください。",
+  "store.error.lookupFailed": "アドレスを確認できませんでした。もう一度お試しください。",
+
+  // ── dashboard ──────────────────────────────────────────────────────────
+  "dashboard.title": "ダッシュボード",
+  "dashboard.subtitle": "ストアの概要です。",
+  "dashboard.storeCard": "ストア",
+  "dashboard.summary": "サマリー",
+  "dashboard.products": "商品",
+  "dashboard.orders": "注文",
+  "dashboard.customers": "顧客",
+  "dashboard.summaryPlaceholder": "後のフェーズで利用可能",
+  "dashboard.status": "ステータス",
+  "dashboard.statusActive": "有効",
+  "dashboard.statusInactive": "無効",
+  "dashboard.storeName": "ストア名",
+  "dashboard.slug": "アドレス",
+  "dashboard.currency": "通貨",
+  "dashboard.language": "言語",
+  "dashboard.country": "国",
+  "dashboard.timezone": "タイムゾーン",
+  "dashboard.whatsapp": "WhatsApp",
+  "dashboard.publicUrl": "公開 URL",
+  "dashboard.notSet": "未設定",
+
+  // ── definições ─────────────────────────────────────────────────────────
+  "settings.title": "設定",
+  "settings.subtitle": "ストア情報を更新します。",
+  "settings.sectionStore": "ストア詳細",
+  "settings.sectionLocalization": "ローカライズ",
+  "settings.sectionContact": "連絡先",
+  "settings.sectionAppearance": "外観",
+  "settings.primaryColor": "プライマリカラー",
+  "settings.logo": "ロゴ",
+  "settings.logoPending":
+    "ロゴのアップロードは後のフェーズで提供——ストレージはすでに準備済みです。",
+  "settings.save": "変更を保存",
+  "settings.saving": "保存中…",
+  "settings.saved": "設定を保存しました。",
+  "settings.slugImmutable": "ストアアドレスはまだ変更できません。",
+  "settings.currencyPreview": "例: {value}",
+
+  // ── estados genéricos ──────────────────────────────────────────────────
+  "common.soon": "近日公開",
+  "common.comingSoon": "近日公開",
+  "common.comingSoonBody":
+    "{section} は後のフェーズで構築中です。基盤はすでにできています。",
+  "common.loading": "読み込み中…",
+  "common.optional": "任意",
+  "common.backHome": "ホームに戻る",
+  "common.backToDashboard": "ダッシュボードに戻る",
+
+  // ── vitrine pública (placeholder) ──────────────────────────────────────
+  "storefront.comingSoon": "このストアは準備中です",
+  "storefront.comingSoonBody":
+    "商品・カート・WhatsApp 決済は次のフェーズで登場します。",
+  "storefront.notFound": "ストアが見つかりません",
+  "storefront.visitApp": "出品者ダッシュボード",
+
+  // ── erros de página ────────────────────────────────────────────────────
+  "error.title": "問題が発生しました",
+  "error.body": "予期しないエラーが発生しました。もう一度お試しください。",
+  "error.retry": "もう一度試す",
+  "notFound.title": "ページが見つかりません",
+  "notFound.body": "お探しのページは存在しません。",
+
+  // ── navegação: aparência ───────────────────────────────────────────────
+  "nav.appearance": "外観",
+
+  // ── botões genéricos ───────────────────────────────────────────────────
+  "common.cancel": "キャンセル",
+
+  // ── validação de loja (novos campos de identidade) ─────────────────────
+  "store.error.urlInvalid": "https://… のような完全なリンクを使用してください。",
+  "store.error.openingHoursTooLong": "営業時間は最大 300 文字です。",
+
+  // ── definições: identidade da vitrine ──────────────────────────────────
+  "settings.sectionStorefront": "ストア情報",
+  "settings.sectionStorefrontHelp":
+    "顧客が公開ストアで見る内容です。出品者のコンテンツが自動翻訳されることはありません。",
+  "settings.bannerUrl": "カバー画像の URL",
+  "settings.openingHours": "営業時間",
+  "settings.openingHoursPlaceholder": "月–金 8:00–18:00\n土 8:00–13:00",
+  "settings.instagramUrl": "Instagram リンク",
+  "settings.facebookUrl": "Facebook リンク",
+
+  // ── aparência da vitrine ───────────────────────────────────────────────
+  "appearance.title": "外観",
+  "appearance.subtitle": "ストアのテンプレート・カラー・カタログ布局を選びます。",
+  "appearance.template": "テンプレート",
+  "appearance.templateHelp":
+    "テンプレートは表示だけを変えます——購入・カート・注文の流れはすべて同じです。",
+  "appearance.templateMinimal": "ミニマル",
+  "appearance.templateMinimalDesc": "清潔で広々、商品画像が大きい。",
+  "appearance.templateMarket": "マーケット",
+  "appearance.templateMarketDesc": "密度の高いグリッド、価格をしっかり表示、実用的。",
+  "appearance.templateFashion": "ファッション",
+  "appearance.templateFashionDesc": "エディトリアルな見た目、上品な余白。",
+  "appearance.templateRestaurant": "レストラン",
+  "appearance.templateRestaurantDesc": "コンパクトなメニュー型カタログ。",
+  "appearance.colors": "カラー",
+  "appearance.colorsHelp": "テキストは自動的に読みやすくなります——背景に合わせて調整します。",
+  "appearance.primaryColor": "プライマリカラー",
+  "appearance.buttonColor": "ボタンの色",
+  "appearance.accentColor": "アクセントカラー",
+  "appearance.backgroundColor": "背景色",
+  "appearance.catalog": "カタログ",
+  "appearance.productLayout": "商品のレイアウト",
+  "appearance.layoutGrid": "グリッド",
+  "appearance.layoutGridDesc": "レスポンシブなグリッド内の商品カード。",
+  "appearance.layoutList": "リスト",
+  "appearance.layoutListDesc": "コンパクトな行: 画像・詳細・追加ボタン。",
+  "appearance.imageRatio": "商品画像の比率",
+  "appearance.imageSquare": "正方形",
+  "appearance.imagePortrait": "縦向き",
+  "appearance.imageLandscape": "横向き",
+  "appearance.buttonStyle": "ボタンのスタイル",
+  "appearance.buttonRounded": "角丸",
+  "appearance.buttonSoft": "ソフト",
+  "appearance.buttonCompact": "コンパクト",
+  "appearance.cardStyle": "カードのスタイル",
+  "appearance.cardSubtle": "サブトル",
+  "appearance.cardRounded": "角丸",
+  "appearance.cardMinimal": "ミニマル",
+  "appearance.preview": "ライブプレビュー",
+  "appearance.previewDevice": "プレビュー端末",
+  "appearance.previewMobile": "モバイル",
+  "appearance.previewDesktop": "デスクトップ",
+  "appearance.previewHint": "プレビューには実際の商品が使われます。保存すると公開されます。",
+  "appearance.save": "外観を保存",
+  "appearance.saving": "保存中…",
+  "appearance.saved": "外観を保存しました。",
+  "appearance.viewStore": "ストアを見る",
+  "appearance.error.optionInvalid": "有効なオプションを選んでください。",
+  "appearance.error.colorInvalid": "#2563eb のような 16 進カラーを使用してください。",
+
+  // ── vitrine pública ────────────────────────────────────────────────────
+  "storefront.searchPlaceholder": "商品を検索…",
+  "storefront.categories": "カテゴリー",
+  "storefront.allProducts": "すべての商品",
+  "storefront.featured": "おすすめ",
+  "storefront.addToCart": "カートに追加",
+  "storefront.unavailable": "在庫なし",
+  "storefront.noProducts": "まだ商品がありません",
+  "storefront.noProductsBody": "ストアはまだ商品を追加していません。",
+  "storefront.noResults": "商品が見つかりません",
+  "storefront.noResultsBody": "別の検索語やカテゴリーをお試しください。",
+  "storefront.cart": "カート",
+  "storefront.cartEmpty": "カートは空です",
+  "storefront.cartEmptyBody": "商品を追加して注文しましょう。",
+  "storefront.orderWhatsApp": "WhatsApp で注文",
+  "storefront.subtotal": "小計",
+  "storefront.increaseQty": "数量を増やす",
+  "storefront.decreaseQty": "数量を減らす",
+  "storefront.removeItem": "商品を削除",
+  "storefront.itemQuantity": "数量",
+  "storefront.storeInfo": "ストア情報",
+  "storefront.delivery": "配送",
+  "storefront.deliveryBody": "配送オプションは WhatsApp で確認します。",
+  "storefront.contact": "お問い合わせ",
+  "storefront.openingHours": "営業時間",
+  "storefront.followUs": "フォローする",
+  "storefront.openCartAria": "カートを開く",
+  "storefront.cartCountAria": "カート内の商品数",
+  "storefront.productImageAlt": "商品画像",
+  "storefront.noImageAlt": "画像のない商品",
+
+  // ── gestão de produtos ─────────────────────────────────────────────────
+  "products.subtitle": "ストアの商品を管理します。",
+  "products.new": "新規商品",
+  "products.newSubtitle": "カタログに商品を追加します。",
+  "products.empty": "まだ商品がありません",
+  "products.emptyBody": "最初の商品を作成してストアを充実させましょう。",
+  "products.edit": "商品を編集",
+  "products.name": "名前",
+  "products.namePlaceholder": "青いリネンシャツ",
+  "products.description": "説明",
+  "products.descriptionPlaceholder": "素材・サイズ・詳細…",
+  "products.price": "価格",
+  "products.promoPrice": "セール価格",
+  "products.promoPriceHint": "設定すると価格の代わりに表示されます。",
+  "products.category": "カテゴリー",
+  "products.image": "画像 URL",
+  "products.imageHint": "商品写真へのリンク（https://…）。",
+  "products.imagePreview": "画像プレビュー",
+  "products.available": "販売中",
+  "products.unavailable": "在庫なし",
+  "products.featured": "おすすめ",
+  "products.featuredHint": "おすすめ商品はメインカタログの前に表示されます。",
+  "products.noCategory": "カテゴリーなし",
+  "products.save": "変更を保存",
+  "products.saved": "商品を保存しました。",
+  "products.create": "商品を作成",
+  "products.delete": "削除",
+  "products.deleteConfirm": "商品「{name}」を削除しますか？",
+  "products.moveUp": "上へ",
+  "products.moveDown": "下へ",
+  "products.sectionDetails": "詳細",
+  "products.sectionPricing": "価格設定",
+  "products.sectionOrganization": "整理",
+  "products.error.nameRequired": "商品名を入力してください。",
+  "products.error.nameTooLong": "名前は最大 120 文字です。",
+  "products.error.descriptionTooLong": "説明は最大 1000 文字です。",
+  "products.error.priceInvalid": "1000 や 999.99 のような有効な価格を入力してください。",
+  "products.error.promoPriceInvalid": "有効なセール価格を入力してください。",
+  "products.error.promoPriceNotBelow": "セール価格は通常価格より低くしてください。",
+  "products.error.imageInvalid":
+    "完全なリンク（https://…）またはサイト内のパス（/…）を使用してください。",
+  "products.error.categoryInvalid": "ストアのカテゴリーを選んでください。",
+  "products.error.createFailed": "商品を作成できませんでした。もう一度お試しください。",
+  "products.error.saveFailed": "変更を保存できませんでした。もう一度お試しください。",
+
+  // ── gestão de categorias ───────────────────────────────────────────────
+  "categories.title": "カテゴリー",
+  "categories.subtitle": "カタログをカテゴリーで整理します。",
+  "categories.new": "新規カテゴリー",
+  "categories.newSubtitle": "カテゴリーはストアのフィルターとして表示されます。",
+  "categories.name": "名前",
+  "categories.namePlaceholder": "シャツ",
+  "categories.add": "追加",
+  "categories.save": "保存",
+  "categories.saved": "カテゴリーを保存しました。",
+  "categories.created": "カテゴリーを作成しました。",
+  "categories.empty": "まだカテゴリーがありません。",
+  "categories.listHint":
+    "名前の変更・並べ替え・有効化・削除ができます。無効なカテゴリーはストアに表示されません。",
+  "categories.active": "有効",
+  "categories.delete": "削除",
+  "categories.deleteConfirm": "カテゴリー「{name}」を削除しますか？商品は保持されます。",
+  "categories.moveUp": "上へ",
+  "categories.moveDown": "下へ",
+  "categories.error.nameRequired": "カテゴリー名を入力してください。",
+  "categories.error.nameTooLong": "名前は最大 60 文字です。",
+  "categories.error.createFailed": "カテゴリーを作成できませんでした。もう一度お試しください。",
+  "categories.error.saveFailed": "変更を保存できませんでした。もう一度お試しください。",
+
+  // ── seletor de idioma da UI ────────────────────────────────────────────
+  "locale.selectorLabel": "言語",
+  "locale.changeLanguage": "表示言語を変更",
+
+  // ── definições: idioma da interface (painel) ───────────────────────────
+  "settings.uiLanguage": "表示言語",
+  "settings.uiLanguageHelp":
+    "Elicani プラットフォームの言語——ストアの言語や通貨とは独立しています。",
+
+  // ── landing / marketing ────────────────────────────────────────────────
+  "landing.mainNav": "メインナビゲーション",
+  "landing.footerNav": "フッターリンク",
+  "landing.navFeatures": "機能",
+  "landing.navHow": "使い方",
+  "landing.signIn": "ログイン",
+  "landing.createStore": "ストアを作成",
+  "landing.openMenu": "メニューを開く",
+  "landing.closeMenu": "メニューを閉じる",
+
+  "landing.heroTitle1": "オンラインで販売。",
+  "landing.heroTitle2": "WhatsApp で注文を受け取ろう。",
+  "landing.heroSubtitle":
+    "Elicani は小さなビジネスに本格的なオンラインストアを——商品の紹介、注文の受付、顧客管理、どんな通貨でも販売できます。",
+  "landing.seeHow": "使い方を見る",
+
+  "landing.trust1": "自分だけのオンラインストア",
+  "landing.trust2": "商品とカテゴリー",
+  "landing.trust3": "WhatsApp で注文",
+  "landing.trust4": "あらゆる通貨に対応",
+  "landing.trust5": "小さなビジネスのために",
+
+  "landing.featuresTitle": "あなたらしいストアを",
+  "landing.featuresSubtitle":
+    "ストアを開いて販売を始めるために必要なすべて——技術的な知識は不要です。",
+  "landing.feature1Title": "自分だけのストア",
+  "landing.feature1Body":
+    "独自の世界観・商品・カテゴリーを持つ本格的なオンラインストアを作成できます。",
+  "landing.feature2Title": "かんたんなカタログ",
+  "landing.feature2Body":
+    "技術的な知識なしに商品・画像・価格・カテゴリーを追加できます。",
+  "landing.feature3Title": "かんたんな注文",
+  "landing.feature3Body":
+    "顧客は商品を探してカートに入れ、WhatsApp で注文を送信します。",
+  "landing.feature4Title": "柔軟な通貨",
+  "landing.feature4Body":
+    "USD・EUR・MZN・BRL など対応する通貨で販売できます。",
+  "landing.feature5Title": "配送",
+  "landing.feature5Body":
+    "顧客向けの配送エリアと配送料を設定できます。",
+  "landing.feature6Title": "すべてを一元管理",
+  "landing.feature6Body":
+    "商品・注文・顧客・ストア設定をひとつのダッシュボードから。",
+
+  "landing.howTitle": "使い方",
+  "landing.howSubtitle": "アイデアから最初の注文まで、3 ステップ。",
+  "landing.step1Title": "ストアを作成",
+  "landing.step1Body": "ビジネス情報を設定します。",
+  "landing.step2Title": "商品を追加",
+  "landing.step2Body": "写真・価格・カテゴリーを追加します。",
+  "landing.step3Title": "注文を受け取る",
+  "landing.step3Body":
+    "顧客が買い物をして、WhatsApp で注文を送信します。",
+
+  "landing.previewStoreTitle": "単なる商品リストではなく、本格的なオンラインストア。",
+  "landing.previewStoreBody":
+    "ヘッダー、カテゴリー、商品カード、価格、検索、カートを備えたストア——保存した瞬間に共有できます。",
+  "landing.previewDashTitle": "ダッシュボードからすべてを管理",
+  "landing.previewDashBody":
+    "商品・注文・顧客・配送・ストア設定——ひとつの場所にまとめて。",
+  "landing.colOrder": "注文",
+  "landing.colItems": "点数",
+  "landing.colTotal": "合計",
+  "landing.colStatus": "ステータス",
+  "landing.statusNew": "新規",
+  "landing.statusConfirmed": "確認済み",
+  "landing.statusDelivered": "配送済み",
+
+  "landing.ctaTitle": "ビジネスをオンラインに始めましょうか？",
+  "landing.ctaBody": "Elicani ストアを作成して、売り始めましょう。",
+
+  "landing.footerTagline": "WhatsApp 注文対応のオンラインストア。",
+  "landing.footerRights": "© {year} Elicani. 無断転載を禁じます。",
+
+  "landing.pillOrder": "WhatsApp で注文を送信しました",
+  "landing.demoItemsOne": "{count} 点",
+  "landing.demoItemsMany": "{count} 点",
+};

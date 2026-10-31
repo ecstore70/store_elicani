@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import { LOCALE_COOKIE, normalizeLocale, type Locale } from "./config.ts";
+import { LOCALE_COOKIE, isSupportedLocale, normalizeLocale, type Locale } from "./config.ts";
 import { createTranslator, type Translator } from "./translate.ts";
 
 /**
@@ -18,4 +18,17 @@ export async function getLocale(): Promise<Locale> {
 /** Tradutor pronto para uso em Server Components e Server Actions. */
 export async function getTranslator(): Promise<Translator> {
   return createTranslator(await getLocale());
+}
+
+/**
+ * Escolha EXPLÍCITA do visitante, ou `null` se nunca escolheu.
+ *
+ * Distinguir "não escolheu" de "escolheu o padrão" permite à vitrine
+ * pública respeitar a preferência do visitante quando existe e cair no
+ * idioma configurado pela loja quando não existe — sem sistemas duplos.
+ */
+export async function getLocaleChoice(): Promise<Locale | null> {
+  const cookieStore = await cookies();
+  const raw = cookieStore.get(LOCALE_COOKIE)?.value;
+  return isSupportedLocale(raw) ? raw : null;
 }

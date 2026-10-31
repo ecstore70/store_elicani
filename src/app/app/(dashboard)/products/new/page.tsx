@@ -7,9 +7,10 @@ import { getLocale } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 import { requireStore } from "@/lib/stores/queries";
 
-export const metadata: Metadata = {
-  title: "New product",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = createTranslator(await getLocale());
+  return { title: t("products.new") };
+}
 
 export default async function NewProductPage() {
   const user = await requireUser();

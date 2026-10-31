@@ -10,9 +10,10 @@ import { getLocale } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 import { getStoreForOwner } from "@/lib/stores/queries";
 
-export const metadata: Metadata = {
-  title: "Create your store",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = createTranslator(await getLocale());
+  return { title: t("landing.createStore") };
+}
 
 /**
  * Onboarding: lojista autenticado sem loja.

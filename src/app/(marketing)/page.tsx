@@ -157,7 +157,7 @@ export default async function LandingPage() {
                   <ArrowRight
                     data-icon="inline-end"
                     aria-hidden="true"
-                    className="size-4"
+                    className="size-4 rtl:rotate-180"
                   />
                 </Link>
               </Button>
@@ -357,7 +357,7 @@ export default async function LandingPage() {
           <div className="relative overflow-hidden rounded-2xl bg-brand-dark px-6 py-14 text-center sm:px-12 sm:py-16">
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute -right-8 -top-8 opacity-[0.08]"
+              className="pointer-events-none absolute -end-8 -top-8 opacity-[0.08]"
             >
               <Logo markOnly className="h-36 w-36 sm:h-48 sm:w-48" />
             </span>
@@ -382,7 +382,7 @@ export default async function LandingPage() {
                     <ArrowRight
                       data-icon="inline-end"
                       aria-hidden="true"
-                      className="size-4"
+                      className="size-4 rtl:rotate-180"
                     />
                   </Link>
                 </Button>

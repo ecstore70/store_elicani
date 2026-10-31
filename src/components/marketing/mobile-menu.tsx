@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LocaleSelector } from "@/components/shared/locale-selector";
+import type { Locale } from "@/lib/i18n/config";
 
 /**
  * Menu da navegação de marketing no mobile.
@@ -25,6 +27,8 @@ export function MobileMenu({
   ctaLabel,
   openLabel,
   closeLabel,
+  currentLocale,
+  localeLabel,
 }: {
   links: MenuLink[];
   navLabel: string;
@@ -32,6 +36,8 @@ export function MobileMenu({
   ctaLabel: string;
   openLabel: string;
   closeLabel: string;
+  currentLocale: Locale;
+  localeLabel: string;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -57,6 +63,14 @@ export function MobileMenu({
           id="marketing-mobile-menu"
           className="absolute inset-x-0 top-full border-b border-border/70 bg-background px-4 py-4 shadow-lg sm:px-6"
         >
+          <div className="mb-3">
+            <LocaleSelector
+              current={currentLocale}
+              label={localeLabel}
+              className="w-full"
+            />
+          </div>
+
           <nav aria-label={navLabel}>
             <ul className="space-y-1">
               {links.map((link) => (

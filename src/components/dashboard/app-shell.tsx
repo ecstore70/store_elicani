@@ -1,6 +1,9 @@
 import type { ReactNode } from "react";
 import { Logo } from "@/components/shared/logo";
-import { getTranslator } from "@/lib/i18n/locale";
+import { LocaleSelector } from "@/components/shared/locale-selector";
+import { getLocaleDirection } from "@/lib/i18n/config";
+import { getLocale } from "@/lib/i18n/locale";
+import { createTranslator } from "@/lib/i18n/translate";
 import { buildNavItems } from "./nav-items";
 import { MobileNav } from "./mobile-nav";
 import { SidebarNav } from "./sidebar-nav";
@@ -24,12 +27,13 @@ export async function AppShell({
   storeSlug?: string | null;
   children: ReactNode;
 }) {
-  const t = await getTranslator();
+  const locale = await getLocale();
+  const t = createTranslator(locale);
   const items = buildNavItems(t);
 
   return (
     <div className="flex min-h-svh w-full">
-      <aside className="sticky top-0 hidden h-svh w-60 shrink-0 flex-col border-r border-border/70 bg-sidebar lg:flex">
+      <aside className="sticky top-0 hidden h-svh w-60 shrink-0 flex-col border-e border-border/70 bg-sidebar lg:flex">
         <div className="flex h-16 items-center border-b border-border/70 px-5">
           <Logo />
         </div>
@@ -50,7 +54,12 @@ export async function AppShell({
             </div>
           )}
 
-          <div className="border-t border-border/70 p-3">
+          <div className="space-y-3 border-t border-border/70 p-3">
+            <LocaleSelector
+              current={locale}
+              label={t("locale.changeLanguage")}
+              className="w-full"
+            />
             <SignOutButton
               label={t("shell.signOut")}
               className="w-full justify-start text-muted-foreground"
@@ -67,6 +76,9 @@ export async function AppShell({
             storeSlug={storeSlug}
             openLabel={t("shell.openMenu")}
             signOutLabel={t("shell.signOut")}
+            currentLocale={locale}
+            localeLabel={t("locale.changeLanguage")}
+            direction={getLocaleDirection(locale)}
           />
           <Logo />
         </header>

@@ -372,6 +372,15 @@ export const en = {
   "categories.error.createFailed": "Could not create the category. Please try again.",
   "categories.error.saveFailed": "Could not save the changes. Please try again.",
 
+  // ── seletor de idioma da UI ────────────────────────────────────────────
+  "locale.selectorLabel": "Language",
+  "locale.changeLanguage": "Change interface language",
+
+  // ── definições: idioma da interface (painel) ───────────────────────────
+  "settings.uiLanguage": "Interface language",
+  "settings.uiLanguageHelp":
+    "Language of the Elicani platform — independent from your storefront language and currency.",
+
   // ── landing / marketing ────────────────────────────────────────────────
   "landing.mainNav": "Main navigation",
   "landing.footerNav": "Footer links",

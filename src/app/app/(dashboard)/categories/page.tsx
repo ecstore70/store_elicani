@@ -7,9 +7,10 @@ import { getLocale } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 import { requireStore } from "@/lib/stores/queries";
 
-export const metadata: Metadata = {
-  title: "Categories",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = createTranslator(await getLocale());
+  return { title: t("categories.title") };
+}
 
 /**
  * Categorias da própria loja — criação, edição, ativação, remoção e

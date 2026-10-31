@@ -43,7 +43,7 @@ function MiniHeader() {
       </div>
       <span className="relative shrink-0">
         <ShoppingBag aria-hidden="true" className="size-5 text-[var(--sf-muted)]" />
-        <span className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-[var(--sf-primary)] text-[10px] font-semibold text-[var(--sf-on-primary)]">
+        <span className="absolute -end-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-[var(--sf-primary)] text-[10px] font-semibold text-[var(--sf-on-primary)]">
           {SAMPLE_CART_COUNT}
         </span>
       </span>
@@ -111,7 +111,7 @@ export function HeroStorefront({ locale }: { locale: Locale }) {
         </div>
       </BrowserFrame>
 
-      <div className="absolute -bottom-4 left-4 hidden items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 shadow-[0_14px_30px_-16px_rgba(15,23,42,0.35)] sm:flex">
+      <div className="absolute -bottom-4 start-4 hidden items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 shadow-[0_14px_30px_-16px_rgba(15,23,42,0.35)] sm:flex">
         <span className="flex size-6 items-center justify-center rounded-full bg-[#22c55e]">
           <MessageCircle aria-hidden="true" className="size-3.5 text-white" />
         </span>

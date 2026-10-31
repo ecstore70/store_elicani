@@ -66,11 +66,37 @@ describe("tradutor", () => {
     );
   });
 
-  it("idiomas ainda não traduzidos caem no inglês", () => {
-    const japanese = createTranslator("ja");
+  it("todos os idiomas registrados traduzem de verdade (sem cair no inglês)", () => {
     const english = createTranslator("en");
-    assert.equal(japanese("nav.dashboard"), english("nav.dashboard"));
-    assert.equal(japanese("settings.save"), english("settings.save"));
+    // Chaves que mudam obrigatoriamente de idioma: se um catálogo não
+    // estiver registrado/traduzido, elas voltariam ao inglês e o teste falha.
+    const mustTranslate = [
+      "nav.dashboard",
+      "settings.save",
+      "locale.changeLanguage",
+      "landing.heroTitle1",
+      "storefront.addToCart",
+      "common.cancel",
+    ] as const;
+
+    for (const locale of SUPPORTED_LOCALES) {
+      if (locale === "en") continue;
+      const t = createTranslator(locale);
+      for (const key of mustTranslate) {
+        assert.notEqual(t(key), english(key), `${locale}: ${key} não traduzido`);
+      }
+    }
+  });
+
+  it("amostras douradas por idioma (valores que a UI renderiza)", () => {
+    assert.equal(createTranslator("pt-BR")("nav.dashboard"), "Painel");
+    assert.equal(createTranslator("pt-PT")("nav.settings"), "Definições");
+    assert.equal(createTranslator("es")("landing.signIn"), "Iniciar sesión");
+    assert.equal(createTranslator("fr")("auth.signIn"), "Se connecter");
+    assert.equal(createTranslator("de")("auth.signIn"), "Anmelden");
+    assert.equal(createTranslator("ar")("storefront.addToCart"), "أضف إلى السلة");
+    assert.equal(createTranslator("zh-Hans")("nav.dashboard"), "仪表盘");
+    assert.equal(createTranslator("ja")("locale.selectorLabel"), "言語");
   });
 
   it("todos os idiomas expõem o mesmo número de chaves", () => {

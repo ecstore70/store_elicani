@@ -20,9 +20,10 @@ import { getLocale } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 import { requireStore } from "@/lib/stores/queries";
 
-export const metadata: Metadata = {
-  title: "Products",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = createTranslator(await getLocale());
+  return { title: t("nav.products") };
+}
 
 /**
  * Produtos da própria loja — o RLS garante que cada comerciante vê e

@@ -5,9 +5,10 @@ import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { getLocale } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 
-export const metadata: Metadata = {
-  title: "Choose a new password",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = createTranslator(await getLocale());
+  return { title: t("auth.reset.title") };
+}
 
 /** Lê o cookie de idioma — rota dinâmica por natureza. */
 export const instant = false;

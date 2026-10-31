@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
-import { DEFAULT_LOCALE } from "@/lib/i18n/config";
-import { createTranslator } from "@/lib/i18n/translate";
+import { getTranslator } from "@/lib/i18n/locale";
 
 /**
  * 404 global. Serve tanto páginas inexistentes quanto lojas desconhecidas
  * (o /store/[slug] chama notFound() quando a loja não existe ou está inativa).
+ * Segue o idioma do visitante (cookie `elicani_locale`).
  */
-export default function NotFound() {
-  const t = createTranslator(DEFAULT_LOCALE);
+export default async function NotFound() {
+  const t = await getTranslator();
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted/40 px-4 text-center">

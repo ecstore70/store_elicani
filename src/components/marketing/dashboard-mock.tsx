@@ -90,7 +90,7 @@ export function DashboardMock({ locale }: { locale: Locale }) {
               <div className="border-b border-border/70 px-3 py-2.5">
                 <p className="text-xs font-semibold">{t("nav.orders")}</p>
               </div>
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-start text-xs">
                 <thead className="text-[11px] text-muted-foreground">
                   <tr>
                     <th className="px-3 py-2 font-medium">

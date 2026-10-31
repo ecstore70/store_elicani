@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getMarketingUrl } from "@/lib/env";
+import { getLocaleDirection } from "@/lib/i18n/config";
+import { getLocale } from "@/lib/i18n/locale";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -48,13 +50,23 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+/**
+ * `lang`/`dir` seguem o cookie `elicani_locale` — é a fundação do RTL:
+ * com "ar" o documento inteiro passa a `dir="rtl"` e o layout (flex/grid
+ * lógico) espelha-se sem aplicação separada. Sem cookie, "en" (default).
+ *
+ * A rota resolve em tempo de requisição; `instant = false` autoriza o
+ * bloqueio (mesmo padrão de `app/layout`), cobrindo também o `/_not-found`.
+ */
+export const instant = false;
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const locale = await getLocale();
+
   return (
-    // A Fase 1 não expõe seletor de idioma: a UI segue o padrão ("en").
-    // O canal de locale já existe (cookie `elicani_locale`) para a fase
-    // em que o seletor for adicionado.
     <html
-      lang="en"
+      lang={locale}
+      dir={getLocaleDirection(locale)}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">{children}</body>

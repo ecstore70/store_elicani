@@ -5,7 +5,9 @@ import { Clock, Camera, Globe, MessageCircle, Phone } from "lucide-react";
 import { CartProvider } from "@/components/storefront/cart-provider";
 import { StorefrontCatalog } from "@/components/storefront/storefront-catalog";
 import { Logo } from "@/components/shared/logo";
+import { LocaleSelector } from "@/components/shared/locale-selector";
 import { normalizeLocale, getLocaleDirection } from "@/lib/i18n/config";
+import { getLocaleChoice, getTranslator } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 import { getPublicCatalog } from "@/lib/catalog/queries";
 import { normalizeAppearance } from "@/lib/stores/appearance";
@@ -26,15 +28,18 @@ export const instant = false;
  * resolve a loja e o catálogo com a credencial ANON (o RLS só devolve
  * dados de lojas ATIVAS).
  *
- * A vitrine fala o idioma DEFINIDO PELA LOJA — conteúdo do comerciante
- * nunca é traduzido automaticamente.
+ * Camada de UI da vitrine: idioma da escolha EXPLÍCITA do visitante
+ * (cookie `elicani_locale`, definido pelo seletor do cabeçalho) quando
+ * existe; caso contrário, o idioma configurado pela loja. Conteúdo do
+ * comerciante nunca é traduzido automaticamente.
  */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const store = await getPublicStoreBySlug(slug);
 
   if (!store) {
-    return { title: "Store not found" };
+    const t = await getTranslator();
+    return { title: t("storefront.notFound") };
   }
 
   return {
@@ -56,7 +61,9 @@ export default async function StorefrontPage({ params }: Props) {
     notFound();
   }
 
-  const locale = normalizeLocale(store.language);
+  // Preferência explícita do visitante > idioma configurado pela loja.
+  const visitorChoice = await getLocaleChoice();
+  const locale = visitorChoice ?? normalizeLocale(store.language);
   const t = createTranslator(locale);
   const strings = buildStorefrontStrings(t);
 
@@ -122,6 +129,15 @@ export default async function StorefrontPage({ params }: Props) {
                 </p>
               )}
             </div>
+
+            {/* idioma da UI do visitante — não confundir com o conteúdo da loja */}
+            <LocaleSelector
+              current={locale}
+              label={t("locale.changeLanguage")}
+              align="end"
+              tone="storefront"
+              className="w-40 shrink-0"
+            />
 
             {/* botão do carrinho vive dentro do provider (posicionado fixo) */}
           </div>

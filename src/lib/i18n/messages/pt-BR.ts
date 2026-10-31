@@ -373,6 +373,15 @@ export const ptBR: Messages = {
   "categories.error.createFailed": "Não foi possível criar a categoria. Tente novamente.",
   "categories.error.saveFailed": "Não foi possível guardar as alterações. Tente novamente.",
 
+  // ── seletor de idioma da UI ────────────────────────────────────────────
+  "locale.selectorLabel": "Idioma",
+  "locale.changeLanguage": "Alterar idioma da interface",
+
+  // ── definições: idioma da interface (painel) ───────────────────────────
+  "settings.uiLanguage": "Idioma da interface",
+  "settings.uiLanguageHelp":
+    "Idioma da plataforma Elicani — independente do idioma e da moeda da sua loja.",
+
   // ── landing / marketing ────────────────────────────────────────────────
   "landing.mainNav": "Navegação principal",
   "landing.footerNav": "Links do rodapé",

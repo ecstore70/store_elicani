@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { StoreForm } from "@/components/store/store-form";
+import { LocaleSelector } from "@/components/shared/locale-selector";
 import {
   Card,
   CardContent,
@@ -15,9 +16,10 @@ import { createTranslator } from "@/lib/i18n/translate";
 import { requireStore } from "@/lib/stores/queries";
 import { storePublicUrl } from "@/lib/stores/resolve";
 
-export const metadata: Metadata = {
-  title: "Settings",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = createTranslator(await getLocale());
+  return { title: t("settings.title") };
+}
 
 export default async function SettingsPage() {
   const user = await requireUser();
@@ -50,6 +52,22 @@ export default async function SettingsPage() {
               timezone: store.timezone ?? "",
               primary_color: store.primary_color ?? "",
             }}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base tracking-tight">
+            {t("settings.uiLanguage")}
+          </CardTitle>
+          <CardDescription>{t("settings.uiLanguageHelp")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LocaleSelector
+            current={locale}
+            label={t("locale.changeLanguage")}
+            className="w-full max-w-56"
           />
         </CardContent>
       </Card>

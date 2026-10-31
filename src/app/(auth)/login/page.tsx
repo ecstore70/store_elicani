@@ -3,9 +3,10 @@ import { LoginForm } from "@/components/auth/login-form";
 import { getLocale } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 
-export const metadata: Metadata = {
-  title: "Sign in",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = createTranslator(await getLocale());
+  return { title: t("auth.signIn") };
+}
 
 /** Lê o cookie de idioma e de sessão — rota dinâmica por natureza. */
 export const instant = false;

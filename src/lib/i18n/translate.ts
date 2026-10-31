@@ -1,10 +1,13 @@
 /**
  * Tradução de strings.
  *
- * Arquitetura: catálogo em inglês ("en") é a base; outros idiomas entram
- * como `Partial<Messages>` e apenas SOBREPOEM as chaves traduzidas — as
- * ausentes caem automaticamente no inglês. Isso permite adicionar idiomas
+ * Arquitetura: catálogo em inglês ("en") é a base; os demais idiomas
+ * entram como `Partial<Messages>` e apenas SOBREPOEM as chaves traduzidas —
+ * as ausentes caem automaticamente no inglês. Isso permite adicionar idiomas
  * sem tocar em nenhum componente.
+ *
+ * Os 9 idiomas suportados estão registrados; nesta fase todos os catálogos
+ * estão completos (o teste `i18n.test.ts` garante a cobertura das chaves).
  */
 import {
   DEFAULT_LOCALE,
@@ -12,13 +15,28 @@ import {
   type Locale,
 } from "./config.ts";
 import { en, type MessageKey, type Messages } from "./messages/en.ts";
+import { ptBR } from "./messages/pt-BR.ts";
+import { ptPT } from "./messages/pt-PT.ts";
+import { es } from "./messages/es.ts";
+import { fr } from "./messages/fr.ts";
+import { de } from "./messages/de.ts";
+import { ar } from "./messages/ar.ts";
+import { zhHans } from "./messages/zh-Hans.ts";
+import { ja } from "./messages/ja.ts";
 
 type PartialMessages = Partial<Messages>;
 
-/** Catálogos registrados. Adicione aqui novos idiomas quando traduzidos. */
+/** Catálogos registrados — os 9 idiomas suportados da Fase 1. */
 const catalogs: Partial<Record<Locale, PartialMessages>> = {
   en,
-  // Ex.: "pt-BR": ptBR,
+  "pt-BR": ptBR,
+  "pt-PT": ptPT,
+  es,
+  fr,
+  de,
+  ar,
+  "zh-Hans": zhHans,
+  ja,
 };
 
 export function getMessages(locale: Locale): Messages {

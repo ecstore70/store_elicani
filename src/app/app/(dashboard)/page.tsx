@@ -12,9 +12,10 @@ import { createTranslator } from "@/lib/i18n/translate";
 import { requireStore } from "@/lib/stores/queries";
 import { storePublicUrl } from "@/lib/stores/resolve";
 
-export const metadata: Metadata = {
-  title: "Dashboard",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = createTranslator(await getLocale());
+  return { title: t("nav.dashboard") };
+}
 
 /**
  * Cartões de resumo são EXPLICITAMENTE placeholders das tabelas das próximas
@@ -39,8 +40,8 @@ function DetailRow({
   href?: string;
 }) {
   const classes = mono
-    ? "min-w-0 truncate text-right font-mono text-xs text-foreground"
-    : "min-w-0 truncate text-right text-sm font-medium";
+    ? "min-w-0 truncate text-end font-mono text-xs text-foreground"
+    : "min-w-0 truncate text-end text-sm font-medium";
 
   return (
     <div className="flex items-center justify-between gap-4 py-3">

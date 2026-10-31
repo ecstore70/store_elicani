@@ -7,9 +7,10 @@ import { createTranslator } from "@/lib/i18n/translate";
 import { listCategoriesForOwner, listProductsForOwner } from "@/lib/catalog/queries";
 import { requireStore } from "@/lib/stores/queries";
 
-export const metadata: Metadata = {
-  title: "Appearance",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = createTranslator(await getLocale());
+  return { title: t("nav.appearance") };
+}
 
 /**
  * Loja → Aparência — template, cores, layout e estilos, com preview ao vivo

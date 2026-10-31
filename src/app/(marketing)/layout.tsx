@@ -2,23 +2,20 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
+import { LocaleSelector } from "@/components/shared/locale-selector";
 import { MobileMenu, type MenuLink } from "@/components/marketing/mobile-menu";
-import { getTranslator } from "@/lib/i18n/locale";
+import { getLocale } from "@/lib/i18n/locale";
+import { createTranslator } from "@/lib/i18n/translate";
 
 /**
  * Layout de marketing (página pública da Elicani).
  *
- * Cabeçalho sticky com hierarquia clara: logo → âncoras → Sign in →
- * CTA primário "Create your store" (azul da marca). No mobile, o mesmo
- * conteúdo vive no menu acessível (`MobileMenu`).
+ * Cabeçalho sticky com hierarquia clara: logo → âncoras → seletor de
+ * idioma → Sign in → CTA primário "Create your store" (azul da marca).
+ * No mobile, o mesmo conteúdo vive no menu acessível (`MobileMenu`).
  *
- * Toda a copy passa pelo sistema i18n existente (`getTranslator`) — o
- * idioma vem do cookie `elicani_locale`, que nenhum seletor altera ainda
- * (o seletor de idioma é trabalho do sistema i18n, não do visual).
- *
- * O layout lê o cookie, logo a rota resolve em tempo de requisição;
- * `instant = false` autoriza o bloqueio (mesmo padrão de `/app` e das
- * páginas de autenticação) em vez de falhar o prerender com Cache Components.
+ * Toda a copy passa pelo sistema i18n existente — o idioma vem do cookie
+ * `elicani_locale`, definido pelo seletor reutilizável (`LocaleSelector`).
  */
 export const instant = false;
 
@@ -27,7 +24,8 @@ export default async function MarketingLayout({
 }: {
   children: ReactNode;
 }) {
-  const t = await getTranslator();
+  const locale = await getLocale();
+  const t = createTranslator(locale);
 
   const links: MenuLink[] = [
     { href: "/#features", label: t("landing.navFeatures") },
@@ -62,6 +60,11 @@ export default async function MarketingLayout({
           </nav>
 
           <div className="hidden items-center gap-2 lg:flex">
+            <LocaleSelector
+              current={locale}
+              label={t("locale.changeLanguage")}
+              className="w-44"
+            />
             <Button
               variant="ghost"
               className="h-10 px-4"
@@ -84,6 +87,8 @@ export default async function MarketingLayout({
             ctaLabel={t("landing.createStore")}
             openLabel={t("landing.openMenu")}
             closeLabel={t("landing.closeMenu")}
+            currentLocale={locale}
+            localeLabel={t("locale.changeLanguage")}
           />
         </div>
       </header>
