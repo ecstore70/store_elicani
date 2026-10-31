@@ -1,4 +1,4 @@
-import { MessageCircle, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import { formatCurrency } from "@/lib/currency";
 import { createTranslator } from "@/lib/i18n/translate";
@@ -8,6 +8,7 @@ import { buildStorefrontStrings } from "@/lib/storefront/strings";
 import type { StorefrontStrings } from "@/lib/storefront/strings";
 import { ProductCard } from "@/components/storefront/product-card";
 import { StorefrontCatalog } from "@/components/storefront/storefront-catalog";
+import { WhatsAppIcon } from "@/components/shared/whatsapp-icon";
 import { BrowserFrame } from "./browser-frame";
 import {
   SAMPLE_APPEARANCE,
@@ -112,9 +113,7 @@ export function HeroStorefront({ locale }: { locale: Locale }) {
       </BrowserFrame>
 
       <div className="absolute -bottom-4 start-4 hidden items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 shadow-[0_14px_30px_-16px_rgba(15,23,42,0.35)] sm:flex">
-        <span className="flex size-6 items-center justify-center rounded-full bg-[#22c55e]">
-          <MessageCircle aria-hidden="true" className="size-3.5 text-white" />
-        </span>
+        <WhatsAppIcon className="size-5" />
         <span className="text-xs font-medium text-slate-800">
           {t("landing.pillOrder")}
         </span>
@@ -181,7 +180,8 @@ export function PhoneStorefront({ locale }: { locale: Locale }) {
               )}
             </p>
           </div>
-          <span className="shrink-0 rounded-[var(--sf-btn-radius)] bg-[var(--sf-button)] px-2.5 py-2 text-[11px] font-medium text-[var(--sf-on-button)]">
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-[var(--sf-btn-radius)] bg-[var(--sf-button)] px-2.5 py-2 text-[11px] font-medium text-[var(--sf-on-button)]">
+            <WhatsAppIcon className="size-3.5" />
             {strings.orderWhatsApp}
           </span>
         </div>

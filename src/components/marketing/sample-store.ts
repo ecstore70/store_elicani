@@ -11,7 +11,18 @@ import type { MessageKey } from "@/lib/i18n/messages/en";
  * `storefront.*`.
  *
  * Preços/formatos usam as moedas e o `Intl.NumberFormat` existentes.
+ *
+ * IMAGENS: fotografias reais servidas pelo CDN do Cloudinary com
+ * transformações de entrega (`w_640,c_fit,q_auto,f_auto`) — largura
+ * limitada, qualidade automática e formato negociado, mantendo a
+ * proporção original de cada foto (sem esticar; o `object-cover` dos
+ * cards faz o enquadramento). São ativos de demonstração do marketing —
+ * NUNCA entram na base de dados de produtos de nenhum comerciante.
  */
+
+/** CDN + transformações de entrega (peso leve, proporção preservada). */
+const DEMO_IMG = (path: string) =>
+  `https://res.cloudinary.com/nb0qqa5m/image/upload/w_640,c_fit,q_auto,f_auto/${path}`;
 
 export const SAMPLE_STORE = {
   name: "Nova Moda",
@@ -38,11 +49,13 @@ export const SAMPLE_PRODUCTS: PublicProduct[] = [
   {
     id: "p-shirt",
     category_id: "c-apparel",
-    name: "Linen Shirt",
-    description: "Breathable linen, relaxed fit.",
+    name: "Polo Shirt",
+    description: "Breathable knit, relaxed fit.",
     price: 49.9,
     promo_price: 39.9,
-    image_url: "/demo/shirt.svg",
+    image_url: DEMO_IMG(
+      "v1793409091/file_00000000b7d88211acb16dc93efc3d7a.png",
+    ),
     is_available: true,
     is_featured: true,
     sort_order: 0,
@@ -50,11 +63,13 @@ export const SAMPLE_PRODUCTS: PublicProduct[] = [
   {
     id: "p-dress",
     category_id: "c-apparel",
-    name: "Summer Dress",
-    description: "Light fabric for warm days.",
+    name: "Satin Bow Dress",
+    description: "Statement look for special days.",
     price: 64,
     promo_price: null,
-    image_url: "/demo/dress.svg",
+    image_url: DEMO_IMG(
+      "v1793409091/file_00000000a0848211b7dcbeb1a86b9d3c.png",
+    ),
     is_available: true,
     is_featured: false,
     sort_order: 1,
@@ -62,11 +77,13 @@ export const SAMPLE_PRODUCTS: PublicProduct[] = [
   {
     id: "p-tote",
     category_id: "c-accessories",
-    name: "Classic Tote",
-    description: "Canvas tote with inner pocket.",
+    name: "Leather Handbag",
+    description: "Structured carry with tassel charm.",
     price: 29.5,
     promo_price: null,
-    image_url: "/demo/tote.svg",
+    image_url: DEMO_IMG(
+      "v1793409091/file_00000000dfd482119ef9f40caac92466.png",
+    ),
     is_available: true,
     is_featured: false,
     sort_order: 2,
@@ -78,7 +95,7 @@ export const SAMPLE_PRODUCTS: PublicProduct[] = [
     description: "Cushioned sole, everyday comfort.",
     price: 79,
     promo_price: null,
-    image_url: "/demo/sneakers.svg",
+    image_url: DEMO_IMG("v1788730967/cld-sample-5.jpg"),
     is_available: true,
     is_featured: false,
     sort_order: 3,
@@ -90,7 +107,9 @@ export const SAMPLE_PRODUCTS: PublicProduct[] = [
     description: "Adjustable, one size.",
     price: 18,
     promo_price: 14.5,
-    image_url: "/demo/cap.svg",
+    image_url: DEMO_IMG(
+      "v1793409091/file_00000000a21882119e013dfde944e065.png",
+    ),
     is_available: true,
     is_featured: false,
     sort_order: 4,
@@ -102,7 +121,9 @@ export const SAMPLE_PRODUCTS: PublicProduct[] = [
     description: "Slim profile, six card slots.",
     price: 34,
     promo_price: null,
-    image_url: "/demo/wallet.svg",
+    image_url: DEMO_IMG(
+      "v1793409092/file_0000000030c88211be90dd7a94645795.png",
+    ),
     is_available: true,
     is_featured: false,
     sort_order: 5,
@@ -123,7 +144,7 @@ export const SAMPLE_HERO_PRODUCTS = SAMPLE_PRODUCTS.filter((product) =>
 
 /** Subtotal demonstrado na barra de carrinho do mock de telemóvel. */
 export const SAMPLE_CART_COUNT: number = 2;
-export const SAMPLE_CART_SUBTOTAL: number = 69.4; // 39.90 (camisa em promoção) + 29.50 (tote)
+export const SAMPLE_CART_SUBTOTAL: number = 69.4; // 39.90 (polo em promoção) + 29.50 (handbag)
 
 /** Encomendas do mock do painel — IDs e valores genéricos, sem dados pessoais. */
 export const SAMPLE_ORDERS: readonly {

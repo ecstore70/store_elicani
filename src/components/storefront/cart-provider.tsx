@@ -11,6 +11,7 @@ import {
 } from "react";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { WhatsAppIcon } from "@/components/shared/whatsapp-icon";
 import {
   Sheet,
   SheetContent,
@@ -393,6 +394,7 @@ export function CartProvider({
                     rel="noreferrer"
                     className={`${BUTTON_CLASSES} w-full`}
                   >
+                    <WhatsAppIcon className="size-4" />
                     {strings.orderWhatsApp}
                   </a>
                 ) : null}

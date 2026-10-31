@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Clock, Camera, Globe, MessageCircle, Phone } from "lucide-react";
+import { Clock, Camera, Globe, Phone } from "lucide-react";
 import { CartProvider } from "@/components/storefront/cart-provider";
 import { StorefrontCatalog } from "@/components/storefront/storefront-catalog";
 import { Logo } from "@/components/shared/logo";
 import { LocaleSelector } from "@/components/shared/locale-selector";
+import { WhatsAppIcon } from "@/components/shared/whatsapp-icon";
 import { normalizeLocale, getLocaleDirection } from "@/lib/i18n/config";
 import { getLocaleChoice, getTranslator } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
@@ -176,7 +177,7 @@ export default async function StorefrontPage({ params }: Props) {
                 {whatsappHref && (
                   <div className="space-y-1.5">
                     <p className="flex items-center gap-2 text-sm font-medium">
-                      <MessageCircle aria-hidden="true" className="size-4 text-[var(--sf-primary)]" />
+                      <WhatsAppIcon className="size-4" />
                       {strings.contact}
                     </p>
                     <a

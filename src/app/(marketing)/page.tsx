@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Coins, LayoutGrid, MessageCircle, Settings, Store, Truck } from "lucide-react";
+import { ArrowRight, Check, Coins, LayoutGrid, Settings, Store, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/logo";
+import { WhatsAppIcon } from "@/components/shared/whatsapp-icon";
 import {
   Card,
   CardDescription,
@@ -39,37 +41,38 @@ export const metadata: Metadata = {
 };
 
 const FEATURES: readonly {
-  icon: typeof Store;
+  icon: ReactNode;
   titleKey: MessageKey;
   bodyKey: MessageKey;
 }[] = [
   {
-    icon: Store,
+    icon: <Store aria-hidden="true" className="size-5" />,
     titleKey: "landing.feature1Title",
     bodyKey: "landing.feature1Body",
   },
   {
-    icon: LayoutGrid,
+    icon: <LayoutGrid aria-hidden="true" className="size-5" />,
     titleKey: "landing.feature2Title",
     bodyKey: "landing.feature2Body",
   },
   {
-    icon: MessageCircle,
+    // Canal de encomendas = WhatsApp — logotipo oficial da marca WhatsApp.
+    icon: <WhatsAppIcon className="size-5" />,
     titleKey: "landing.feature3Title",
     bodyKey: "landing.feature3Body",
   },
   {
-    icon: Coins,
+    icon: <Coins aria-hidden="true" className="size-5" />,
     titleKey: "landing.feature4Title",
     bodyKey: "landing.feature4Body",
   },
   {
-    icon: Truck,
+    icon: <Truck aria-hidden="true" className="size-5" />,
     titleKey: "landing.feature5Title",
     bodyKey: "landing.feature5Body",
   },
   {
-    icon: Settings,
+    icon: <Settings aria-hidden="true" className="size-5" />,
     titleKey: "landing.feature6Title",
     bodyKey: "landing.feature6Body",
   },
@@ -224,7 +227,7 @@ export default async function LandingPage() {
               >
                 <CardHeader className="gap-3 px-5">
                   <span className="flex size-10 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary">
-                    <feature.icon aria-hidden="true" className="size-5" />
+                    {feature.icon}
                   </span>
                   <CardTitle className="font-semibold">
                     {t(feature.titleKey)}
