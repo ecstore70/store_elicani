@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Cotton cap">
+  <rect width="400" height="400" fill="#f1f5f9"/>
+  <path d="M118 254 A82 78 0 0 1 282 254 Z" fill="#0f172a"/>
+  <circle cx="200" cy="177" r="9" fill="#2563eb"/>
+  <path d="M200 177 L200 254 M160 187 L152 254 M240 187 L248 254" stroke="#1e293b" stroke-width="5"/>
+  <path d="M268 254 Q332 256 340 276 Q302 292 250 270 Z" fill="#1d4ed8"/>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Linen shirt">
+  <rect width="400" height="400" fill="#f1f5f9"/>
+  <path d="M150 95 L178 82 Q200 104 222 82 L250 95 L310 132 L286 190 L258 176 L258 316 Q200 332 142 316 L142 176 L114 190 L90 132 Z" fill="#2563eb"/>
+  <path d="M176 80 Q200 110 224 80 Q217 122 200 122 Q183 122 176 80 Z" fill="#f1f5f9"/>
+  <path d="M200 122 L200 328" stroke="#1d4ed8" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="200" cy="168" r="6" fill="#f1f5f9"/>
+  <circle cx="200" cy="212" r="6" fill="#f1f5f9"/>
+  <circle cx="200" cy="256" r="6" fill="#f1f5f9"/>
+</svg>

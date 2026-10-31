@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Leather wallet">
+  <rect width="400" height="400" fill="#f1f5f9"/>
+  <rect x="106" y="146" width="188" height="134" rx="16" fill="#0f172a"/>
+  <path d="M106 164 Q106 146 124 146 H276 Q294 146 294 164 V212 H106 Z" fill="#1e293b"/>
+  <rect x="136" y="198" width="96" height="17" rx="8" fill="#2563eb"/>
+  <circle cx="262" cy="250" r="11" fill="#60a5fa"/>
+</svg>

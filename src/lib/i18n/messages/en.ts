@@ -371,6 +371,84 @@ export const en = {
   "categories.error.nameTooLong": "The name can have at most 60 characters.",
   "categories.error.createFailed": "Could not create the category. Please try again.",
   "categories.error.saveFailed": "Could not save the changes. Please try again.",
+
+  // ── landing / marketing ────────────────────────────────────────────────
+  "landing.mainNav": "Main navigation",
+  "landing.footerNav": "Footer links",
+  "landing.navFeatures": "Features",
+  "landing.navHow": "How it works",
+  "landing.signIn": "Sign in",
+  "landing.createStore": "Create your store",
+  "landing.openMenu": "Open menu",
+  "landing.closeMenu": "Close menu",
+
+  "landing.heroTitle1": "Sell online.",
+  "landing.heroTitle2": "Take orders on WhatsApp.",
+  "landing.heroSubtitle":
+    "Elicani gives small businesses a real online storefront — showcase products, take orders, manage customers and sell in any currency.",
+  "landing.seeHow": "See how it works",
+
+  "landing.trust1": "Your own online storefront",
+  "landing.trust2": "Products and categories",
+  "landing.trust3": "Orders through WhatsApp",
+  "landing.trust4": "Any currency",
+  "landing.trust5": "Built for small businesses",
+
+  "landing.featuresTitle": "Your store, your way",
+  "landing.featuresSubtitle":
+    "Everything you need to open your store and start selling — no technical skills required.",
+  "landing.feature1Title": "Your own storefront",
+  "landing.feature1Body":
+    "Create a real online store with your own identity, products and categories.",
+  "landing.feature2Title": "Simple catalog",
+  "landing.feature2Body":
+    "Add products, images, prices and categories without technical knowledge.",
+  "landing.feature3Title": "Orders made simple",
+  "landing.feature3Body":
+    "Customers browse, add products to cart and send their order through WhatsApp.",
+  "landing.feature4Title": "Flexible currency",
+  "landing.feature4Body":
+    "Sell in USD, EUR, MZN, BRL or another supported currency.",
+  "landing.feature5Title": "Delivery",
+  "landing.feature5Body":
+    "Configure delivery areas and fees for your customers.",
+  "landing.feature6Title": "Manage everything",
+  "landing.feature6Body":
+    "Products, orders, customers and store settings from one dashboard.",
+
+  "landing.howTitle": "How it works",
+  "landing.howSubtitle": "From idea to first order in three steps.",
+  "landing.step1Title": "Create your store",
+  "landing.step1Body": "Set up your business information.",
+  "landing.step2Title": "Add your products",
+  "landing.step2Body": "Add photos, prices and categories.",
+  "landing.step3Title": "Receive orders",
+  "landing.step3Body":
+    "Customers shop and send their order through WhatsApp.",
+
+  "landing.previewStoreTitle": "A real online store, not just a product list.",
+  "landing.previewStoreBody":
+    "Your storefront ships with a header, categories, product cards, prices, search and a cart — ready to share the moment you save.",
+  "landing.previewDashTitle": "Run everything from one dashboard",
+  "landing.previewDashBody":
+    "Products, orders, customers, delivery and store settings — organized in a single place.",
+  "landing.colOrder": "Order",
+  "landing.colItems": "Items",
+  "landing.colTotal": "Total",
+  "landing.colStatus": "Status",
+  "landing.statusNew": "New",
+  "landing.statusConfirmed": "Confirmed",
+  "landing.statusDelivered": "Delivered",
+
+  "landing.ctaTitle": "Ready to put your business online?",
+  "landing.ctaBody": "Create your Elicani store and start selling.",
+
+  "landing.footerTagline": "Online storefronts with WhatsApp orders.",
+  "landing.footerRights": "© {year} Elicani. All rights reserved.",
+
+  "landing.pillOrder": "Order sent on WhatsApp",
+  "landing.demoItemsOne": "{count} item",
+  "landing.demoItemsMany": "{count} items",
 } as const;
 
 export type Messages = Record<keyof typeof en, string>;

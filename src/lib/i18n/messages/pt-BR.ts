@@ -372,4 +372,82 @@ export const ptBR: Messages = {
   "categories.error.nameTooLong": "O nome pode ter no máximo 60 caracteres.",
   "categories.error.createFailed": "Não foi possível criar a categoria. Tente novamente.",
   "categories.error.saveFailed": "Não foi possível guardar as alterações. Tente novamente.",
+
+  // ── landing / marketing ────────────────────────────────────────────────
+  "landing.mainNav": "Navegação principal",
+  "landing.footerNav": "Links do rodapé",
+  "landing.navFeatures": "Recursos",
+  "landing.navHow": "Como funciona",
+  "landing.signIn": "Entrar",
+  "landing.createStore": "Criar sua loja",
+  "landing.openMenu": "Abrir menu",
+  "landing.closeMenu": "Fechar menu",
+
+  "landing.heroTitle1": "Venda online.",
+  "landing.heroTitle2": "Receba encomendas no WhatsApp.",
+  "landing.heroSubtitle":
+    "A Elicani dá às pequenas empresas uma loja online de verdade — mostre produtos, receba encomendas, gerencie clientes e venda em qualquer moeda.",
+  "landing.seeHow": "Veja como funciona",
+
+  "landing.trust1": "Sua própria loja online",
+  "landing.trust2": "Produtos e categorias",
+  "landing.trust3": "Encomendas pelo WhatsApp",
+  "landing.trust4": "Qualquer moeda",
+  "landing.trust5": "Feito para pequenos negócios",
+
+  "landing.featuresTitle": "Sua loja, do seu jeito",
+  "landing.featuresSubtitle":
+    "Tudo o que você precisa para abrir sua loja e começar a vender — sem conhecimentos técnicos.",
+  "landing.feature1Title": "Sua própria loja online",
+  "landing.feature1Body":
+    "Crie uma loja de verdade com sua identidade, produtos e categorias.",
+  "landing.feature2Title": "Catálogo simples",
+  "landing.feature2Body":
+    "Adicione produtos, imagens, preços e categorias sem conhecimento técnico.",
+  "landing.feature3Title": "Encomendas sem complicação",
+  "landing.feature3Body":
+    "Os clientes navegam, adicionam ao carrinho e enviam a encomenda pelo WhatsApp.",
+  "landing.feature4Title": "Moeda flexível",
+  "landing.feature4Body":
+    "Venda em USD, EUR, MZN, BRL ou outra moeda suportada.",
+  "landing.feature5Title": "Entrega",
+  "landing.feature5Body":
+    "Configure áreas de entrega e taxas para seus clientes.",
+  "landing.feature6Title": "Gerencie tudo",
+  "landing.feature6Body":
+    "Produtos, encomendas, clientes e definições da loja em um só painel.",
+
+  "landing.howTitle": "Como funciona",
+  "landing.howSubtitle": "Da ideia à primeira encomenda em três passos.",
+  "landing.step1Title": "Crie sua loja",
+  "landing.step1Body": "Configure as informações do seu negócio.",
+  "landing.step2Title": "Adicione seus produtos",
+  "landing.step2Body": "Coloque fotos, preços e categorias.",
+  "landing.step3Title": "Receba encomendas",
+  "landing.step3Body":
+    "Os clientes compram e enviam a encomenda pelo WhatsApp.",
+
+  "landing.previewStoreTitle": "Uma loja online de verdade, não só uma lista de produtos.",
+  "landing.previewStoreBody":
+    "Sua vitrine vem com cabeçalho, categorias, cards de produto, preços, busca e carrinho — pronta para compartilhar assim que você salvar.",
+  "landing.previewDashTitle": "Gerencie tudo em um só painel",
+  "landing.previewDashBody":
+    "Produtos, encomendas, clientes, entrega e definições da loja — organizados em um só lugar.",
+  "landing.colOrder": "Encomenda",
+  "landing.colItems": "Itens",
+  "landing.colTotal": "Total",
+  "landing.colStatus": "Status",
+  "landing.statusNew": "Nova",
+  "landing.statusConfirmed": "Confirmada",
+  "landing.statusDelivered": "Entregue",
+
+  "landing.ctaTitle": "Pronto para colocar seu negócio online?",
+  "landing.ctaBody": "Crie sua loja Elicani e comece a vender.",
+
+  "landing.footerTagline": "Lojas online com encomendas pelo WhatsApp.",
+  "landing.footerRights": "© {year} Elicani. Todos os direitos reservados.",
+
+  "landing.pillOrder": "Encomenda enviada pelo WhatsApp",
+  "landing.demoItemsOne": "{count} item",
+  "landing.demoItemsMany": "{count} itens",
 };

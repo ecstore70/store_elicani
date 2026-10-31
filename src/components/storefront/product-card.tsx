@@ -28,7 +28,12 @@ type ProductViewProps = {
   strings: StorefrontStrings;
   currency: string;
   locale: Locale;
-  onAdd: (product: PublicProduct) => void;
+  /**
+   * Opcional: previews sem provedor de carrinho (vitrine do painel, vitrine
+   * de marketing) renderizam o card somente com `readOnly` — a ação nunca
+   * chega a disparar sem um manipulador.
+   */
+  onAdd?: (product: PublicProduct) => void;
   readOnly?: boolean;
 };
 
@@ -109,7 +114,7 @@ function AddButton({
 }: {
   product: PublicProduct;
   strings: StorefrontStrings;
-  onAdd: (product: PublicProduct) => void;
+  onAdd?: (product: PublicProduct) => void;
   readOnly?: boolean;
   compact?: boolean;
 }) {
@@ -118,7 +123,7 @@ function AddButton({
       <button
         type="button"
         disabled={readOnly || !product.is_available}
-        onClick={() => onAdd(product)}
+        onClick={() => onAdd?.(product)}
         aria-label={`${strings.addToCart}: ${product.name}`}
         className={`${BUTTON_CLASSES} !px-2.5 !py-2`}
       >
@@ -131,7 +136,7 @@ function AddButton({
     <button
       type="button"
       disabled={readOnly || !product.is_available}
-      onClick={() => onAdd(product)}
+      onClick={() => onAdd?.(product)}
       className={`${BUTTON_CLASSES} mt-1 w-full`}
     >
       {strings.addToCart}

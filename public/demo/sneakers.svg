@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Runner sneakers">
+  <rect width="400" height="400" fill="#f1f5f9"/>
+  <path d="M104 264 L104 214 Q104 188 132 184 L196 176 Q216 202 252 220 Q286 236 302 244 Q316 251 316 264 L316 274 L104 274 Z" fill="#2563eb"/>
+  <path d="M150 202 L178 196 M157 220 L187 214 M165 238 L195 232" stroke="#f8fafc" stroke-width="7" stroke-linecap="round"/>
+  <rect x="96" y="268" width="228" height="26" rx="13" fill="#0f172a"/>
+  <path d="M96 281 L324 281" stroke="#334155" stroke-width="4"/>
+</svg>
