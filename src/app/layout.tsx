@@ -26,6 +26,11 @@ export const metadata: Metadata = {
   description:
     "Elicani gives your business its own storefront. Products, customers and orders in one place — in any currency.",
   applicationName: "Elicani",
+  // Verificação do Google Search Console — meta na raiz cobre todas as
+  // páginas (o Google aceita a tag em qualquer URL da propriedade).
+  verification: {
+    google: "PvmCbQE34svGKEnVqHMcwNODvoGyfKDiLBFoRzC3yEc",
+  },
   openGraph: {
     type: "website",
     siteName: "Elicani",
