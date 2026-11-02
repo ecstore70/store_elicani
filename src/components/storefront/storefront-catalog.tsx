@@ -42,6 +42,7 @@ export function StorefrontCatalog({
   locale,
   onAdd,
   readOnly,
+  storeSlug,
 }: {
   products: PublicProduct[];
   categories: PublicCategory[];
@@ -52,6 +53,11 @@ export function StorefrontCatalog({
   /** Opcional: sem provider (preview) o catálogo fica somente leitura. */
   onAdd?: (product: PublicProduct) => void;
   readOnly?: boolean;
+  /**
+   * Com o slug, os cards levam à página de produto
+   * (`/store/{slug}/products/{id}`). O preview não envia → cards inertes.
+   */
+  storeSlug?: string;
 }) {
   const cart = useOptionalCart();
   const [query, setQuery] = useState("");
@@ -96,6 +102,11 @@ export function StorefrontCatalog({
       : (categories.find((category) => category.id === activeCategoryId)?.name ??
         null);
 
+  const productHref = (product: PublicProduct): string | null =>
+    storeSlug && !readOnly
+      ? `/store/${storeSlug}/products/${product.id}`
+      : null;
+
   const renderProducts = (list: PublicProduct[]) =>
     appearance.product_layout === "grid" ? (
       <div className="grid grid-cols-2 gap-[var(--sf-gap)] md:grid-cols-3 lg:grid-cols-4">
@@ -109,6 +120,7 @@ export function StorefrontCatalog({
             locale={locale}
             onAdd={handleAdd}
             readOnly={readOnly}
+            href={productHref(product)}
           />
         ))}
       </div>
@@ -124,6 +136,7 @@ export function StorefrontCatalog({
             locale={locale}
             onAdd={handleAdd}
             readOnly={readOnly}
+            href={productHref(product)}
           />
         ))}
       </div>

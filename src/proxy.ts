@@ -5,6 +5,9 @@
  *  1. Encaminhar {slug}.{NEXT_PUBLIC_STORE_DOMAIN}/ → /store/[slug]
  *     (arquitetura de wildcard pronta para o storefront público);
  *  1b. Responder 404 real para loja inativa/inexistente (ver nota no ramo 2);
+ *  1c. Responder 404 real também em /store/{slug}/products/{id} (loja
+ *     ausente, id malformado ou produto de outra loja) — mesma nota do
+ *     ramo 2 vale para a página de produto;
  *  2. Redirecionar www → domínio principal;
  *  3. Renovar a sessão Supabase (refresh dos cookies);
  *  4. Proteger rotas /app e redirecionar usuário logado fora de /login.
@@ -43,6 +46,46 @@ async function isStoreActive(slug: string): Promise<boolean> {
   }
 }
 
+/** Formato de uuid — ids malformados não geram query nem 400 do PostgREST. */
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Consulta pública que responde se o produto EXISTE nesta loja ATIVA.
+ * Devolve `false` (→ 404 real) para loja inativa/inexistente, id malformado
+ * ou produto pertencente a outra loja; falha em aberto em erro de rede/DB.
+ */
+async function isStoreProduct(
+  storeSlug: string,
+  productId: string,
+): Promise<boolean> {
+  if (!UUID_PATTERN.test(productId)) return false;
+  try {
+    const publicClient = createServerClient<Database>(getSupabaseUrl(), getSupabaseAnonKey(), {
+      cookies: { getAll: () => [], setAll: () => {} },
+    });
+    const { data: store, error: storeError } = await publicClient
+      .from("stores")
+      .select("id")
+      .eq("slug", storeSlug)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (storeError) return true; // falha em aberto: a página revalida
+    if (!store) return false;
+
+    const { data: product, error: productError } = await publicClient
+      .from("products")
+      .select("id")
+      .eq("id", productId)
+      .eq("store_id", store.id)
+      .maybeSingle();
+    if (productError) return true; // falha em aberto: a página revalida
+    return Boolean(product);
+  } catch {
+    return true; // falha em aberto: a página revalida
+  }
+}
+
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname, search } = request.nextUrl;
   const host = request.headers.get("host") ?? "";
@@ -54,6 +97,19 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     const url = request.nextUrl.clone();
     url.hostname = domain;
     return NextResponse.redirect(url);
+  }
+
+  // ── 1c. página de produto: {slug}/{id} precisa existir (404 real) ──────
+  //
+  // Mesma justificativa do ramo 2: sob cacheComponents/PPR o notFound()
+  // da página cai no hole dinâmico com status 200 (soft-404). Aqui o check
+  // cobre: loja inativa/inexistente, id malformado (uuid inválido → sem
+  // query) e produto que não pertence a ESTA loja (URL cruzada). Falha em
+  // aberto: erro de rede/DB deixa a página revalidar como antes.
+  const productPath = /^\/store\/([^/]+)\/products\/([^/]+)\/?$/.exec(pathname);
+  if (productPath && !(await isStoreProduct(productPath[1], productPath[2]))) {
+    const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
+    return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
   }
 
   // ── 2. storefront: {slug}.{domain}/ → /store/{slug} ───────────────────

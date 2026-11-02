@@ -36,6 +36,36 @@ export type StorefrontStrings = {
   cartCountAria: string;
   productImageAlt: string;
   noImageAlt: string;
+  // ── página de produto ───────────────────────────────────────────────
+  backToStore: string;
+  productDescription: string;
+  relatedProducts: string;
+  whatsappContact: string;
+  optionsRequired: string;
+  // ── checkout (sheet) ───────────────────────────────────────────────
+  checkout: string;
+  continueShopping: string;
+  customerName: string;
+  customerPhone: string;
+  deliveryAddress: string;
+  neighborhood: string;
+  referencePoint: string;
+  orderNotes: string;
+  paymentMethod: string;
+  paymentCash: string;
+  paymentTransfer: string;
+  paymentOther: string;
+  nameRequired: string;
+  phoneRequired: string;
+  checkoutNote: string;
+  orderSent: string;
+  // ── rótulos da mensagem de pedido (WhatsApp) ────────────────────────
+  msgNewOrder: string;
+  msgCustomer: string;
+  msgPhone: string;
+  msgProducts: string;
+  msgTotal: string;
+  msgAddress: string;
 };
 
 export function buildStorefrontStrings(t: Translator): StorefrontStrings {
@@ -69,5 +99,32 @@ export function buildStorefrontStrings(t: Translator): StorefrontStrings {
     cartCountAria: t("storefront.cartCountAria"),
     productImageAlt: t("storefront.productImageAlt"),
     noImageAlt: t("storefront.noImageAlt"),
+    backToStore: t("storefront.backToStore"),
+    productDescription: t("storefront.productDescription"),
+    relatedProducts: t("storefront.relatedProducts"),
+    whatsappContact: t("storefront.whatsappContact"),
+    optionsRequired: t("storefront.optionsRequired"),
+    checkout: t("storefront.checkout"),
+    continueShopping: t("storefront.continueShopping"),
+    customerName: t("storefront.customerName"),
+    customerPhone: t("storefront.customerPhone"),
+    deliveryAddress: t("storefront.deliveryAddress"),
+    neighborhood: t("storefront.neighborhood"),
+    referencePoint: t("storefront.referencePoint"),
+    orderNotes: t("storefront.orderNotes"),
+    paymentMethod: t("storefront.paymentMethod"),
+    paymentCash: t("storefront.paymentCash"),
+    paymentTransfer: t("storefront.paymentTransfer"),
+    paymentOther: t("storefront.paymentOther"),
+    nameRequired: t("storefront.nameRequired"),
+    phoneRequired: t("storefront.phoneRequired"),
+    checkoutNote: t("storefront.checkoutNote"),
+    orderSent: t("storefront.orderSent"),
+    msgNewOrder: t("storefront.msgNewOrder"),
+    msgCustomer: t("storefront.msgCustomer"),
+    msgPhone: t("storefront.msgPhone"),
+    msgProducts: t("storefront.msgProducts"),
+    msgTotal: t("storefront.msgTotal"),
+    msgAddress: t("storefront.msgAddress"),
   };
 }
