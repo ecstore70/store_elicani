@@ -313,6 +313,17 @@ export const zhHans: Messages = {
   "storefront.msgAddress": "地址",
   "storefront.orderSent": "订单已发送",
 
+  // ── 购物车与结算（展示） ──────────────────────────────────────────────
+  "storefront.orderSummary": "订单摘要",
+  "storefront.total": "合计",
+  "storefront.addedToCart": "已加入购物车",
+  "storefront.cartItemsOne": "1 件商品",
+  "storefront.cartItemsMany": "{count} 件商品",
+  "storefront.exploreProducts": "浏览商品",
+  "storefront.yourOrder": "您的订单",
+  "storefront.customerDetails": "客户信息",
+  "storefront.close": "关闭",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "管理您店铺的商品。",
   "products.new": "新建商品",

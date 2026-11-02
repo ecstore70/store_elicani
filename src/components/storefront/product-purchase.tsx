@@ -21,9 +21,10 @@ import { useCart } from "./cart-provider";
  * Painel de compra da PÁGINA DE PRODUTO: quantidade + opções (quando o
  * produto as tem) + adicionar ao carrinho + ação WhatsApp.
  *
- * Ao adicionar, o sheet do carrinho abre já com a linha nova. Sem canal de
- * WhatsApp configurado, o botão WhatsApp não renderiza (mesma regra do
- * resto da vitrine).
+ * Ao adicionar, um aviso discreto ("Adicionado ao carrinho") confirma a
+ * ação SEM roubar o controlo: o visitante continua na loja e decide quando
+ * abre o carrinho (cabeçalho). Sem canal de WhatsApp configurado, o botão
+ * WhatsApp não renderiza (mesma regra do resto da vitrine).
  */
 
 /** Campo futuro do modelo de dados — hoje todos os produtos chegam sem. */
@@ -105,7 +106,6 @@ export function ProductPurchase({
       return;
     }
     cart.add(product, chosenOptions, qty);
-    cart.setOpen(true);
   };
 
   const orderText = `*${storeName}*\n${product.name} — ${formatCurrency(unitPrice, currency, locale)}\n${productUrl}`;

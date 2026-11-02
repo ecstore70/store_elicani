@@ -327,6 +327,17 @@ export const es: Messages = {
   "storefront.msgAddress": "Dirección",
   "storefront.orderSent": "Pedido enviado",
 
+  // ── carrito y checkout (presentación) ──────────────────────────────────
+  "storefront.orderSummary": "Resumen del pedido",
+  "storefront.total": "Total",
+  "storefront.addedToCart": "Añadido al carrito",
+  "storefront.cartItemsOne": "1 artículo",
+  "storefront.cartItemsMany": "{count} artículos",
+  "storefront.exploreProducts": "Explorar productos",
+  "storefront.yourOrder": "Tu pedido",
+  "storefront.customerDetails": "Datos del cliente",
+  "storefront.close": "Cerrar",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "Gestiona los productos de tu tienda.",
   "products.new": "Nuevo producto",

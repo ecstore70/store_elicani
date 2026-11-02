@@ -18,8 +18,8 @@ import type { StorefrontTheme } from "@/lib/storefront/theme";
  *
  * Partilhado pela home e pela página de produto: a navegação, o acesso ao
  * carrinho e o contacto são idênticos em qualquer ecrã. O `CartProvider`
- * envolve tudo porque o botão do cabeçalho, o botão flutuante e o Sheet
- * partilham o mesmo estado.
+ * envolve tudo porque o botão do cabeçalho e o diálogo de carrinho
+ * (ecrã-cheio no mobile, modal no desktop) partilham o mesmo estado.
  */
 export function StoreShell({
   store,

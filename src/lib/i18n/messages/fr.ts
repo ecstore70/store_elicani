@@ -327,6 +327,17 @@ export const fr: Messages = {
   "storefront.msgAddress": "Adresse",
   "storefront.orderSent": "Commande envoyée",
 
+  // ── panier et checkout (présentation) ──────────────────────────────────
+  "storefront.orderSummary": "Résumé de la commande",
+  "storefront.total": "Total",
+  "storefront.addedToCart": "Ajouté au panier",
+  "storefront.cartItemsOne": "1 article",
+  "storefront.cartItemsMany": "{count} articles",
+  "storefront.exploreProducts": "Explorer les produits",
+  "storefront.yourOrder": "Votre commande",
+  "storefront.customerDetails": "Informations du client",
+  "storefront.close": "Fermer",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "Gérez les produits de votre boutique.",
   "products.new": "Nouveau produit",

@@ -1,14 +1,14 @@
 "use client";
 
-import { ShoppingBag } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { useCart } from "./cart-provider";
 import type { StorefrontStrings } from "@/lib/storefront/strings";
 
 /**
- * Botão do carrinho no CABEÇALHO da vitrine — acesso sempre visível
- * (mobile e desktop), com contagem viva do mesmo estado do provider.
- * O botão flutuante do `CartProvider` continua a existir para o alcance
- * com o polegar em páginas longas.
+ * Botão do carrinho no CABEÇALHO da vitrine — ícone de carrinho de compras
+ * com contagem viva do mesmo estado do provider (badge atualiza de imediato).
+ * É o ÚNICO acesso ao carrinho: sem botões flutuantes gigantes, o ícone
+ * pertence naturalmente à navegação da loja.
  */
 export function CartButton({ strings }: { strings: StorefrontStrings }) {
   const { count, setOpen } = useCart();
@@ -20,7 +20,7 @@ export function CartButton({ strings }: { strings: StorefrontStrings }) {
       aria-label={strings.openCartAria}
       className="relative inline-flex size-10 shrink-0 items-center justify-center rounded-[var(--sf-btn-radius)] border border-[var(--sf-border)] bg-[var(--sf-surface)] text-[var(--sf-fg)] transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)]"
     >
-      <ShoppingBag aria-hidden="true" className="size-5" />
+      <ShoppingCart aria-hidden="true" className="size-5" />
       {count > 0 && (
         <span
           aria-label={strings.cartCountAria}

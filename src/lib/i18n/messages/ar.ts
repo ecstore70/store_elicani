@@ -328,6 +328,17 @@ export const ar: Messages = {
   "storefront.msgAddress": "العنوان",
   "storefront.orderSent": "تم إرسال الطلب",
 
+  // ── السلة وإتمام الطلب (العرض) ────────────────────────────────────────
+  "storefront.orderSummary": "ملخص الطلب",
+  "storefront.total": "الإجمالي",
+  "storefront.addedToCart": "تمت الإضافة إلى السلة",
+  "storefront.cartItemsOne": "منتج واحد",
+  "storefront.cartItemsMany": "{count} منتجات",
+  "storefront.exploreProducts": "استكشف المنتجات",
+  "storefront.yourOrder": "طلبك",
+  "storefront.customerDetails": "بيانات العميل",
+  "storefront.close": "إغلاق",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "أدر منتجات متجرك.",
   "products.new": "منتج جديد",

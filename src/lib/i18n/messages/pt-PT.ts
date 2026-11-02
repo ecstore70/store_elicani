@@ -329,6 +329,17 @@ export const ptPT: Messages = {
   "storefront.msgAddress": "Morada",
   "storefront.orderSent": "Encomenda enviada",
 
+  // ── carrinho e checkout (apresentação) ─────────────────────────────────
+  "storefront.orderSummary": "Resumo da encomenda",
+  "storefront.total": "Total",
+  "storefront.addedToCart": "Adicionado ao carrinho",
+  "storefront.cartItemsOne": "1 artigo",
+  "storefront.cartItemsMany": "{count} artigos",
+  "storefront.exploreProducts": "Explorar produtos",
+  "storefront.yourOrder": "A sua encomenda",
+  "storefront.customerDetails": "Dados do cliente",
+  "storefront.close": "Fechar",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "Faça a gestão dos produtos da sua loja.",
   "products.new": "Novo produto",

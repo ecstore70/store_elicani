@@ -331,6 +331,17 @@ export const en = {
   "storefront.msgAddress": "Address",
   "storefront.orderSent": "Order sent",
 
+  // ── carrinho e checkout (apresentação) ─────────────────────────────────
+  "storefront.orderSummary": "Order summary",
+  "storefront.total": "Total",
+  "storefront.addedToCart": "Added to cart",
+  "storefront.cartItemsOne": "1 item",
+  "storefront.cartItemsMany": "{count} items",
+  "storefront.exploreProducts": "Explore products",
+  "storefront.yourOrder": "Your order",
+  "storefront.customerDetails": "Customer details",
+  "storefront.close": "Close",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "Manage the products of your store.",
   "products.new": "New product",

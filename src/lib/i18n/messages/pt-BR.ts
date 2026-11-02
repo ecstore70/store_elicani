@@ -332,6 +332,17 @@ export const ptBR: Messages = {
   "storefront.msgAddress": "Endereço",
   "storefront.orderSent": "Pedido enviado",
 
+  // ── carrinho e checkout (apresentação) ─────────────────────────────────
+  "storefront.orderSummary": "Resumo do pedido",
+  "storefront.total": "Total",
+  "storefront.addedToCart": "Adicionado ao carrinho",
+  "storefront.cartItemsOne": "1 item",
+  "storefront.cartItemsMany": "{count} itens",
+  "storefront.exploreProducts": "Explorar produtos",
+  "storefront.yourOrder": "Seu pedido",
+  "storefront.customerDetails": "Dados do cliente",
+  "storefront.close": "Fechar",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "Gerencie os produtos da sua loja.",
   "products.new": "Novo produto",

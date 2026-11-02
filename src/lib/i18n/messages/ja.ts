@@ -326,6 +326,17 @@ export const ja: Messages = {
   "storefront.msgAddress": "住所",
   "storefront.orderSent": "注文を送信しました",
 
+  // ── カートとチェックアウト（表示） ────────────────────────────────────
+  "storefront.orderSummary": "注文内容",
+  "storefront.total": "合計",
+  "storefront.addedToCart": "カートに追加しました",
+  "storefront.cartItemsOne": "1点",
+  "storefront.cartItemsMany": "{count} 点",
+  "storefront.exploreProducts": "商品を見る",
+  "storefront.yourOrder": "ご注文内容",
+  "storefront.customerDetails": "お客様情報",
+  "storefront.close": "閉じる",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "ストアの商品を管理します。",
   "products.new": "新規商品",

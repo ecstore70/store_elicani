@@ -4,33 +4,18 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type FormEvent,
   type ReactNode,
 } from "react";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  Minus,
-  Plus,
-  ShoppingBag,
-  Trash2,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { WhatsAppIcon } from "@/components/shared/whatsapp-icon";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { CheckCircle2 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
-import type { Locale } from "@/lib/i18n/config";
+import { getLocaleDirection, type Locale } from "@/lib/i18n/config";
 import type { PublicProduct } from "@/lib/catalog/types";
-import { BUTTON_CLASSES } from "@/lib/storefront/theme";
 import type { StorefrontStrings } from "@/lib/storefront/strings";
 import { buildOrderMessage } from "@/lib/storefront/order-message";
 import {
@@ -38,6 +23,7 @@ import {
   selectedOptionsPrice,
   type SelectedOption,
 } from "@/lib/storefront/product-options";
+import { CartDialog } from "./cart-dialog";
 
 /**
  * Carrinho da vitrine — estado CLIENTE persistido em localStorage, por loja.
@@ -46,12 +32,17 @@ import {
  * WhatsApp (o canal de encomendas previsto pela Fase 1). Nada de pagamentos,
  * sessão ou tabelas.
  *
- * Fluxo do sheet: **carrinho → checkout → enviado**. O checkout é um
- * formulário SEM conta (nome, contacto, morada, notas, pagamento) e a
- * mensagem final é a ESTRUTURADA construída por `buildOrderMessage`
- * (testada em `order-message.test.ts`). A entrega fica preparada para taxas
- * futuras: `deliveryFee` entra na mensagem como linha extra, mas hoje é
- * sempre `null` (nenhuma zona/taxa é calculada).
+ * Fluxo: **carrinho → checkout → enviado**, apresentado pelo `CartDialog`
+ * (ecrã-cheio no mobile, modal centrado no desktop — nunca uma gaveta
+ * lateral). O checkout é um formulário SEM conta (nome, contacto, morada,
+ * notas, pagamento) e a mensagem final é a ESTRUTURADA construída por
+ * `buildOrderMessage` (testada em `order-message.test.ts`). A entrega fica
+ * preparada para taxas futuras: `deliveryFee` entra na mensagem como linha
+ * extra, mas hoje é sempre `null` (nenhuma zona/taxa é calculada).
+ *
+ * Adicionar produto NÃO abre o carrinho: um aviso discreto ("Adicionado ao
+ * carrinho") confirma a ação e o visitante continua a comprar — ele é quem
+ * decide quando abrir o carrinho (cabeçalho).
  *
  * A hidratação usa `useSyncExternalStore` (padrão React para stores
  * externos): o snapshot do servidor é vazio, o cliente lê o localStorage
@@ -234,6 +225,28 @@ function getCartStore(storeId: string): CartStore {
   return store;
 }
 
+export type CartView = "cart" | "checkout" | "sent";
+
+export type CheckoutForm = {
+  name: string;
+  phone: string;
+  address: string;
+  neighborhood: string;
+  reference: string;
+  notes: string;
+  payment: string;
+};
+
+const EMPTY_FORM: CheckoutForm = {
+  name: "",
+  phone: "",
+  address: "",
+  neighborhood: "",
+  reference: "",
+  notes: "",
+  payment: "",
+};
+
 type CartContextValue = {
   items: CartItem[];
   count: number;
@@ -269,65 +282,6 @@ export function useOptionalCart(): CartContextValue | null {
   return useContext(CartContext);
 }
 
-// ── estilos locais do formulário de checkout ──────────────────────────────
-const INPUT_CLASSES =
-  "w-full rounded-[var(--sf-btn-radius)] border border-[var(--sf-border)] bg-[var(--sf-bg)] px-3 py-2 text-sm text-[var(--sf-fg)] outline-none placeholder:text-[var(--sf-muted)] focus-visible:ring-2 focus-visible:ring-[var(--sf-primary)]";
-
-type CheckoutForm = {
-  name: string;
-  phone: string;
-  address: string;
-  neighborhood: string;
-  reference: string;
-  notes: string;
-  payment: string;
-};
-
-const EMPTY_FORM: CheckoutForm = {
-  name: "",
-  phone: "",
-  address: "",
-  neighborhood: "",
-  reference: "",
-  notes: "",
-  payment: "",
-};
-
-type SheetView = "cart" | "checkout" | "sent";
-
-function Field({
-  id,
-  label,
-  required,
-  error,
-  children,
-}: {
-  id: string;
-  label: string;
-  required?: boolean;
-  error?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div>
-      <label htmlFor={id} className="mb-1 block text-sm font-medium">
-        {label}
-        {required && (
-          <span aria-hidden="true" className="text-destructive">
-            {" *"}
-          </span>
-        )}
-      </label>
-      {children}
-      {error && (
-        <span id={`${id}-err`} role="alert" className="mt-1 block text-xs text-destructive">
-          {error}
-        </span>
-      )}
-    </div>
-  );
-}
-
 export function CartProvider({
   storeId,
   storeName,
@@ -346,9 +300,11 @@ export function CartProvider({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState<SheetView>("cart");
+  const [view, setView] = useState<CartView>("cart");
   const [form, setForm] = useState<CheckoutForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
+  const [justAdded, setJustAdded] = useState(false);
+  const addToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cartStore = useMemo(() => getCartStore(storeId), [storeId]);
 
   const items = useSyncExternalStore(
@@ -357,9 +313,22 @@ export function CartProvider({
     cartStore.getServerSnapshot,
   );
 
+  useEffect(
+    () => () => {
+      if (addToastTimer.current) clearTimeout(addToastTimer.current);
+    },
+    [],
+  );
+
   const add = useCallback(
-    (product: PublicProduct, options?: readonly SelectedOption[], qty?: number) =>
-      cartStore.add(product, options, qty),
+    (product: PublicProduct, options?: readonly SelectedOption[], qty?: number) => {
+      cartStore.add(product, options, qty);
+      // Confirmação discreta — o visitante continua na loja (não abrimos o
+      // carrinho por ele).
+      setJustAdded(true);
+      if (addToastTimer.current) clearTimeout(addToastTimer.current);
+      addToastTimer.current = setTimeout(() => setJustAdded(false), 2400);
+    },
     [cartStore],
   );
   const increment = useCallback(
@@ -469,7 +438,7 @@ export function CartProvider({
 
   // Sem canal de WhatsApp o carrinho nunca oferece checkout (a Fase 1 é
   // por WhatsApp) — mesma semântica de sempre: nenhum botão de envio.
-  const activeView: SheetView =
+  const activeView: CartView =
     items.length === 0 && view !== "cart" ? "cart" : view;
 
   const money = (value: number) => formatCurrency(value, currency, locale);
@@ -478,332 +447,43 @@ export function CartProvider({
     <CartContext.Provider value={value}>
       {children}
 
-      <Sheet open={open} onOpenChange={handleOpenChange}>
-        {/* gatilho flutuante (canto inferior final) */}
-        <button
-          type="button"
-          onClick={() => handleOpenChange(true)}
-          className={`${BUTTON_CLASSES} fixed bottom-4 end-4 z-40 shadow-lg sm:bottom-6 sm:end-6`}
-          aria-label={strings.openCartAria}
+      <CartDialog
+        open={open}
+        onOpenChange={handleOpenChange}
+        view={activeView}
+        setView={setView}
+        items={items}
+        count={value.count}
+        subtotal={subtotal}
+        hasChannel={hasChannel}
+        form={form}
+        updateForm={updateForm}
+        errors={errors}
+        onSubmit={sendOrder}
+        increment={increment}
+        decrement={decrement}
+        remove={remove}
+        money={money}
+        strings={strings}
+        dir={getLocaleDirection(locale)}
+      />
+
+      {/* aviso discreto de "adicionado ao carrinho" (role=status anuncia) */}
+      {justAdded && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none fixed inset-x-0 top-3 z-[60] flex justify-center px-4"
         >
-          <ShoppingBag aria-hidden="true" className="size-4" />
-          {strings.cart}
-          {value.count > 0 && (
-            <span
-              className="ms-1 inline-flex min-w-5 items-center justify-center rounded-full bg-[var(--sf-accent)] px-1 py-0.5 text-xs font-semibold text-[var(--sf-on-accent)]"
-              aria-label={strings.cartCountAria}
-            >
-              {value.count}
-            </span>
-          )}
-        </button>
-
-        <SheetContent side="right" className="flex w-full flex-col sm:max-w-sm">
-          <SheetHeader>
-            <SheetTitle>
-              {activeView === "cart"
-                ? strings.cart
-                : activeView === "checkout"
-                  ? strings.checkout
-                  : strings.orderSent}
-            </SheetTitle>
-            <SheetDescription className="sr-only">
-              {strings.cart}
-            </SheetDescription>
-          </SheetHeader>
-
-          {/* ── vista 1/3: carrinho ─────────────────────────────────── */}
-          {activeView === "cart" &&
-            (items.length === 0 ? (
-              <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
-                <ShoppingBag
-                  aria-hidden="true"
-                  className="size-8 text-muted-foreground"
-                />
-                <p className="text-sm font-medium">{strings.cartEmpty}</p>
-                <p className="text-sm text-muted-foreground">
-                  {strings.cartEmptyBody}
-                </p>
-              </div>
-            ) : (
-              <>
-                <ul className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-                  {items.map((item) => (
-                    <li key={item.key} className="flex items-start gap-3">
-                      {item.imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={item.imageUrl}
-                          alt=""
-                          className="size-14 shrink-0 rounded-md border border-border/70 object-cover"
-                        />
-                      ) : (
-                        <div className="flex size-14 shrink-0 items-center justify-center rounded-md border border-border/70 bg-muted/40">
-                          <ShoppingBag
-                            aria-hidden="true"
-                            className="size-4 text-muted-foreground"
-                          />
-                        </div>
-                      )}
-
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium leading-snug">
-                          {item.name}
-                        </p>
-
-                        {item.options.length > 0 && (
-                          <ul className="mt-0.5 space-y-0.5">
-                            {item.options.map((option) => (
-                              <li
-                                key={`${option.groupLabel}:${option.choiceLabel}`}
-                                className="text-xs text-muted-foreground"
-                              >
-                                {`• ${option.groupLabel}: ${option.choiceLabel}`}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-
-                        {/* preço unitário + subtotal da linha */}
-                        <div className="mt-1 flex items-baseline justify-between gap-2 text-sm">
-                          <span className="tabular-nums text-muted-foreground">
-                            {item.qty} × {money(item.price)}
-                          </span>
-                          <span className="font-semibold tabular-nums">
-                            {money(item.price * item.qty)}
-                          </span>
-                        </div>
-
-                        <div className="mt-1.5 flex items-center gap-1.5">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon-sm"
-                            aria-label={`${strings.decreaseQty}: ${item.name}`}
-                            onClick={() => decrement(item.key)}
-                          >
-                            <Minus aria-hidden="true" className="size-3.5" />
-                          </Button>
-                          <span
-                            className="w-6 text-center text-sm tabular-nums"
-                            aria-label={`${strings.itemQuantity}: ${item.qty}`}
-                          >
-                            {item.qty}
-                          </span>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon-sm"
-                            aria-label={`${strings.increaseQty}: ${item.name}`}
-                            onClick={() => increment(item.key)}
-                          >
-                            <Plus aria-hidden="true" className="size-3.5" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            className="ms-auto text-muted-foreground hover:text-destructive"
-                            aria-label={`${strings.removeItem}: ${item.name}`}
-                            onClick={() => remove(item.key)}
-                          >
-                            <Trash2 aria-hidden="true" className="size-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="space-y-3 border-t border-border/70 px-4 py-4">
-                  <div className="flex items-center justify-between text-sm font-semibold">
-                    <span>{strings.subtotal}</span>
-                    <span>{money(subtotal)}</span>
-                  </div>
-
-                  {hasChannel && (
-                    <button
-                      type="button"
-                      onClick={() => setView("checkout")}
-                      className={`${BUTTON_CLASSES} w-full`}
-                    >
-                      {strings.checkout}
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => handleOpenChange(false)}
-                    className="w-full py-1 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                  >
-                    {strings.continueShopping}
-                  </button>
-                </div>
-              </>
-            ))}
-
-          {/* ── vista 2/3: checkout ─────────────────────────────────── */}
-          {activeView === "checkout" && (
-            <>
-              <div className="flex-1 overflow-y-auto px-4 py-4">
-                <button
-                  type="button"
-                  onClick={() => setView("cart")}
-                  className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                >
-                  <ArrowLeft aria-hidden="true" className="size-4" />
-                  {strings.cart}
-                </button>
-
-                <form
-                  id="sf-checkout"
-                  onSubmit={sendOrder}
-                  noValidate
-                  className="space-y-4"
-                >
-                  <Field id="sf-name" label={strings.customerName} required error={errors.name}>
-                    <input
-                      id="sf-name"
-                      name="name"
-                      type="text"
-                      autoComplete="name"
-                      required
-                      aria-required="true"
-                      aria-invalid={Boolean(errors.name)}
-                      aria-describedby={errors.name ? "sf-name-err" : undefined}
-                      value={form.name}
-                      onChange={(event) => updateForm("name", event.target.value)}
-                      className={INPUT_CLASSES}
-                    />
-                  </Field>
-
-                  <Field id="sf-phone" label={strings.customerPhone} required error={errors.phone}>
-                    <input
-                      id="sf-phone"
-                      name="phone"
-                      type="tel"
-                      inputMode="tel"
-                      autoComplete="tel"
-                      required
-                      aria-required="true"
-                      aria-invalid={Boolean(errors.phone)}
-                      aria-describedby={errors.phone ? "sf-phone-err" : undefined}
-                      value={form.phone}
-                      onChange={(event) => updateForm("phone", event.target.value)}
-                      className={INPUT_CLASSES}
-                    />
-                  </Field>
-
-                  {/* morada agrupada — pronta para taxas/zonas de entrega futuras */}
-                  <fieldset className="rounded-[var(--sf-btn-radius)] border border-border/70 px-3 pb-3 pt-1.5">
-                    <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {strings.delivery}
-                    </legend>
-                    <div className="space-y-3 pt-1.5">
-                      <Field id="sf-address" label={strings.deliveryAddress}>
-                        <input
-                          id="sf-address"
-                          name="address"
-                          type="text"
-                          autoComplete="street-address"
-                          value={form.address}
-                          onChange={(event) => updateForm("address", event.target.value)}
-                          className={INPUT_CLASSES}
-                        />
-                      </Field>
-                      <Field id="sf-neighborhood" label={strings.neighborhood}>
-                        <input
-                          id="sf-neighborhood"
-                          name="neighborhood"
-                          type="text"
-                          autoComplete="address-level2"
-                          value={form.neighborhood}
-                          onChange={(event) => updateForm("neighborhood", event.target.value)}
-                          className={INPUT_CLASSES}
-                        />
-                      </Field>
-                      <Field id="sf-reference" label={strings.referencePoint}>
-                        <input
-                          id="sf-reference"
-                          name="reference"
-                          type="text"
-                          value={form.reference}
-                          onChange={(event) => updateForm("reference", event.target.value)}
-                          className={INPUT_CLASSES}
-                        />
-                      </Field>
-                    </div>
-                  </fieldset>
-
-                  <Field id="sf-notes" label={strings.orderNotes}>
-                    <textarea
-                      id="sf-notes"
-                      name="notes"
-                      rows={3}
-                      value={form.notes}
-                      onChange={(event) => updateForm("notes", event.target.value)}
-                      className={`${INPUT_CLASSES} resize-y`}
-                    />
-                  </Field>
-
-                  <Field id="sf-payment" label={strings.paymentMethod}>
-                    <select
-                      id="sf-payment"
-                      name="payment"
-                      value={form.payment}
-                      onChange={(event) => updateForm("payment", event.target.value)}
-                      className={INPUT_CLASSES}
-                    >
-                      <option value="">—</option>
-                      <option value="cash">{strings.paymentCash}</option>
-                      <option value="transfer">{strings.paymentTransfer}</option>
-                      <option value="other">{strings.paymentOther}</option>
-                    </select>
-                  </Field>
-                </form>
-              </div>
-
-              <div className="space-y-3 border-t border-border/70 px-4 py-4">
-                <div className="flex items-center justify-between text-sm font-semibold">
-                  <span>{strings.subtotal}</span>
-                  <span>{money(subtotal)}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {strings.checkoutNote}
-                </p>
-                <button
-                  type="submit"
-                  form="sf-checkout"
-                  className={`${BUTTON_CLASSES} w-full`}
-                >
-                  <WhatsAppIcon className="size-4" />
-                  {strings.orderWhatsApp}
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* ── vista 3/3: enviado ──────────────────────────────────── */}
-          {activeView === "sent" && (
-            <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-              <CheckCircle2
-                aria-hidden="true"
-                className="size-10 text-[var(--sf-primary)]"
-              />
-              <p className="text-sm font-semibold">{strings.orderSent}</p>
-              <p className="text-sm text-muted-foreground">
-                {strings.checkoutNote}
-              </p>
-              <button
-                type="button"
-                onClick={() => handleOpenChange(false)}
-                className={`${BUTTON_CLASSES} mt-2 w-full`}
-              >
-                {strings.continueShopping}
-              </button>
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
+          <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-[var(--sf-border)] bg-[var(--sf-bg)] px-4 py-2.5 text-sm font-medium text-[var(--sf-fg)] shadow-lg animate-in fade-in-0 slide-in-from-bottom-2">
+            <CheckCircle2
+              aria-hidden="true"
+              className="size-4 text-[var(--sf-primary)]"
+            />
+            {strings.addedToCart}
+          </div>
+        </div>
+      )}
     </CartContext.Provider>
   );
 }

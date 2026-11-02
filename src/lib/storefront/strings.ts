@@ -59,6 +59,16 @@ export type StorefrontStrings = {
   phoneRequired: string;
   checkoutNote: string;
   orderSent: string;
+  // ── carrinho e checkout (apresentação) ───────────────────────────────
+  orderSummary: string;
+  total: string;
+  addedToCart: string;
+  cartItemsOne: string;
+  cartItemsMany: string;
+  exploreProducts: string;
+  yourOrder: string;
+  customerDetails: string;
+  close: string;
   // ── rótulos da mensagem de pedido (WhatsApp) ────────────────────────
   msgNewOrder: string;
   msgCustomer: string;
@@ -120,6 +130,15 @@ export function buildStorefrontStrings(t: Translator): StorefrontStrings {
     phoneRequired: t("storefront.phoneRequired"),
     checkoutNote: t("storefront.checkoutNote"),
     orderSent: t("storefront.orderSent"),
+    orderSummary: t("storefront.orderSummary"),
+    total: t("storefront.total"),
+    addedToCart: t("storefront.addedToCart"),
+    cartItemsOne: t("storefront.cartItemsOne"),
+    cartItemsMany: t("storefront.cartItemsMany"),
+    exploreProducts: t("storefront.exploreProducts"),
+    yourOrder: t("storefront.yourOrder"),
+    customerDetails: t("storefront.customerDetails"),
+    close: t("storefront.close"),
     msgNewOrder: t("storefront.msgNewOrder"),
     msgCustomer: t("storefront.msgCustomer"),
     msgPhone: t("storefront.msgPhone"),
