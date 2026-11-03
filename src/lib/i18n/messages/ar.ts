@@ -339,6 +339,14 @@ export const ar: Messages = {
   "storefront.customerDetails": "بيانات العميل",
   "storefront.close": "إغلاق",
 
+  // ── galeria de mídia da vitrine ─────────────────────────────────────────
+  "storefront.galleryLabel": "وسائط المنتج",
+  "storefront.galleryVideo": "فيديو",
+  "storefront.galleryPrevious": "الوسائط السابقة",
+  "storefront.galleryNext": "الوسائط التالية",
+  "storefront.galleryUnavailable": "الفيديو غير متاح",
+  "storefront.galleryPlay": "تشغيل الفيديو",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "أدر منتجات متجرك.",
   "products.new": "منتج جديد",
@@ -373,6 +381,23 @@ export const ar: Messages = {
   "products.sectionDetails": "التفاصيل",
   "products.sectionPricing": "الأسعار",
   "products.sectionOrganization": "التنظيم",
+
+  // ── galeria de mídia do produto ────────────────────────────────────────
+  "products.sectionGallery": "معرض المنتج",
+  "products.gallery.images": "إضافة صور",
+  "products.gallery.videos": "إضافة فيديوهات",
+  "products.gallery.youtubePlaceholder": "رابط فيديو يوتيوب",
+  "products.gallery.youtubeAdd": "إضافة",
+  "products.gallery.empty": "لا توجد وسائط بعد — أضف صورًا أو فيديو.",
+  "products.gallery.primary": "الأساسية",
+  "products.gallery.setPrimary": "تعيين كصورة أساسية",
+  "products.gallery.remove": "إزالة من المعرض",
+  "products.gallery.uploading": "جارٍ الرفع…",
+  "products.gallery.uploadFailed": "فشل الرفع. حاول مرة أخرى.",
+  "products.gallery.imageTooLarge": "يمكن أن تكون الصور بحد أقصى 10 ميغابايت.",
+  "products.gallery.videoTooLarge": "يمكن أن تكون الفيديوهات بحد أقصى 100 ميغابايت.",
+  "products.gallery.unsupportedType": "نوع ملف غير مدعوم.",
+  "products.gallery.videoBadge": "فيديو",
   "products.error.nameRequired": "أدخل اسم المنتج.",
   "products.error.nameTooLong": "لا يمكن أن يتجاوز الاسم ١٢٠ حرفًا.",
   "products.error.descriptionTooLong": "لا يمكن أن يتجاوز الوصف ١٠٠٠ حرف.",
@@ -383,6 +408,8 @@ export const ar: Messages = {
   "products.error.categoryInvalid": "اختر فئة من متجرك.",
   "products.error.createFailed": "تعذّر إنشاء المنتج. حاول مجددًا.",
   "products.error.saveFailed": "تعذّر حفظ التغييرات. حاول مجددًا.",
+  "products.error.mediaInvalid": "صحح المعرض: تحقق من الروابط وأنواع الملفات.",
+  "products.error.mediaTooMany": "يمكن أن يحتوي المعرض على 64 عنصرًا كحد أقصى.",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "الفئات",

@@ -324,6 +324,14 @@ export const zhHans: Messages = {
   "storefront.customerDetails": "客户信息",
   "storefront.close": "关闭",
 
+  // ── galeria de mídia da vitrine ─────────────────────────────────────────
+  "storefront.galleryLabel": "产品媒体",
+  "storefront.galleryVideo": "视频",
+  "storefront.galleryPrevious": "上一项媒体",
+  "storefront.galleryNext": "下一项媒体",
+  "storefront.galleryUnavailable": "视频不可用",
+  "storefront.galleryPlay": "播放视频",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "管理您店铺的商品。",
   "products.new": "新建商品",
@@ -357,6 +365,23 @@ export const zhHans: Messages = {
   "products.sectionDetails": "详情",
   "products.sectionPricing": "定价",
   "products.sectionOrganization": "分类整理",
+
+  // ── galeria de mídia do produto ────────────────────────────────────────
+  "products.sectionGallery": "产品图集",
+  "products.gallery.images": "添加图片",
+  "products.gallery.videos": "添加视频",
+  "products.gallery.youtubePlaceholder": "YouTube 视频链接",
+  "products.gallery.youtubeAdd": "添加",
+  "products.gallery.empty": "暂无媒体 — 添加照片或视频。",
+  "products.gallery.primary": "主图",
+  "products.gallery.setPrimary": "设为主图",
+  "products.gallery.remove": "从图集中移除",
+  "products.gallery.uploading": "上传中…",
+  "products.gallery.uploadFailed": "上传失败，请重试。",
+  "products.gallery.imageTooLarge": "图片最大 10 MB。",
+  "products.gallery.videoTooLarge": "视频最大 100 MB。",
+  "products.gallery.unsupportedType": "不支持的文件类型。",
+  "products.gallery.videoBadge": "视频",
   "products.error.nameRequired": "请输入商品名称。",
   "products.error.nameTooLong": "名称最多 120 个字符。",
   "products.error.descriptionTooLong": "描述最多 1000 个字符。",
@@ -367,6 +392,8 @@ export const zhHans: Messages = {
   "products.error.categoryInvalid": "请选择您店铺的分类。",
   "products.error.createFailed": "无法创建商品，请重试。",
   "products.error.saveFailed": "无法保存更改，请重试。",
+  "products.error.mediaInvalid": "请修正图集：检查链接和文件类型。",
+  "products.error.mediaTooMany": "图集最多 64 项。",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "分类",

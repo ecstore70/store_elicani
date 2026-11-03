@@ -69,6 +69,13 @@ export type StorefrontStrings = {
   yourOrder: string;
   customerDetails: string;
   close: string;
+  // ── galeria de mídia do produto ─────────────────────────────────────
+  galleryLabel: string;
+  galleryVideo: string;
+  galleryPrevious: string;
+  galleryNext: string;
+  galleryUnavailable: string;
+  galleryPlay: string;
   // ── rótulos da mensagem de pedido (WhatsApp) ────────────────────────
   msgNewOrder: string;
   msgCustomer: string;
@@ -139,6 +146,12 @@ export function buildStorefrontStrings(t: Translator): StorefrontStrings {
     yourOrder: t("storefront.yourOrder"),
     customerDetails: t("storefront.customerDetails"),
     close: t("storefront.close"),
+    galleryLabel: t("storefront.galleryLabel"),
+    galleryVideo: t("storefront.galleryVideo"),
+    galleryPrevious: t("storefront.galleryPrevious"),
+    galleryNext: t("storefront.galleryNext"),
+    galleryUnavailable: t("storefront.galleryUnavailable"),
+    galleryPlay: t("storefront.galleryPlay"),
     msgNewOrder: t("storefront.msgNewOrder"),
     msgCustomer: t("storefront.msgCustomer"),
     msgPhone: t("storefront.msgPhone"),

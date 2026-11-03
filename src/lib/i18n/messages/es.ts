@@ -338,6 +338,14 @@ export const es: Messages = {
   "storefront.customerDetails": "Datos del cliente",
   "storefront.close": "Cerrar",
 
+  // ── galeria de mídia da vitrine ─────────────────────────────────────────
+  "storefront.galleryLabel": "Medios del producto",
+  "storefront.galleryVideo": "Vídeo",
+  "storefront.galleryPrevious": "Medio anterior",
+  "storefront.galleryNext": "Medio siguiente",
+  "storefront.galleryUnavailable": "Vídeo no disponible",
+  "storefront.galleryPlay": "Reproducir vídeo",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "Gestiona los productos de tu tienda.",
   "products.new": "Nuevo producto",
@@ -372,6 +380,23 @@ export const es: Messages = {
   "products.sectionDetails": "Detalles",
   "products.sectionPricing": "Precios",
   "products.sectionOrganization": "Organización",
+
+  // ── galeria de mídia do produto ────────────────────────────────────────
+  "products.sectionGallery": "Galería del producto",
+  "products.gallery.images": "Añadir imágenes",
+  "products.gallery.videos": "Añadir vídeos",
+  "products.gallery.youtubePlaceholder": "URL del vídeo de YouTube",
+  "products.gallery.youtubeAdd": "Añadir",
+  "products.gallery.empty": "Aún no hay medios: añade fotos o un vídeo.",
+  "products.gallery.primary": "Principal",
+  "products.gallery.setPrimary": "Establecer como imagen principal",
+  "products.gallery.remove": "Quitar de la galería",
+  "products.gallery.uploading": "Subiendo…",
+  "products.gallery.uploadFailed": "Error al subir. Inténtalo de nuevo.",
+  "products.gallery.imageTooLarge": "Las imágenes pueden tener como máximo 10 MB.",
+  "products.gallery.videoTooLarge": "Los vídeos pueden tener como máximo 100 MB.",
+  "products.gallery.unsupportedType": "Tipo de archivo no admitido.",
+  "products.gallery.videoBadge": "Vídeo",
   "products.error.nameRequired": "Introduce el nombre del producto.",
   "products.error.nameTooLong": "El nombre puede tener como máximo 120 caracteres.",
   "products.error.descriptionTooLong": "La descripción puede tener como máximo 1000 caracteres.",
@@ -382,6 +407,8 @@ export const es: Messages = {
   "products.error.categoryInvalid": "Elige una categoría de tu tienda.",
   "products.error.createFailed": "No se pudo crear el producto. Inténtalo de nuevo.",
   "products.error.saveFailed": "No se pudieron guardar los cambios. Inténtalo de nuevo.",
+  "products.error.mediaInvalid": "Corrige la galería: revisa los enlaces y los tipos de archivo.",
+  "products.error.mediaTooMany": "La galería puede tener como máximo 64 elementos.",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "Categorías",

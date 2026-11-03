@@ -337,6 +337,14 @@ export const ja: Messages = {
   "storefront.customerDetails": "お客様情報",
   "storefront.close": "閉じる",
 
+  // ── galeria de mídia da vitrine ─────────────────────────────────────────
+  "storefront.galleryLabel": "商品メディア",
+  "storefront.galleryVideo": "動画",
+  "storefront.galleryPrevious": "前のメディア",
+  "storefront.galleryNext": "次のメディア",
+  "storefront.galleryUnavailable": "動画を利用できません",
+  "storefront.galleryPlay": "動画を再生",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "ストアの商品を管理します。",
   "products.new": "新規商品",
@@ -370,6 +378,23 @@ export const ja: Messages = {
   "products.sectionDetails": "詳細",
   "products.sectionPricing": "価格設定",
   "products.sectionOrganization": "整理",
+
+  // ── galeria de mídia do produto ────────────────────────────────────────
+  "products.sectionGallery": "商品ギャラリー",
+  "products.gallery.images": "画像を追加",
+  "products.gallery.videos": "動画を追加",
+  "products.gallery.youtubePlaceholder": "YouTube 動画の URL",
+  "products.gallery.youtubeAdd": "追加",
+  "products.gallery.empty": "まだメディアがありません — 写真や動画を追加してください。",
+  "products.gallery.primary": "メイン",
+  "products.gallery.setPrimary": "メイン画像に設定",
+  "products.gallery.remove": "ギャラリーから削除",
+  "products.gallery.uploading": "アップロード中…",
+  "products.gallery.uploadFailed": "アップロードに失敗しました。再試行してください。",
+  "products.gallery.imageTooLarge": "画像は最大 10 MB です。",
+  "products.gallery.videoTooLarge": "動画は最大 100 MB です。",
+  "products.gallery.unsupportedType": "対応していないファイル形式です。",
+  "products.gallery.videoBadge": "動画",
   "products.error.nameRequired": "商品名を入力してください。",
   "products.error.nameTooLong": "名前は最大 120 文字です。",
   "products.error.descriptionTooLong": "説明は最大 1000 文字です。",
@@ -381,6 +406,8 @@ export const ja: Messages = {
   "products.error.categoryInvalid": "ストアのカテゴリーを選んでください。",
   "products.error.createFailed": "商品を作成できませんでした。もう一度お試しください。",
   "products.error.saveFailed": "変更を保存できませんでした。もう一度お試しください。",
+  "products.error.mediaInvalid": "ギャラリーを修正してください：リンクとファイル形式を確認してください。",
+  "products.error.mediaTooMany": "ギャラリーは最大 64 項目です。",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "カテゴリー",

@@ -342,6 +342,14 @@ export const en = {
   "storefront.customerDetails": "Customer details",
   "storefront.close": "Close",
 
+  // ── galeria de mídia da vitrine ─────────────────────────────────────────
+  "storefront.galleryLabel": "Product media",
+  "storefront.galleryVideo": "Video",
+  "storefront.galleryPrevious": "Previous media",
+  "storefront.galleryNext": "Next media",
+  "storefront.galleryUnavailable": "Video unavailable",
+  "storefront.galleryPlay": "Play video",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "Manage the products of your store.",
   "products.new": "New product",
@@ -376,6 +384,23 @@ export const en = {
   "products.sectionDetails": "Details",
   "products.sectionPricing": "Pricing",
   "products.sectionOrganization": "Organization",
+
+  // ── galeria de mídia do produto ────────────────────────────────────────
+  "products.sectionGallery": "Product gallery",
+  "products.gallery.images": "Add images",
+  "products.gallery.videos": "Add videos",
+  "products.gallery.youtubePlaceholder": "YouTube video URL",
+  "products.gallery.youtubeAdd": "Add",
+  "products.gallery.empty": "No media yet — add photos or a video.",
+  "products.gallery.primary": "Primary",
+  "products.gallery.setPrimary": "Set as primary image",
+  "products.gallery.remove": "Remove from gallery",
+  "products.gallery.uploading": "Uploading…",
+  "products.gallery.uploadFailed": "Upload failed. Try again.",
+  "products.gallery.imageTooLarge": "Images can be at most 10 MB.",
+  "products.gallery.videoTooLarge": "Videos can be at most 100 MB.",
+  "products.gallery.unsupportedType": "Unsupported file type.",
+  "products.gallery.videoBadge": "Video",
   "products.error.nameRequired": "Enter the product name.",
   "products.error.nameTooLong": "The name can have at most 120 characters.",
   "products.error.descriptionTooLong": "The description can have at most 1000 characters.",
@@ -386,6 +411,8 @@ export const en = {
   "products.error.categoryInvalid": "Choose a category of your store.",
   "products.error.createFailed": "Could not create the product. Please try again.",
   "products.error.saveFailed": "Could not save the changes. Please try again.",
+  "products.error.mediaInvalid": "Fix the gallery: check the links and file types.",
+  "products.error.mediaTooMany": "The gallery can have at most 64 items.",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "Categories",

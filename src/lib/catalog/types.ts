@@ -8,6 +8,10 @@ export type NewCategory = Database["public"]["Tables"]["categories"]["Insert"];
 export type Product = Database["public"]["Tables"]["products"]["Row"];
 export type NewProduct = Database["public"]["Tables"]["products"]["Insert"];
 
+/** Linha bruta de `product_media`, gerada pelo Supabase (fonte única). */
+export type ProductMedia =
+  Database["public"]["Tables"]["product_media"]["Row"];
+
 /**
  * Campos SEGUROS para a vitrine pública. Nada de store_id aqui: a vitrine
  * já resolveu a loja — o visitante não precisa de internos de tenant.

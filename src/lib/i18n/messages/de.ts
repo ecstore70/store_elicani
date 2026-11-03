@@ -338,6 +338,14 @@ export const de: Messages = {
   "storefront.customerDetails": "Kundendaten",
   "storefront.close": "Schließen",
 
+  // ── galeria de mídia da vitrine ─────────────────────────────────────────
+  "storefront.galleryLabel": "Produktmedien",
+  "storefront.galleryVideo": "Video",
+  "storefront.galleryPrevious": "Vorheriges Medium",
+  "storefront.galleryNext": "Nächstes Medium",
+  "storefront.galleryUnavailable": "Video nicht verfügbar",
+  "storefront.galleryPlay": "Video abspielen",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "Verwalten Sie die Produkte Ihres Shops.",
   "products.new": "Neues Produkt",
@@ -372,6 +380,23 @@ export const de: Messages = {
   "products.sectionDetails": "Details",
   "products.sectionPricing": "Preise",
   "products.sectionOrganization": "Organisation",
+
+  // ── galeria de mídia do produto ────────────────────────────────────────
+  "products.sectionGallery": "Produktgalerie",
+  "products.gallery.images": "Bilder hinzufügen",
+  "products.gallery.videos": "Videos hinzufügen",
+  "products.gallery.youtubePlaceholder": "YouTube-Video-URL",
+  "products.gallery.youtubeAdd": "Hinzufügen",
+  "products.gallery.empty": "Noch keine Medien — Fotos oder ein Video hinzufügen.",
+  "products.gallery.primary": "Primär",
+  "products.gallery.setPrimary": "Als Hauptbild festlegen",
+  "products.gallery.remove": "Aus der Galerie entfernen",
+  "products.gallery.uploading": "Wird hochgeladen…",
+  "products.gallery.uploadFailed": "Upload fehlgeschlagen. Erneut versuchen.",
+  "products.gallery.imageTooLarge": "Bilder dürfen höchstens 10 MB groß sein.",
+  "products.gallery.videoTooLarge": "Videos dürfen höchstens 100 MB groß sein.",
+  "products.gallery.unsupportedType": "Nicht unterstützter Dateityp.",
+  "products.gallery.videoBadge": "Video",
   "products.error.nameRequired": "Geben Sie den Produktnamen ein.",
   "products.error.nameTooLong": "Der Name darf höchstens 120 Zeichen haben.",
   "products.error.descriptionTooLong": "Die Beschreibung darf höchstens 1000 Zeichen haben.",
@@ -382,6 +407,8 @@ export const de: Messages = {
   "products.error.categoryInvalid": "Wählen Sie eine Kategorie Ihres Shops.",
   "products.error.createFailed": "Das Produkt konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
   "products.error.saveFailed": "Die Änderungen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+  "products.error.mediaInvalid": "Galerie korrigieren: Links und Dateitypen prüfen.",
+  "products.error.mediaTooMany": "Die Galerie darf höchstens 64 Einträge haben.",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "Kategorien",

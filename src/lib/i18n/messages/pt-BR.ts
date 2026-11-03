@@ -343,6 +343,14 @@ export const ptBR: Messages = {
   "storefront.customerDetails": "Dados do cliente",
   "storefront.close": "Fechar",
 
+  // ── galeria de mídia da vitrine ─────────────────────────────────────────
+  "storefront.galleryLabel": "Mídias do produto",
+  "storefront.galleryVideo": "Vídeo",
+  "storefront.galleryPrevious": "Mídia anterior",
+  "storefront.galleryNext": "Próxima mídia",
+  "storefront.galleryUnavailable": "Vídeo indisponível",
+  "storefront.galleryPlay": "Reproduzir vídeo",
+
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "Gerencie os produtos da sua loja.",
   "products.new": "Novo produto",
@@ -377,6 +385,23 @@ export const ptBR: Messages = {
   "products.sectionDetails": "Detalhes",
   "products.sectionPricing": "Preços",
   "products.sectionOrganization": "Organização",
+
+  // ── galeria de mídia do produto ────────────────────────────────────────
+  "products.sectionGallery": "Galeria do produto",
+  "products.gallery.images": "Adicionar imagens",
+  "products.gallery.videos": "Adicionar vídeos",
+  "products.gallery.youtubePlaceholder": "URL do vídeo do YouTube",
+  "products.gallery.youtubeAdd": "Adicionar",
+  "products.gallery.empty": "Nenhuma mídia ainda — adicione fotos ou um vídeo.",
+  "products.gallery.primary": "Principal",
+  "products.gallery.setPrimary": "Definir como imagem principal",
+  "products.gallery.remove": "Remover da galeria",
+  "products.gallery.uploading": "Enviando…",
+  "products.gallery.uploadFailed": "Falha no envio. Tente novamente.",
+  "products.gallery.imageTooLarge": "As imagens podem ter no máximo 10 MB.",
+  "products.gallery.videoTooLarge": "Os vídeos podem ter no máximo 100 MB.",
+  "products.gallery.unsupportedType": "Tipo de arquivo não suportado.",
+  "products.gallery.videoBadge": "Vídeo",
   "products.error.nameRequired": "Informe o nome do produto.",
   "products.error.nameTooLong": "O nome pode ter no máximo 120 caracteres.",
   "products.error.descriptionTooLong": "A descrição pode ter no máximo 1000 caracteres.",
@@ -387,6 +412,8 @@ export const ptBR: Messages = {
   "products.error.categoryInvalid": "Escolha uma categoria da sua loja.",
   "products.error.createFailed": "Não foi possível criar o produto. Tente novamente.",
   "products.error.saveFailed": "Não foi possível guardar as alterações. Tente novamente.",
+  "products.error.mediaInvalid": "Corrija a galeria: verifique os links e os tipos de arquivo.",
+  "products.error.mediaTooMany": "A galeria pode ter no máximo 64 itens.",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "Categorias",
