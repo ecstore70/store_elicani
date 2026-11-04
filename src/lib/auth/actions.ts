@@ -2,8 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { cookies, headers } from "next/headers";
-import { recordDebug, verifierDigests } from "@/lib/auth/debug";
 import { getSiteUrl } from "@/lib/env";
 import { getTranslator } from "@/lib/i18n/locale";
 import type { MessageKey } from "@/lib/i18n/messages/en";
@@ -117,34 +115,6 @@ export async function loginWithGoogleAction(
 
   if (error) {
     return { error: t("auth.error.oauth"), notice: null };
-  }
-
-  // TEMPORÁRIO (diagnóstico PKCE): lê de volta os cookies gravados por esta
-  // ação e compara o digesto do verifier com o code_challenge enviado ao
-  // /authorize — prova se a gravação dos cookies funcionou nesta resposta.
-  try {
-    const cookieStore = await cookies();
-    const all = cookieStore.getAll();
-    const digests = verifierDigests(all);
-    const challenge = new URL(data.url).searchParams.get("code_challenge");
-    const h = await headers();
-    let sentinelSet = true;
-    try {
-      cookieStore.set("__auth_diag", "1", { path: "/", maxAge: 60 });
-    } catch {
-      sentinelSet = false;
-    }
-    await recordDebug({
-      branch: "action",
-      host: h.get("host"),
-      challenge,
-      digests,
-      challenge_matches_cookie: digests.some((d) => d.b64 === challenge),
-      sentinel_set: sentinelSet,
-      cookie_names: all.map((c) => c.name),
-    });
-  } catch (e) {
-    await recordDebug({ branch: "action_diag_failed", message: String(e) });
   }
 
   redirect(data.url);
