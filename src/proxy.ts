@@ -9,6 +9,8 @@
  *     ausente, id malformado ou produto de outra loja) — mesma nota do
  *     ramo 2 vale para a página de produto;
  *  2. Redirecionar www → domínio principal;
+ *  2b. Manter páginas de auth (/login, /signup, …) no host canônico —
+ *      evita o split dos cookies PKCE entre alias e host do app;
  *  3. Renovar a sessão Supabase (refresh dos cookies);
  *  4. Proteger rotas /app e redirecionar usuário logado fora de /login.
  *
@@ -18,7 +20,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/database.types";
-import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
+import { getSiteUrl, getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 import { isSafeInternalPath } from "@/lib/safe-redirect";
 import { extractStoreSlug, getStoreDomain } from "@/lib/stores/resolve";
 
@@ -91,6 +93,29 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const host = request.headers.get("host") ?? "";
   const domain = getStoreDomain();
   const hostname = host.split(":")[0].toLowerCase();
+
+  // ── 0. páginas de auth só no host canônico (getSiteUrl) ─────────────────
+  //
+  // Os cookies PKCE do login Google são HOST-ONLY: a ação de login grava o
+  // code verifier no host onde a página foi servida, mas o /auth/callback
+  // roda sempre no host canônico (redirect_to = getSiteUrl()). Quando os
+  // dois hosts divergem (ex.: elicani.site × app.elicani.site), o callback
+  // lê outro jar de cookies → "code challenge does not match previously
+  // saved code verifier" e o login Google falha. Redirecionar /login,
+  // /signup, /forgot-password e /reset-password para o host canônico
+  // garante ação → Google → callback no MESMO host. As demais rotas
+  // (landing, /app, vitrine) não são afetadas.
+  const canonicalHost = new URL(getSiteUrl()).hostname;
+  const isAuthOnlyPath =
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password";
+  if (isAuthOnlyPath && hostname !== canonicalHost) {
+    const url = request.nextUrl.clone();
+    url.hostname = canonicalHost;
+    return NextResponse.redirect(url);
+  }
 
   // ── 1. www → domínio principal ─────────────────────────────────────────
   if (hostname === `www.${domain}`) {

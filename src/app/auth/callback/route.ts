@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
   const cookieNames = request.cookies.getAll().map((c) => c.name);
   const digests = verifierDigests(request.cookies.getAll());
   const diag = {
+    host: request.headers.get("host"),
     search: url.search.slice(0, 400),
     has_code: Boolean(code),
     error_param: error,
