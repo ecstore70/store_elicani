@@ -165,8 +165,15 @@ depois (usa `SUPABASE_SERVICE_ROLE_KEY`).
 Minúsculas, números e hífens, normalizados (`slugify`), 3–48 caracteres, únicos no
 banco. Reservados (lista em `src/lib/stores/slug.ts`, fácil de estender):
 `app, admin, api, www, login, signup, dashboard, settings, support, help, docs,
-status` + colisões com rotas internas. O slug é imutável na Fase 1. O DNS wildcard
+status, shop` + colisões com rotas internas. O slug é imutável na Fase 1. O DNS wildcard
 nunca é gerenciado pelo código — é configuração de infra.
+
+Exceção do dono da plataforma: a claim `platform_owner` em `app_metadata`
+(gravada só via Admin API, verificada no servidor via `auth.getUser()`)
+permite registrar o slug reservado `shop` (`PLATFORM_OWNER_RESERVED_SLUGS` em
+`src/lib/stores/slug.ts`). Os demais reservados seguem bloqueados para todos,
+inclusive o dono; a vitrine `shop.elicani.site` só resolve se existir a loja
+no banco.
 
 ## i18n
 

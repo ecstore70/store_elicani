@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   isReservedSlug,
+  isPlatformOwnerSlugException,
+  PLATFORM_OWNER_RESERVED_SLUGS,
   RESERVED_SLUGS,
   SLUG_MAX_LENGTH,
   slugify,
   validateSlug,
+  validateSlugForCreation,
 } from "./slug.ts";
 
 describe("slugify", () => {
@@ -90,5 +93,43 @@ describe("validateSlug", () => {
 
   it("a lista de reservados não contém duplicados", () => {
     assert.equal(new Set(RESERVED_SLUGS).size, RESERVED_SLUGS.length);
+  });
+});
+
+describe("exceção do dono da plataforma (shop)", () => {
+  it("'shop' continua na lista global de reservados", () => {
+    assert.ok(RESERVED_SLUGS.includes("shop"));
+    assert.equal(validateSlug("shop"), "reserved");
+    assert.ok(isReservedSlug("shop"));
+  });
+
+  it("só a exceção EXPLÍCITA passa para o dono da plataforma", () => {
+    assert.equal(validateSlugForCreation("shop", true), null);
+    assert.equal(validateSlugForCreation("shop", false), "reserved");
+    assert.ok(isPlatformOwnerSlugException("shop"));
+  });
+
+  it("dono da plataforma NÃO passa pelos demais reservados", () => {
+    for (const slug of RESERVED_SLUGS) {
+      if (PLATFORM_OWNER_RESERVED_SLUGS.includes(slug)) continue;
+      // Mesmo resultado de um usuário comum — e sempre bloqueado (o
+      // problema pode ser "reserved" ou outro anterior, ex.: "ns" curto).
+      assert.equal(validateSlugForCreation(slug, true), validateSlug(slug), slug);
+      assert.notEqual(validateSlugForCreation(slug, true), null, slug);
+      assert.ok(!isPlatformOwnerSlugException(slug), slug);
+    }
+  });
+
+  it("a exceção é subconjunto dos reservados", () => {
+    for (const slug of PLATFORM_OWNER_RESERVED_SLUGS) {
+      assert.ok(RESERVED_SLUGS.includes(slug), slug);
+    }
+    assert.equal(new Set(PLATFORM_OWNER_RESERVED_SLUGS).size, PLATFORM_OWNER_RESERVED_SLUGS.length);
+  });
+
+  it("formato inválido continua rejeitado mesmo para o dono", () => {
+    assert.equal(validateSlugForCreation("shop!", true), "invalid");
+    assert.equal(validateSlugForCreation("ab", true), "too_short");
+    assert.equal(validateSlugForCreation("", true), "empty");
   });
 });

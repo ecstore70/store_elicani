@@ -7,7 +7,11 @@
  *
  * Nada aqui é hardcoded: o domínio base vem de NEXT_PUBLIC_STORE_DOMAIN.
  */
-import { isReservedSlug, validateSlug } from "./slug.ts";
+import {
+  isPlatformOwnerSlugException,
+  isReservedSlug,
+  validateSlugFormat,
+} from "./slug.ts";
 
 const DEFAULT_STORE_DOMAIN = "elicani.site";
 
@@ -36,6 +40,8 @@ function stripPort(host: string): string {
  *  elicani.site                → null  (apex)
  *  outro.site                  → null  (domínio alheio)
  *  api.elicani.site            → null  (reservado)
+ *  shop.elicani.site           → "shop" (exceção do dono da plataforma;
+ *                                só existe como loja se estiver no banco)
  *  a.b.elicani.site            → null  (subdomínio aninhado)
  */
 export function extractStoreSlug(
@@ -55,8 +61,13 @@ export function extractStoreSlug(
   const subdomain = clean.slice(0, -(base.length + 1));
 
   if (subdomain.includes(".")) return null; // aninhado
-  if (isReservedSlug(subdomain)) return null;
-  if (validateSlug(subdomain) !== null) return null;
+  // Reservados continuam bloqueados; só a exceção EXPLÍCITA do dono da
+  // plataforma (ex.: shop) passa — e ainda assim apenas se existir uma
+  // loja com esse slug no banco (o proxy/página confirmam antes de servir).
+  if (isReservedSlug(subdomain) && !isPlatformOwnerSlugException(subdomain)) {
+    return null;
+  }
+  if (validateSlugFormat(subdomain) !== null) return null;
 
   return subdomain;
 }

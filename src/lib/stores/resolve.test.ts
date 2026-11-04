@@ -37,6 +37,10 @@ describe("extractStoreSlug — {slug}.elicani.site → slug", () => {
     }
   });
 
+  it("exceção do dono da plataforma: shop.elicani.site resolve como loja", () => {
+    assert.equal(extractStoreSlug("shop.elicani.site", DOMAIN), "shop");
+  });
+
   it("ignora domínios alheios e hosts vazios", () => {
     assert.equal(extractStoreSlug("maria.outro-site.com", DOMAIN), null);
     assert.equal(extractStoreSlug("maria.elicani.site.com", DOMAIN), null);

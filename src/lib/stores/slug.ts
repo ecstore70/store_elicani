@@ -82,6 +82,21 @@ export function isReservedSlug(slug: string): boolean {
   return RESERVED_SLUGS.includes(slug.trim().toLowerCase());
 }
 
+/**
+ * Subconjunto EXPLÍCITO de RESERVED_SLUGS que o dono da plataforma pode
+ * registrar como loja (exceção controlada).
+ *
+ * "shop" continua DENTRO de RESERVED_SLUGS — lojistas comuns continuam
+ * recebendo "store.error.slugReserved". A exceção é estreita de propósito:
+ * NÃO cobre os demais reservados (app, admin, api, ...) — esses continuam
+ * proibidos para todos, incluindo o próprio dono da plataforma.
+ */
+export const PLATFORM_OWNER_RESERVED_SLUGS: readonly string[] = ["shop"];
+
+export function isPlatformOwnerSlugException(slug: string): boolean {
+  return PLATFORM_OWNER_RESERVED_SLUGS.includes(slug.trim().toLowerCase());
+}
+
 export type SlugProblem =
   | "empty"
   | "invalid"
@@ -98,17 +113,47 @@ export const SLUG_MESSAGE_KEYS: Record<SlugProblem, MessageKey> = {
   reserved: "store.error.slugReserved",
 };
 
-/** Valida um slug já normalizado. Retorna o problema ou null se válido. */
-export function validateSlug(slug: string): SlugProblem | null {
+/** Valida só o FORMATO (comprimento + padrão), sem a regra de reservados. */
+export function validateSlugFormat(slug: string): SlugProblem | null {
   const value = slug.trim();
 
   if (value.length === 0) return "empty";
   if (value.length < SLUG_MIN_LENGTH) return "too_short";
   if (value.length > SLUG_MAX_LENGTH) return "too_long";
   if (!SLUG_PATTERN.test(value)) return "invalid";
-  if (isReservedSlug(value)) return "reserved";
 
   return null;
+}
+
+/** Valida um slug já normalizado. Retorna o problema ou null se válido. */
+export function validateSlug(slug: string): SlugProblem | null {
+  const problem = validateSlugFormat(slug);
+  if (problem) return problem;
+  if (isReservedSlug(slug)) return "reserved";
+
+  return null;
+}
+
+/**
+ * Valida slug no fluxo de CRIAÇÃO de loja, aplicando a exceção do dono
+ * da plataforma (PLATFORM_OWNER_RESERVED_SLUGS).
+ *
+ * `isPlatformOwner` é informado SOMENTE pelo servidor, derivado do token
+ * validado (auth.getUser → app_metadata). Nunca vem do formulário.
+ */
+export function validateSlugForCreation(
+  slug: string,
+  isPlatformOwner: boolean,
+): SlugProblem | null {
+  const problem = validateSlug(slug);
+  if (
+    problem === "reserved" &&
+    isPlatformOwner &&
+    isPlatformOwnerSlugException(slug)
+  ) {
+    return null;
+  }
+  return problem;
 }
 
 /**

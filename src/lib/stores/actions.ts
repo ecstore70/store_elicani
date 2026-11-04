@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { PostgrestError } from "@supabase/supabase-js";
+import { isPlatformOwner } from "@/lib/auth/platform";
 import { requireUser } from "@/lib/auth/session";
 import { isValidCountry } from "@/lib/countries";
 import { isSupportedCurrency } from "@/lib/currency";
@@ -23,7 +24,7 @@ import {
   SLUG_MAX_LENGTH,
   SLUG_MESSAGE_KEYS,
   SLUG_MIN_LENGTH,
-  validateSlug,
+  validateSlugForCreation,
 } from "./slug";
 import {
   emptyStoreFormValues,
@@ -87,7 +88,7 @@ function readFormValues(formData: FormData): StoreFormValues {
 function validateStoreValues(
   values: StoreFormValues,
   t: Translator,
-  options: { includeSlug: boolean },
+  options: { includeSlug: boolean; isPlatformOwner?: boolean },
 ): FieldErrors {
   const errors: FieldErrors = {};
 
@@ -99,7 +100,10 @@ function validateStoreValues(
   }
 
   if (options.includeSlug) {
-    const problem = validateSlug(values.slug);
+    const problem = validateSlugForCreation(
+      values.slug,
+      options.isPlatformOwner === true,
+    );
     if (problem) {
       errors.slug = t(SLUG_MESSAGE_KEYS[problem], {
         min: SLUG_MIN_LENGTH,
@@ -230,9 +234,12 @@ function withValues(
 /**
  * Cria a store do lojista autenticado.
  *
- * Segurança em duas camadas:
+ * Segurança em três camadas:
  *  1. RLS — `with check (auth.uid() = owner_id)` impede criar loja alheia;
- *  2. UNIQUE em owner_id — impede duas lojas para o mesmo lojista.
+ *  2. UNIQUE em owner_id — impede duas lojas para o mesmo lojista;
+ *  3. Slug reservado — bloqueado para todos, EXETO a exceção explícita do
+ *     dono da plataforma (claim platform_owner em app_metadata, lida do
+ *     token validado aqui no servidor — o formulário não envia essa flag).
  */
 export async function createStoreAction(
   _prevState: StoreFormState,
@@ -242,7 +249,10 @@ export async function createStoreAction(
   const t = await getTranslator();
   const values = readFormValues(formData);
 
-  const fieldErrors = validateStoreValues(values, t, { includeSlug: true });
+  const fieldErrors = validateStoreValues(values, t, {
+    includeSlug: true,
+    isPlatformOwner: isPlatformOwner(user),
+  });
   if (Object.keys(fieldErrors).length > 0) {
     return withValues(values, { fieldErrors });
   }
