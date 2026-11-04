@@ -1,5 +1,5 @@
-import { createHash } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
+import { recordDebug, verifierDigests } from "@/lib/auth/debug";
 import { resolveSafeNext } from "@/lib/safe-redirect";
 import { createClient } from "@/lib/supabase/server";
 import { getStoreForOwner } from "@/lib/stores/queries";
@@ -17,31 +17,7 @@ import { getStoreForOwner } from "@/lib/stores/queries";
  *
  * Erros (link expirado, acesso negado no Google, sessão ausente) voltam
  * para /login com mensagem genérica — sem expor detalhes.
- *
- * TEMPORÁRIO (diagnóstico): cada branch grava telemetria em
- * public.auth_debug (service role) para identificar por que a troca do
- * código PKCE falha em produção. Remover após o diagnóstico.
  */
-async function recordDebug(data: Record<string, unknown>): Promise<void> {
-  try {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !serviceKey) return;
-    await fetch(`${url}/rest/v1/auth_debug`, {
-      method: "POST",
-      headers: {
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal",
-      },
-      body: JSON.stringify({ data }),
-      cache: "no-store",
-    });
-  } catch {
-    // melhor esforço: diagnóstico nunca derruba o callback
-  }
-}
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl;
@@ -50,19 +26,14 @@ export async function GET(request: NextRequest) {
   const next = resolveSafeNext(url.searchParams.get("next"), "/app");
 
   const cookieNames = request.cookies.getAll().map((c) => c.name);
-  const verifierCookie = request.cookies
-    .getAll()
-    .find((c) => c.name.endsWith("-code-verifier"));
+  const digests = verifierDigests(request.cookies.getAll());
   const diag = {
     search: url.search.slice(0, 400),
     has_code: Boolean(code),
     error_param: error,
     sb_flow_id: url.searchParams.get("sb_flow_id"),
     all_cookies: cookieNames,
-    verifier_cookie_name: verifierCookie?.name ?? null,
-    verifier_sha256: verifierCookie
-      ? createHash("sha256").update(verifierCookie.value.split("/")[0]).digest("hex")
-      : null,
+    digests,
     ua: request.headers.get("user-agent")?.slice(0, 100) ?? null,
   };
 
