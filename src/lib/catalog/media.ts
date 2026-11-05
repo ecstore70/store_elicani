@@ -160,6 +160,65 @@ export function mediaErrorMessage(
   );
 }
 
+// ── reconciliação da galeria ao salvar ──────────────────────────────────────
+
+/** Linha existente de `product_media` considerada pela reconciliação. */
+export type ExistingMediaRow = { id: string; source_url: string };
+
+export type MediaPlan = {
+  /** IDs do conjunto antigo — removidos APÓS o insert do novo conjunto. */
+  replaceIds: string[];
+  /** URLs que saíram da lista — candidatas à limpeza do storage. */
+  removeUrls: string[];
+  /** Novo conjunto canônico, em ordem de exibição. */
+  rows: { type: MediaType; url: string; display_order: number }[];
+};
+
+/**
+ * Plano de reconciliação da galeria no servidor. A ordem importa: o insert
+ * do novo conjunto vem primeiro e o delete do antigo depois — se o insert
+ * falhar, nada se perde; se o delete falhar, a action reporta erro e a
+ * próxima tentativa converge (o plano recalculado cobre ambos os conjuntos).
+ */
+export function planMediaReconcile(
+  existing: ExistingMediaRow[],
+  items: MediaItemInput[],
+): MediaPlan {
+  const nextUrls = new Set(items.map((item) => item.url));
+  return {
+    replaceIds: existing.map((row) => row.id),
+    removeUrls: existing
+      .map((row) => row.source_url)
+      .filter((url) => !nextUrls.has(url)),
+    rows: items.map((item, index) => ({
+      type: item.type,
+      url: item.url,
+      display_order: index,
+    })),
+  };
+}
+
+/** Espelho de `products.image_url`: a PRIMEIRA IMAGEM da lista (ou null). */
+export function primaryImageUrl(items: MediaItemInput[]): string | null {
+  return items.find((item) => item.type === "image")?.url ?? null;
+}
+
+/**
+ * Caminho dentro do bucket a partir da URL pública — usado só para apagar
+ * arquivos que saíram da galeria. Qualquer URL fora da nossa base/bucket
+ * devolve `null` (nunca tocamos em paths que não reconhecemos).
+ */
+export function mediaStoragePath(
+  rawUrl: string,
+  publicBaseUrl: string,
+): string | null {
+  const base = publicBaseUrl.replace(/\/+$/, "");
+  const prefix = `${base}/storage/v1/object/public/${MEDIA_BUCKET}/`;
+  if (!rawUrl.startsWith(prefix)) return null;
+  const path = rawUrl.slice(prefix.length);
+  return path.length > 0 ? path : null;
+}
+
 /** Normaliza os itens lidos do FormData (JSON) para o formato canônico. */
 export function parseMediaFormData(raw: FormDataEntryValue | null): MediaItemInput[] | null {
   if (typeof raw !== "string" || raw.trim() === "") return [];

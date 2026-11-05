@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/auth/session";
 import {
   getProductForOwner,
   listCategoriesWithStoreForOwner,
+  listMediaForOwner,
 } from "@/lib/catalog/queries";
 import { getLocale } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
@@ -25,9 +26,10 @@ export default async function EditProductPage({ params }: Props) {
   const user = await requireUser();
   const store = await requireStore(user.id);
 
-  const [product, categories] = await Promise.all([
+  const [product, categories, media] = await Promise.all([
     getProductForOwner(store.id, productId),
     listCategoriesWithStoreForOwner(store.id),
+    listMediaForOwner(store.id, productId),
   ]);
 
   if (!product) {
@@ -46,6 +48,8 @@ export default async function EditProductPage({ params }: Props) {
       <ProductForm
         locale={locale}
         productId={product.id}
+        storeId={store.id}
+        initialMedia={media}
         categories={categories}
         initialValues={{
           name: product.name,
@@ -53,7 +57,6 @@ export default async function EditProductPage({ params }: Props) {
           price: String(product.price),
           promo_price: product.promo_price !== null ? String(product.promo_price) : "",
           category_id: product.category_id ?? "",
-          image_url: product.image_url ?? "",
           is_available: product.is_available ? "true" : "",
           is_featured: product.is_featured ? "true" : "",
         }}

@@ -3,9 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ShoppingBag } from "lucide-react";
 import { StoreShell } from "@/components/storefront/store-shell";
+import { ProductGallery } from "@/components/storefront/product-gallery";
 import { ProductPurchase } from "@/components/storefront/product-purchase";
 import { RelatedProducts } from "@/components/storefront/related-products";
-import { getPublicCatalog } from "@/lib/catalog/queries";
+import { getPublicCatalog, getPublicProductMedia } from "@/lib/catalog/queries";
 import { formatCurrency } from "@/lib/currency";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { getLocaleChoice, getTranslator } from "@/lib/i18n/locale";
@@ -94,6 +95,7 @@ export default async function ProductPage({ params }: Props) {
   }
 
   const { store, product, category, related } = loaded;
+  const media = await getPublicProductMedia(product.id);
 
   const visitorChoice = await getLocaleChoice();
   const locale = visitorChoice ?? normalizeLocale(store.language);
@@ -137,9 +139,15 @@ export default async function ProductPage({ params }: Props) {
       </nav>
 
       <article className="grid gap-6 lg:grid-cols-2 lg:gap-10">
-        {/* imagem grande — produto completo, sem cortes feios */}
+        {/* mídia: galeria quando há itens; senão imagem legada ou placeholder */}
         <div className="relative overflow-hidden rounded-[var(--sf-radius)] border border-[var(--sf-border)] bg-[var(--sf-surface)]">
-          {product.image_url ? (
+          {media.length > 0 ? (
+            <ProductGallery
+              items={media}
+              productName={product.name}
+              strings={strings}
+            />
+          ) : product.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={product.image_url}

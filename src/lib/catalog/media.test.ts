@@ -9,7 +9,10 @@ import {
   isYouTubeUrl,
   mediaErrorMessage,
   MEDIA_MAX_ITEMS,
+  mediaStoragePath,
   parseMediaFormData,
+  planMediaReconcile,
+  primaryImageUrl,
   youtubeEmbedUrl,
   type MediaItemInput,
 } from "./media.ts";
@@ -183,5 +186,89 @@ describe("parse do FormData", () => {
       null,
     );
     assert.equal(parseMediaFormData(JSON.stringify([{ type: "image", url: 5 }])), null);
+  });
+});
+
+describe("reconciliação da galeria", () => {
+  const existing = [
+    { id: "row-1", source_url: "https://cdn.test/a.jpg" },
+    { id: "row-2", source_url: "https://cdn.test/b.jpg" },
+  ];
+
+  it("ordena o novo conjunto e marca os ids antigos para troca", () => {
+    const plan = planMediaReconcile(existing, [
+      { type: "image", url: "https://cdn.test/b.jpg" },
+      { type: "video", url: "https://youtu.be/dQw4w9WgXcQ" },
+      { type: "image", url: "https://cdn.test/new.jpg" },
+    ]);
+    assert.deepEqual(plan.replaceIds, ["row-1", "row-2"]);
+    assert.deepEqual(
+      plan.rows.map((row) => row.display_order),
+      [0, 1, 2],
+    );
+    // Só o que saiu da lista vira candidato a limpeza do storage.
+    assert.deepEqual(plan.removeUrls, ["https://cdn.test/a.jpg"]);
+  });
+
+  it("não remove storage quando nada saiu e aceita lista vazia", () => {
+    const plan = planMediaReconcile(existing, [
+      { type: "image", url: "https://cdn.test/a.jpg" },
+      { type: "image", url: "https://cdn.test/b.jpg" },
+    ]);
+    assert.deepEqual(plan.removeUrls, []);
+
+    const cleared = planMediaReconcile(existing, []);
+    assert.deepEqual(cleared.rows, []);
+    assert.deepEqual(cleared.removeUrls, [
+      "https://cdn.test/a.jpg",
+      "https://cdn.test/b.jpg",
+    ]);
+    assert.deepEqual(cleared.replaceIds, ["row-1", "row-2"]);
+  });
+
+  it("devolve a primeira imagem como primária; null sem imagens", () => {
+    assert.equal(
+      primaryImageUrl([
+        { type: "video", url: "https://youtu.be/dQw4w9WgXcQ" },
+        { type: "image", url: "https://cdn.test/first.jpg" },
+        { type: "image", url: "https://cdn.test/second.jpg" },
+      ]),
+      "https://cdn.test/first.jpg",
+    );
+    assert.equal(
+      primaryImageUrl([{ type: "video", url: "https://youtu.be/dQw4w9WgXcQ" }]),
+      null,
+    );
+    assert.equal(primaryImageUrl([]), null);
+  });
+});
+
+describe("caminho de storage a partir da URL pública", () => {
+  const base = "https://abc.supabase.co";
+
+  it("extrai o path dentro do bucket product-media", () => {
+    assert.equal(
+      mediaStoragePath(
+        "https://abc.supabase.co/storage/v1/object/public/product-media/s1/uuid.png",
+        base,
+      ),
+      "s1/uuid.png",
+    );
+  });
+
+  it("devolve null para outras bases, buckets ou URL inválida", () => {
+    assert.equal(
+      mediaStoragePath("https://other.co/storage/v1/object/public/product-media/s1/a.png", base),
+      null,
+    );
+    assert.equal(
+      mediaStoragePath("https://abc.supabase.co/storage/v1/object/public/logos/s1/a.png", base),
+      null,
+    );
+    assert.equal(mediaStoragePath("https://cdn.test/a.jpg", base), null);
+    assert.equal(
+      mediaStoragePath(`${base}/storage/v1/object/public/product-media/`, base),
+      null,
+    );
   });
 });

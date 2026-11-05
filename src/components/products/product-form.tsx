@@ -10,12 +10,13 @@ import {
   TextAreaField,
   TextField,
 } from "@/components/store/fields";
+import { ProductMediaManager } from "@/components/products/product-media-manager";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
   createProductAction,
   updateProductAction,
 } from "@/lib/catalog/actions";
+import type { MediaItemInput } from "@/lib/catalog/media";
 import {
   emptyProductFormValues,
   type ProductFormState,
@@ -34,17 +35,22 @@ const INITIAL_STATE: ProductFormState = {
 /**
  * Formulário de produto (criação e edição — o mesmo componente).
  * Validação no cliente E no servidor; o servidor é sempre a autoridade.
+ * A imagem do produto é a PRIMEIRA imagem da galeria (espelho no servidor).
  */
 export function ProductForm({
   locale,
   productId,
+  storeId,
   initialValues,
+  initialMedia,
   categories,
 }: {
   locale: Locale;
   /** Presente = edição; ausente = criação. */
   productId?: string;
+  storeId: string;
   initialValues?: Partial<ProductFormValues>;
+  initialMedia?: MediaItemInput[];
   categories: { id: string; name: string }[];
 }) {
   const t = createTranslator(locale);
@@ -64,8 +70,6 @@ export function ProductForm({
   ) {
     setValues((current) => ({ ...current, [key]: value }));
   }
-
-  const imagePreview = values.image_url.trim();
 
   return (
     <form action={formAction} className="space-y-8" noValidate>
@@ -134,32 +138,7 @@ export function ProductForm({
           error={state.fieldErrors.category_id}
         />
 
-        <TextField
-          label={t("products.image")}
-          name="image_url"
-          value={values.image_url}
-          onChange={(event) => update("image_url", event.target.value)}
-          placeholder="https://…"
-          hint={t("products.imageHint")}
-          inputMode="url"
-          autoCapitalize="none"
-          spellCheck={false}
-          error={state.fieldErrors.image_url}
-        />
-
-        {imagePreview && (
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label>{t("products.imagePreview")}</Label>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imagePreview}
-              alt={t("products.imagePreview")}
-              className="size-24 rounded-lg border border-border/70 object-cover"
-            />
-          </div>
-        )}
-
-        <div className="space-y-3 sm:col-span-2">
+        <div className="space-y-3">
           <label className="flex cursor-pointer items-center gap-2.5">
             <input
               type="checkbox"
@@ -189,6 +168,14 @@ export function ProductForm({
             {t("products.featuredHint")}
           </p>
         </div>
+      </FormSection>
+
+      <FormSection title={t("products.sectionGallery")}>
+        <ProductMediaManager
+          locale={locale}
+          storeId={storeId}
+          initialItems={initialMedia ?? []}
+        />
       </FormSection>
 
       <div className="flex items-center justify-between gap-3 border-t border-border/70 pt-6">

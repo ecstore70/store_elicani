@@ -26,7 +26,7 @@ export default async function NewProductPage() {
         title={t("products.new")}
         description={t("products.newSubtitle")}
       />
-      <ProductForm locale={locale} categories={categories} />
+      <ProductForm locale={locale} storeId={store.id} categories={categories} />
     </div>
   );
 }

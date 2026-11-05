@@ -35,6 +35,9 @@ export type PublicCategory = Pick<
   "id" | "name" | "sort_order" | "is_active"
 >;
 
+/** Item da galeria exposto à vitrine — sem id nem tenant (só tipo + URL). */
+export type PublicMediaItem = { type: "image" | "video"; url: string };
+
 /** Catálogo público de uma loja — o que a vitrine renderiza. */
 export type StoreCatalog = {
   products: PublicProduct[];

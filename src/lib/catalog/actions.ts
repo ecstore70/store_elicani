@@ -7,6 +7,17 @@ import { getTranslator } from "@/lib/i18n/locale";
 import type { Translator } from "@/lib/i18n/translate";
 import { createClient } from "@/lib/supabase/server";
 import { requireStore } from "@/lib/stores/queries";
+import { getSupabaseUrl } from "@/lib/env";
+import {
+  findMediaErrorKey,
+  mediaErrorMessage,
+  mediaStoragePath,
+  MEDIA_BUCKET,
+  parseMediaFormData,
+  planMediaReconcile,
+  primaryImageUrl,
+  type MediaItemInput,
+} from "./media";
 import { validateProductValues } from "./validate";
 import {
   emptyProductFormValues,
@@ -72,6 +83,21 @@ function productValuesFrom(
   return { error: null, notice: null, fieldErrors: {}, values, ...patch };
 }
 
+/**
+ * Lê e valida a galeria do FormData (JSON no campo `media`).
+ * Devolve os itens prontos ou a mensagem de erro já traduzida.
+ */
+function readMediaItems(
+  formData: FormData,
+  t: Translator,
+): { items: MediaItemInput[] } | { error: string } {
+  const items = parseMediaFormData(formData.get("media"));
+  if (items === null) return { error: mediaErrorMessage("mediaInvalid", t) };
+  const errorKey = findMediaErrorKey(items);
+  if (errorKey) return { error: mediaErrorMessage(errorKey, t) };
+  return { items };
+}
+
 /** Revalida as rotas do catálogo (lista + vitrine pública é dinâmica). */
 function revalidateCatalog(storeSlug: string) {
   revalidatePath("/app/products");
@@ -113,16 +139,45 @@ export async function createProductAction(
     }
   }
 
+  const media = readMediaItems(formData, t);
+  if ("error" in media) {
+    return productValuesFrom(values, { error: media.error });
+  }
+  const mediaItems = media.items;
+
   const supabase = await createClient();
-  const { error } = await supabase.from("products").insert({
-    store_id: store.id,
-    ...toProductPayload(values),
-  });
+  const { data: created, error } = await supabase
+    .from("products")
+    .insert({
+      store_id: store.id,
+      ...toProductPayload(values),
+      // Espelho: a primeira imagem da galeria vira a imagem do produto.
+      image_url: primaryImageUrl(mediaItems),
+    })
+    .select("id")
+    .single();
 
   if (error) {
     return productValuesFrom(values, {
       error: mapCatalogError(error.code, error.message, t, "create"),
     });
+  }
+
+  if (mediaItems.length > 0) {
+    const { error: mediaError } = await supabase.from("product_media").insert(
+      mediaItems.map((item, index) => ({
+        product_id: created.id,
+        store_id: store.id,
+        media_type: item.type,
+        source_url: item.url,
+        display_order: index,
+      })),
+    );
+    if (mediaError) {
+      return productValuesFrom(values, {
+        error: t("products.error.saveFailed"),
+      });
+    }
   }
 
   revalidateCatalog(store.slug);
@@ -160,10 +215,32 @@ export async function updateProductAction(
     }
   }
 
+  const media = readMediaItems(formData, t);
+  if ("error" in media) {
+    return productValuesFrom(values, { error: media.error });
+  }
+  const mediaItems = media.items;
+
   const supabase = await createClient();
+
+  // Conjunto atual: troca segura (insert novo → delete antigo) + limpeza.
+  const { data: existingMedia, error: mediaListError } = await supabase
+    .from("product_media")
+    .select("id, source_url")
+    .eq("store_id", store.id)
+    .eq("product_id", productId);
+  if (mediaListError) {
+    return productValuesFrom(values, { error: t("products.error.saveFailed") });
+  }
+  const plan = planMediaReconcile(existingMedia ?? [], mediaItems);
+
   const { data, error } = await supabase
     .from("products")
-    .update(toProductPayload(values))
+    .update({
+      ...toProductPayload(values),
+      // Espelho: a primeira imagem da galeria vira a imagem do produto.
+      image_url: primaryImageUrl(mediaItems),
+    })
     .eq("store_id", store.id)
     .eq("id", productId)
     .select("id")
@@ -176,6 +253,43 @@ export async function updateProductAction(
   }
   if (!data) {
     return productValuesFrom(values, { error: t("products.error.saveFailed") });
+  }
+
+  // Novo conjunto primeiro: se o insert falhar, o antigo continua intacto.
+  if (plan.rows.length > 0) {
+    const { error: insertError } = await supabase.from("product_media").insert(
+      plan.rows.map((row) => ({
+        product_id: productId,
+        store_id: store.id,
+        media_type: row.type,
+        source_url: row.url,
+        display_order: row.display_order,
+      })),
+    );
+    if (insertError) {
+      return productValuesFrom(values, { error: t("products.error.saveFailed") });
+    }
+  }
+
+  if (plan.replaceIds.length > 0) {
+    const { error: deleteError } = await supabase
+      .from("product_media")
+      .delete()
+      .eq("store_id", store.id)
+      .in("id", plan.replaceIds);
+    if (deleteError) {
+      return productValuesFrom(values, { error: t("products.error.saveFailed") });
+    }
+  }
+
+  // Limpeza best-effort dos arquivos que saíram da galeria (só o nosso bucket).
+  const storagePaths = plan.removeUrls
+    .map((url) => mediaStoragePath(url, getSupabaseUrl()))
+    .filter(
+      (path): path is string => path !== null && path.startsWith(`${store.id}/`),
+    );
+  if (storagePaths.length > 0) {
+    await supabase.storage.from(MEDIA_BUCKET).remove(storagePaths);
   }
 
   revalidateCatalog(store.slug);

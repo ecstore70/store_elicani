@@ -2,7 +2,8 @@ import "server-only";
 
 import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
-import type { PublicCategory, PublicProduct, StoreCatalog } from "./types";
+import type { MediaItemInput } from "./media";
+import type { PublicCategory, PublicMediaItem, PublicProduct, StoreCatalog } from "./types";
 
 /**
  * Consultas PÚBLICAS do catálogo — usadas pela vitrine com o cliente SEM
@@ -128,4 +129,60 @@ export async function getProductForOwner(
   }
 
   return data as PublicProduct | null;
+}
+
+// ── galeria de mídia ──────────────────────────────────────────────────────
+
+const MEDIA_PUBLIC_FIELDS = "media_type, source_url, display_order";
+
+/** Galeria do produto da PRÓPRIA loja (edição), em ordem de exibição. */
+export async function listMediaForOwner(
+  storeId: string,
+  productId: string,
+): Promise<MediaItemInput[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("product_media")
+    .select("id, media_type, source_url, display_order")
+    .eq("store_id", storeId)
+    .eq("product_id", productId)
+    .order("display_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to load media: ${error.message}`);
+  }
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    type: row.media_type as MediaItemInput["type"],
+    url: row.source_url,
+  }));
+}
+
+/**
+ * Galeria PÚBLICA de um produto — cliente `anon`; o RLS público só devolve
+ * mídias de lojas ATIVAS. Ordenação igual à da vitrine (ordem do lojista).
+ */
+export async function getPublicProductMedia(
+  productId: string,
+): Promise<PublicMediaItem[]> {
+  const supabase = createPublicClient();
+
+  const { data, error } = await supabase
+    .from("product_media")
+    .select(MEDIA_PUBLIC_FIELDS)
+    .eq("product_id", productId)
+    .order("display_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to load media: ${error.message}`);
+  }
+
+  return (data ?? []).map((row) => ({
+    type: row.media_type as PublicMediaItem["type"],
+    url: row.source_url,
+  }));
 }
