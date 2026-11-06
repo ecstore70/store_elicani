@@ -19,6 +19,22 @@ import { createTranslator } from "@/lib/i18n/translate";
  */
 export const instant = false;
 
+/**
+ * Ano do copyright do rodapé.
+ *
+ * Com `cacheComponents`, `new Date()` sem argumento é um "valor instável"
+ * proibido em rotas pré-renderizadas (`blocking-prerender-current-time`).
+ * O escopo `"use cache"` é o fix sancionado pelo framework: o valor é
+ * calculado uma vez, ficando estável para todos os renders até a
+ * revalidação (a chave de cache inclui o build, então cada deploy o
+ * recalcula). Não lê cookies/headers, então não viola as restrições de
+ * cached scope — o cookie de idioma continua sendo lido fora, no layout.
+ */
+async function copyrightYear(): Promise<number> {
+  "use cache";
+  return new Date().getFullYear();
+}
+
 export default async function MarketingLayout({
   children,
 }: {
@@ -134,7 +150,7 @@ export default async function MarketingLayout({
           </div>
 
           <div className="border-t border-border/70 pt-6 text-xs text-muted-foreground">
-            {t("landing.footerRights", { year: new Date().getFullYear() })}
+            {t("landing.footerRights", { year: await copyrightYear() })}
           </div>
         </div>
       </footer>
