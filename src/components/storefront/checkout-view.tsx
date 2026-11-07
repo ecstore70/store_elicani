@@ -157,11 +157,9 @@ function SummaryTotals({
 function SummaryItem({
   item,
   money,
-  strings,
 }: {
   item: CartItem;
   money: (value: number) => string;
-  strings: StorefrontStrings;
 }) {
   return (
     <li className="flex items-start gap-3">
@@ -191,7 +189,7 @@ function SummaryItem({
           </p>
         )}
         <p className="mt-0.5 text-xs tabular-nums text-[var(--sf-muted)]">
-          {`${item.qty} × ${money(item.price)} — ${strings.itemQuantity}`}
+          {`${item.qty} × ${money(item.price)}`}
         </p>
       </div>
 
@@ -525,7 +523,6 @@ export function CheckoutView({
                   key={item.key}
                   item={item}
                   money={checkout.money}
-                  strings={strings}
                 />
               ))}
             </ul>
