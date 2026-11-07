@@ -524,6 +524,35 @@ export const en = {
   "landing.pillOrder": "Order sent on WhatsApp",
   "landing.demoItemsOne": "{count} item",
   "landing.demoItemsMany": "{count} items",
+
+  // ── gestão do catálogo (ciclo de vida: ativar / desativar / excluir) ────
+  "nav.catalog": "Catalog",
+  "catalog.subtitle": "Control whether customers can browse your catalog.",
+  "catalog.statusLabel": "Catalog status",
+  "catalog.activeDescription":
+    "Your catalog is live: customers can browse products and order on WhatsApp.",
+  "catalog.inactiveDescription":
+    "Your catalog is hidden from customers. Products, categories and images are kept — reactivate it whenever you want.",
+  "catalog.activate": "Activate catalog",
+  "catalog.deactivate": "Deactivate catalog",
+  "catalog.delete": "Delete catalog",
+  "catalog.deactivateConfirm":
+    "Deactivate this catalog?\n\n• Customers will no longer be able to browse it.\n• Products, categories and images are NOT deleted.\n• You can reactivate it whenever you want.",
+  "catalog.activated": "Catalog activated. Your storefront is live again.",
+  "catalog.deactivated":
+    "Catalog deactivated. Customers can no longer access it.",
+  "catalog.saveFailed": "Could not update the catalog. Try again.",
+  "catalog.deleteTitle": "Delete catalog permanently?",
+  "catalog.deleteBody":
+    "This permanently removes the catalog with its products, categories and images. Your Elicani account and sign-in are kept — but the catalog content cannot be recovered.",
+  "catalog.deleteTypeConfirm": "Type DELETE to confirm",
+  "catalog.deleteConfirmButton": "Delete permanently",
+  "catalog.deleted": "Catalog deleted.",
+  "catalog.deleteFailed": "Could not delete the catalog. Try again.",
+
+  // ── vitrine: catálogo indisponível (estado, não erro) ──────────────────
+  "storefront.catalogUnavailable": "This catalog is currently unavailable.",
+  "storefront.catalogUnavailableHint": "Please try again later.",
 } as const;
 
 export type Messages = Record<keyof typeof en, string>;

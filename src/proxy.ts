@@ -4,10 +4,12 @@
  * Responsabilidades da Fase 1:
  *  1. Encaminhar {slug}.{NEXT_PUBLIC_STORE_DOMAIN}/ → /store/[slug]
  *     (arquitetura de wildcard pronta para o storefront público);
- *  1b. Responder 404 real para loja inativa/inexistente (ver nota no ramo 2);
- *  1c. Responder 404 real também em /store/{slug}/products/{id} (loja
- *     ausente, id malformado ou produto de outra loja) — mesma nota do
- *     ramo 2 vale para a página de produto;
+ *  1b. Distinguir loja INEXISTENTE (404 real) de loja INATIVA: a inativa
+ *     recebe o estado indisponível da vitrine (200 + noindex, ver ramo 2) —
+ *     nunca 404, nunca página quebrada;
+ *  1c. Responder 404 real em /store/{slug}/products/{id} quando a loja não
+ *     existe ou o produto não pertence a ela (id malformado, URL cruzada);
+ *     loja inativa → a página de produto renderiza o estado indisponível;
  *  2. Redirecionar www → domínio principal;
  *  2b. Manter páginas de auth (/login, /signup, …) no host canônico —
  *      evita o split dos cookies PKCE entre alias e host do app;
@@ -25,26 +27,33 @@ import { isSafeInternalPath } from "@/lib/safe-redirect";
 import { extractStoreSlug, getStoreDomain } from "@/lib/stores/resolve";
 
 /**
- * Consulta pública (chave anon, RLS de leitura) que responde se a loja existe
- * e está ativa. Usada só pelo proxy para decidir o status HTTP — a página da
- * vitrine continua buscando os dados completos por conta própria.
+ * Consulta pública (chave anon) que responde o STATUS do catálogo de um slug:
+ * 'active' | 'inactive' | 'missing'.
+ *
+ * Usa a função `store_public_status` (SECURITY DEFINER) porque o RLS esconde
+ * lojas INATIVAS do papel anon — consultando a tabela diretamente, inativa e
+ * inexistente seriam indistinguíveis. A função devolve só o estado.
+ *
+ * Falha em aberto → "active": a página revalida e decide por conta própria
+ * (nunca derrubar a vitrine por erro transiente).
  */
-async function isStoreActive(slug: string): Promise<boolean> {
+async function getStoreStatus(
+  slug: string,
+): Promise<"active" | "inactive" | "missing"> {
   try {
     const publicClient = createServerClient<Database>(getSupabaseUrl(), getSupabaseAnonKey(), {
       // O proxy não tem cookies a manipular nesta consulta.
       cookies: { getAll: () => [], setAll: () => {} },
     });
-    const { data, error } = await publicClient
-      .from("stores")
-      .select("id")
-      .eq("slug", slug)
-      .eq("is_active", true)
-      .maybeSingle();
-    if (error) return true; // falha em aberto: a página revalida
-    return Boolean(data);
+    const { data, error } = await publicClient.rpc("store_public_status", {
+      p_slug: slug,
+    });
+    if (error) return "active"; // falha em aberto: a página revalida
+    if (data === "inactive") return "inactive";
+    if (data === "active") return "active";
+    return "missing";
   } catch {
-    return true; // falha em aberto: a página revalida
+    return "active"; // falha em aberto: a página revalida
   }
 }
 
@@ -124,33 +133,51 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     return NextResponse.redirect(url);
   }
 
-  // ── 1c. página de produto: {slug}/{id} precisa existir (404 real) ──────
+  // ── 1c. página de produto: só existe para catálogo público ─────────────
   //
   // Mesma justificativa do ramo 2: sob cacheComponents/PPR o notFound()
-  // da página cai no hole dinâmico com status 200 (soft-404). Aqui o check
-  // cobre: loja inativa/inexistente, id malformado (uuid inválido → sem
-  // query) e produto que não pertence a ESTA loja (URL cruzada). Falha em
-  // aberto: erro de rede/DB deixa a página revalidar como antes.
+  // da página cai no hole dinâmico com status 200 (soft-404). O check cobre:
+  // loja INEXISTENTE (404 real), id malformado (uuid inválido → sem query),
+  // produto que não pertence a ESTA loja (URL cruzada) e falha em aberto
+  // (erro de rede/DB deixa a página revalidar como antes).
+  //
+  // Loja INATIVA não é 404: a URL passa e a página de produto renderiza o
+  // estado indisponível do catálogo (200 + noindex).
   const productPath = /^\/store\/([^/]+)\/products\/([^/]+)\/?$/.exec(pathname);
-  if (productPath && !(await isStoreProduct(productPath[1], productPath[2]))) {
-    const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
-    return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
+  if (productPath) {
+    const status = await getStoreStatus(productPath[1]);
+    if (status === "missing") {
+      const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
+      return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
+    }
+    if (
+      status === "active" &&
+      !(await isStoreProduct(productPath[1], productPath[2]))
+    ) {
+      const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
+      return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
+    }
   }
 
   // ── 2. storefront: {slug}.{domain}/ → /store/{slug} ───────────────────
   //
-  // Loja inativa ou inexistente recebe 404 REAL aqui, antes do render. Com
-  // cacheComponents/PPR, o Next envia o shell estático com status 200 e o
+  // Loja INEXISTENTE recebe 404 REAL aqui, antes do render: com
+  // cacheComponents/PPR o Next envia o shell estático com status 200 e o
   // notFound() da página cai dentro do hole dinâmico — o cliente veria o
   // conteúdo 404 com status 200 (soft-404), ruim para o SEO das lojas.
-  // O check é falho em aberto: erro de rede/DB não derruba a vitrine, pois a
-  // página continua validando a loja por conta própria.
+  //
+  // Loja INATIVA nunca é 404: passa adiante e a página /store/[slug]
+  // renderiza o estado indisponível do catálogo (200 + robots noindex) —
+  // sem dados do comerciante (o RLS já escondeu a linha) e sem erro
+  // técnico. O check é falho em aberto: erro de rede/DB não derruba a
+  // vitrine, pois a página continua validando a loja por conta própria.
   const storeSlug = extractStoreSlug(host, domain);
   const pathMatch = /^\/store\/([^/]+)\/?$/.exec(pathname);
   const storefrontSlug = storeSlug && pathname === "/" ? storeSlug : (pathMatch?.[1] ?? null);
 
   if (storefrontSlug) {
-    if (!(await isStoreActive(storefrontSlug))) {
+    const status = await getStoreStatus(storefrontSlug);
+    if (status === "missing") {
       // Rewrite para a rota interna de not-found (conteúdo 404 branded com
       // noindex) mantendo status HTTP 404 real na resposta do proxy.
       const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));

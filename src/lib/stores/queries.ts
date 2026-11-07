@@ -1,6 +1,6 @@
 import "server-only";
 
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
@@ -14,10 +14,16 @@ import type { Profile, PublicStore, Store } from "./types";
  *
  * `'use cache: private'` mantém a leitura fora do shell estático e
  * deduplica as chamadas (layout + página) dentro da mesma requisição.
+ *
+ * `cacheTag("store")` permite invalidar esta entrada sob demanda com
+ * `updateTag("store")` após uma mutação do catálogo (ativar/desativar/
+ * excluir) — sem isso o painel serviria a loja fantasma do cache por
+ * até o janela de `stale`.
  */
 export async function getStoreForOwner(ownerId: string): Promise<Store | null> {
   "use cache: private";
   cacheLife({ stale: 30 });
+  cacheTag("store");
 
   const supabase = await createClient();
 
@@ -92,4 +98,34 @@ export async function getPublicStoreBySlug(slug: string): Promise<PublicStore | 
   if (!data || !data.is_active) return null;
 
   return data;
+}
+
+/** Estado público de uma loja pelo slug — ver `getPublicStoreStatus`. */
+export type PublicStoreStatus = "active" | "inactive" | "missing";
+
+/**
+ * Estado público de um slug de loja via `store_public_status` (SECURITY DEFINER).
+ *
+ * O RLS esconde lojas INATIVAS do papel `anon`, então nem o proxy nem as
+ * páginas da vitrine distinguiriam "inativa" (estado indisponível, 200) de
+ * "inexistente" (404 real) consultando a tabela diretamente. A função devolve
+ * APENAS o estado ('active' | 'inactive' | null) — nenhum dado do comerciante.
+ *
+ * Falha em aberto → `"active"`: a página revalida e decide por conta própria
+ * (mesma convenção do proxy — nunca derrubar a vitrine por erro transiente).
+ */
+export async function getPublicStoreStatus(slug: string): Promise<PublicStoreStatus> {
+  const supabase = createPublicClient();
+
+  try {
+    const { data, error } = await supabase.rpc("store_public_status", {
+      p_slug: slug,
+    });
+    if (error) return "active";
+    if (data === "inactive") return "inactive";
+    if (data === "active") return "active";
+    return "missing";
+  } catch {
+    return "active";
+  }
 }

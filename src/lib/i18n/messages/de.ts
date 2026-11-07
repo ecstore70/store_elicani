@@ -520,4 +520,33 @@ export const de: Messages = {
   "landing.pillOrder": "Bestellung per WhatsApp gesendet",
   "landing.demoItemsOne": "{count} Artikel",
   "landing.demoItemsMany": "{count} Artikel",
+
+  // ── Katalogverwaltung (Lebenszyklus: aktivieren / deaktivieren / löschen) ──
+  "nav.catalog": "Katalog",
+  "catalog.subtitle": "Legen Sie fest, ob Kunden Ihren Katalog durchstöbern können.",
+  "catalog.statusLabel": "Katalogstatus",
+  "catalog.activeDescription":
+    "Ihr Katalog ist online: Kunden können Produkte durchstöbern und per WhatsApp bestellen.",
+  "catalog.inactiveDescription":
+    "Ihr Katalog ist für Kunden ausgeblendet. Produkte, Kategorien und Bilder bleiben erhalten – Sie können ihn jederzeit wieder aktivieren.",
+  "catalog.activate": "Katalog aktivieren",
+  "catalog.deactivate": "Katalog deaktivieren",
+  "catalog.delete": "Katalog löschen",
+  "catalog.deactivateConfirm":
+    "Diesen Katalog deaktivieren?\n\n• Kunden können ihn dann nicht mehr durchstöbern.\n• Produkte, Kategorien und Bilder werden NICHT gelöscht.\n• Sie können ihn jederzeit wieder aktivieren.",
+  "catalog.activated": "Katalog aktiviert. Ihr Shop ist wieder online.",
+  "catalog.deactivated":
+    "Katalog deaktiviert. Kunden haben keinen Zugriff mehr darauf.",
+  "catalog.saveFailed": "Der Katalog konnte nicht aktualisiert werden. Versuchen Sie es erneut.",
+  "catalog.deleteTitle": "Katalog endgültig löschen?",
+  "catalog.deleteBody":
+    "Dies entfernt den Katalog mit Produkten, Kategorien und Bildern dauerhaft. Ihr Elicani-Konto und Ihre Anmeldung bleiben erhalten, der Kataloginhalt kann jedoch nicht wiederhergestellt werden.",
+  "catalog.deleteTypeConfirm": "Geben Sie DELETE zur Bestätigung ein",
+  "catalog.deleteConfirmButton": "Endgültig löschen",
+  "catalog.deleted": "Katalog gelöscht.",
+  "catalog.deleteFailed": "Der Katalog konnte nicht gelöscht werden. Versuchen Sie es erneut.",
+
+  // ── Shop: Katalog derzeit nicht verfügbar (Zustand, kein Fehler) ───────
+  "storefront.catalogUnavailable": "Dieser Katalog ist derzeit nicht verfügbar.",
+  "storefront.catalogUnavailableHint": "Bitte versuchen Sie es später erneut.",
 };

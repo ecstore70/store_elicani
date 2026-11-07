@@ -522,4 +522,33 @@ export const ptPT: Messages = {
   "landing.pillOrder": "Encomenda enviada pelo WhatsApp",
   "landing.demoItemsOne": "{count} artigo",
   "landing.demoItemsMany": "{count} artigos",
+
+  // ── gestão do catálogo (ciclo de vida: ativar / desativar / excluir) ────
+  "nav.catalog": "Catálogo",
+  "catalog.subtitle": "Controle se os clientes podem navegar pelo seu catálogo.",
+  "catalog.statusLabel": "Estado do catálogo",
+  "catalog.activeDescription":
+    "O seu catálogo está no ar: os clientes podem navegar pelos produtos e encomendar por WhatsApp.",
+  "catalog.inactiveDescription":
+    "O seu catálogo está oculto dos clientes. Produtos, categorias e imagens são mantidos — reative-o quando quiser.",
+  "catalog.activate": "Ativar catálogo",
+  "catalog.deactivate": "Desativar catálogo",
+  "catalog.delete": "Eliminar catálogo",
+  "catalog.deactivateConfirm":
+    "Desativar este catálogo?\n\n• Os clientes deixam de poder navegar nele.\n• Produtos, categorias e imagens NÃO são eliminados.\n• Pode reativá-lo quando quiser.",
+  "catalog.activated": "Catálogo ativado. A sua vitrine está no ar novamente.",
+  "catalog.deactivated":
+    "Catálogo desativado. Os clientes já não podem aceder a ele.",
+  "catalog.saveFailed": "Não foi possível atualizar o catálogo. Tente novamente.",
+  "catalog.deleteTitle": "Eliminar o catálogo permanentemente?",
+  "catalog.deleteBody":
+    "Isto remove o catálogo com os seus produtos, categorias e imagens de forma permanente. A sua conta Elicani e o seu acesso são mantidos — mas o conteúdo do catálogo não pode ser recuperado.",
+  "catalog.deleteTypeConfirm": "Digite DELETE para confirmar",
+  "catalog.deleteConfirmButton": "Eliminar permanentemente",
+  "catalog.deleted": "Catálogo eliminado.",
+  "catalog.deleteFailed": "Não foi possível eliminar o catálogo. Tente novamente.",
+
+  // ── vitrine: catálogo indisponível (estado, não erro) ──────────────────
+  "storefront.catalogUnavailable": "Este catálogo está indisponível de momento.",
+  "storefront.catalogUnavailableHint": "Tente novamente mais tarde.",
 };

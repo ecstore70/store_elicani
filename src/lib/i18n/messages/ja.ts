@@ -519,4 +519,33 @@ export const ja: Messages = {
   "landing.pillOrder": "WhatsApp で注文を送信しました",
   "landing.demoItemsOne": "{count} 点",
   "landing.demoItemsMany": "{count} 点",
+
+  // ── カタログ管理（ライフサイクル：有効化 / 無効化 / 削除） ──────────────
+  "nav.catalog": "カタログ",
+  "catalog.subtitle": "顧客がカタログを閲覧できるかどうかを管理します。",
+  "catalog.statusLabel": "カタログのステータス",
+  "catalog.activeDescription":
+    "カタログは公開中です。顧客は商品を閲覧し、WhatsApp で注文できます。",
+  "catalog.inactiveDescription":
+    "カタログは顧客に非表示です。商品・カテゴリー・画像は保持され、いつでも再有効化できます。",
+  "catalog.activate": "カタログを有効化",
+  "catalog.deactivate": "カタログを無効化",
+  "catalog.delete": "カタログを削除",
+  "catalog.deactivateConfirm":
+    "このカタログを無効化しますか？\n\n• 顧客は閲覧できなくなります。\n• 商品・カテゴリー・画像は削除されません。\n• いつでも再有効化できます。",
+  "catalog.activated": "カタログを有効化しました。ストアが再び公開されました。",
+  "catalog.deactivated":
+    "カタログを無効化しました。顧客はアクセスできなくなりました。",
+  "catalog.saveFailed": "カタログを更新できませんでした。もう一度お試しください。",
+  "catalog.deleteTitle": "カタログを完全に削除しますか？",
+  "catalog.deleteBody":
+    "カタログとその商品・カテゴリー・画像が完全に削除されます。Elicani アカウントとログインは保持されますが、カタログの内容は復元できません。",
+  "catalog.deleteTypeConfirm": "確認のため DELETE と入力",
+  "catalog.deleteConfirmButton": "完全に削除",
+  "catalog.deleted": "カタログを削除しました。",
+  "catalog.deleteFailed": "カタログを削除できませんでした。もう一度お試しください。",
+
+  // ── ストア：カタログは現在利用不可（状態でありエラーではありません） ───
+  "storefront.catalogUnavailable": "このカタログは現在ご利用いただけません。",
+  "storefront.catalogUnavailableHint": "しばらくしてからもう一度お試しください。",
 };

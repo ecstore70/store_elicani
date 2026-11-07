@@ -495,4 +495,32 @@ export const zhHans: Messages = {
   "landing.pillOrder": "订单已通过 WhatsApp 发送",
   "landing.demoItemsOne": "{count} 件商品",
   "landing.demoItemsMany": "{count} 件商品",
+
+  // ── 商品目录管理（生命周期：激活 / 停用 / 删除） ────────────────────────
+  "nav.catalog": "商品目录",
+  "catalog.subtitle": "控制客户是否可以浏览您的商品目录。",
+  "catalog.statusLabel": "目录状态",
+  "catalog.activeDescription":
+    "您的目录已上线：客户可以浏览商品并通过 WhatsApp 下单。",
+  "catalog.inactiveDescription":
+    "您的目录已对客户隐藏。商品、分类和图片都会保留 — 随时可以重新激活。",
+  "catalog.activate": "激活目录",
+  "catalog.deactivate": "停用目录",
+  "catalog.delete": "删除目录",
+  "catalog.deactivateConfirm":
+    "要停用此目录吗？\n\n• 客户将无法再浏览它。\n• 商品、分类和图片不会被删除。\n• 您随时可以重新激活它。",
+  "catalog.activated": "目录已激活。您的店铺已重新上线。",
+  "catalog.deactivated": "目录已停用。客户无法再访问它。",
+  "catalog.saveFailed": "无法更新目录，请重试。",
+  "catalog.deleteTitle": "永久删除目录？",
+  "catalog.deleteBody":
+    "此操作将永久移除目录及其商品、分类和图片。您的 Elicani 账户和登录方式会保留，但目录内容无法恢复。",
+  "catalog.deleteTypeConfirm": "输入 DELETE 以确认",
+  "catalog.deleteConfirmButton": "永久删除",
+  "catalog.deleted": "目录已删除。",
+  "catalog.deleteFailed": "无法删除目录，请重试。",
+
+  // ── 店铺：目录当前不可用（状态，而非错误） ─────────────────────────────
+  "storefront.catalogUnavailable": "此目录当前不可用。",
+  "storefront.catalogUnavailableHint": "请稍后重试。",
 };

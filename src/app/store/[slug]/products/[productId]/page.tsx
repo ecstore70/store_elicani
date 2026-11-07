@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ShoppingBag } from "lucide-react";
+import { CatalogUnavailable } from "@/components/storefront/catalog-unavailable";
 import { StoreShell } from "@/components/storefront/store-shell";
 import { ProductGallery } from "@/components/storefront/product-gallery";
 import { ProductPurchase } from "@/components/storefront/product-purchase";
@@ -13,7 +14,7 @@ import { getLocaleChoice, getTranslator } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 import { normalizeAppearance } from "@/lib/stores/appearance";
 import { storePublicUrl } from "@/lib/stores/resolve";
-import { getPublicStoreBySlug } from "@/lib/stores/queries";
+import { getPublicStoreBySlug, getPublicStoreStatus } from "@/lib/stores/queries";
 import { discountPercent } from "@/lib/storefront/product-options";
 import { buildStorefrontStrings } from "@/lib/storefront/strings";
 import { resolveTheme, TEMPLATE_CLASSES } from "@/lib/storefront/theme";
@@ -27,12 +28,19 @@ export const instant = false;
 
 /**
  * Carrega loja, produto, categoria e relacionados num só ponto (usado
- * pela página E pelas metadados). Produto não encontrado (ou loja
- * inativa) → `null` → 404 real, com status correto.
+ * pela página E pelas metadados).
+ *
+ *  • `{ unavailable: true }` — catálogo da loja INATIVO: renderiza o
+ *    estado indisponível (200 + noindex), nunca 404;
+ *  • `null` — loja inexistente OU produto não encontrado → 404 real.
  */
 async function loadProduct(slug: string, productId: string) {
   const store = await getPublicStoreBySlug(slug);
-  if (!store) return null;
+  if (!store) {
+    return (await getPublicStoreStatus(slug)) === "inactive"
+      ? { unavailable: true as const }
+      : null;
+  }
 
   const catalog = await getPublicCatalog(store.id);
   const product =
@@ -64,6 +72,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: t("storefront.notFound") };
   }
 
+  // Catálogo inativo: título genérico + noindex (nunca dado do produto).
+  if ("unavailable" in loaded) {
+    const t = await getTranslator();
+    return {
+      title: t("storefront.catalogUnavailable"),
+      robots: { index: false, follow: false },
+    };
+  }
+
   const { store, product } = loaded;
   const description =
     product.description ?? `${product.name} — ${store.name}`;
@@ -92,6 +109,11 @@ export default async function ProductPage({ params }: Props) {
 
   if (!loaded) {
     notFound();
+  }
+
+  // Catálogo inativo → estado indisponível (nunca 404 nem erro técnico).
+  if ("unavailable" in loaded) {
+    return <CatalogUnavailable />;
   }
 
   const { store, product, category, related } = loaded;

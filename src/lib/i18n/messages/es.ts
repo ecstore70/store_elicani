@@ -520,4 +520,33 @@ export const es: Messages = {
   "landing.pillOrder": "Pedido enviado por WhatsApp",
   "landing.demoItemsOne": "{count} artículo",
   "landing.demoItemsMany": "{count} artículos",
+
+  // ── gestión del catálogo (ciclo de vida: activar / desactivar / eliminar) ──
+  "nav.catalog": "Catálogo",
+  "catalog.subtitle": "Controla si los clientes pueden navegar por tu catálogo.",
+  "catalog.statusLabel": "Estado del catálogo",
+  "catalog.activeDescription":
+    "Tu catálogo está en línea: los clientes pueden navegar por los productos y pedir por WhatsApp.",
+  "catalog.inactiveDescription":
+    "Tu catálogo está oculto para los clientes. Los productos, categorías e imágenes se conservan: reactívalo cuando quieras.",
+  "catalog.activate": "Activar catálogo",
+  "catalog.deactivate": "Desactivar catálogo",
+  "catalog.delete": "Eliminar catálogo",
+  "catalog.deactivateConfirm":
+    "¿Desactivar este catálogo?\n\n• Los clientes ya no podrán navegar por él.\n• Los productos, categorías e imágenes NO se eliminarán.\n• Podrás reactivarlo cuando quieras.",
+  "catalog.activated": "Catálogo activado. Tu tienda ya está en línea de nuevo.",
+  "catalog.deactivated":
+    "Catálogo desactivado. Los clientes ya no pueden acceder a él.",
+  "catalog.saveFailed": "No se pudo actualizar el catálogo. Inténtalo de nuevo.",
+  "catalog.deleteTitle": "¿Eliminar el catálogo permanentemente?",
+  "catalog.deleteBody":
+    "Esto elimina permanentemente el catálogo con sus productos, categorías e imágenes. Tu cuenta y acceso de Elicani se conservan, pero el contenido del catálogo no se puede recuperar.",
+  "catalog.deleteTypeConfirm": "Escribe DELETE para confirmar",
+  "catalog.deleteConfirmButton": "Eliminar permanentemente",
+  "catalog.deleted": "Catálogo eliminado.",
+  "catalog.deleteFailed": "No se pudo eliminar el catálogo. Inténtalo de nuevo.",
+
+  // ── tienda: catálogo no disponible (estado, no error) ──────────────────
+  "storefront.catalogUnavailable": "Este catálogo no está disponible en este momento.",
+  "storefront.catalogUnavailableHint": "Vuelve a intentarlo más tarde.",
 };

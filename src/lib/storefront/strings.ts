@@ -83,6 +83,8 @@ export type StorefrontStrings = {
   msgProducts: string;
   msgTotal: string;
   msgAddress: string;
+  // ── guarda de envio de pedido: catálogo inativo ───────────────────────
+  catalogUnavailable: string;
 };
 
 export function buildStorefrontStrings(t: Translator): StorefrontStrings {
@@ -158,5 +160,6 @@ export function buildStorefrontStrings(t: Translator): StorefrontStrings {
     msgProducts: t("storefront.msgProducts"),
     msgTotal: t("storefront.msgTotal"),
     msgAddress: t("storefront.msgAddress"),
+    catalogUnavailable: t("storefront.catalogUnavailable"),
   };
 }

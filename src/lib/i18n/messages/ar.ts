@@ -521,4 +521,33 @@ export const ar: Messages = {
   "landing.pillOrder": "تم إرسال الطلب عبر WhatsApp",
   "landing.demoItemsOne": "{count} عنصر",
   "landing.demoItemsMany": "{count} عناصر",
+
+  // ── إدارة الكتالوج (دورة الحياة: تفعيل / إيقاف / حذف) ──────────────────
+  "nav.catalog": "الكتالوج",
+  "catalog.subtitle": "تحكّم في قدرة العملاء على تصفّح كتالوجك.",
+  "catalog.statusLabel": "حالة الكتالوج",
+  "catalog.activeDescription":
+    "كتالوجك منشور: يستطيع العملاء تصفّح المنتجات والطلب عبر واتساب.",
+  "catalog.inactiveDescription":
+    "كتالوجك مخفي عن العملاء. يُحفظ المنتجات والتصنيفات والصور — يمكنك إعادة تفعيله في أي وقت.",
+  "catalog.activate": "تفعيل الكتالوج",
+  "catalog.deactivate": "إيقاف الكتالوج",
+  "catalog.delete": "حذف الكتالوج",
+  "catalog.deactivateConfirm":
+    "هل تريد إيقاف هذا الكتالوج؟\n\n• لن يتمكن العملاء من تصفّحه بعد الآن.\n• لن تُحذف المنتجات والتصنيفات والصور.\n• يمكنك إعادة تفعيله في أي وقت.",
+  "catalog.activated": "تم تفعيل الكتالوج. متجرك منشور مرة أخرى.",
+  "catalog.deactivated":
+    "تم إيقاف الكتالوج. لم يعد بإمكان العملاء الوصول إليه.",
+  "catalog.saveFailed": "تعذّر تحديث الكتالوج. حاول مرة أخرى.",
+  "catalog.deleteTitle": "حذف الكتالوج نهائيًا؟",
+  "catalog.deleteBody":
+    "سيؤدي هذا إلى إزالة الكتالوج مع منتجاته وتصنيفات وصوره نهائيًا. يبقى حسابك وإدخالك إلى Elicani، لكن لا يمكن استعادة محتوى الكتالوج.",
+  "catalog.deleteTypeConfirm": "اكتب DELETE للتأكيد",
+  "catalog.deleteConfirmButton": "حذف نهائي",
+  "catalog.deleted": "تم حذف الكتالوج.",
+  "catalog.deleteFailed": "تعذّر حذف الكتالوج. حاول مرة أخرى.",
+
+  // ── الواجهة العامة: الكتالوج غير متاح (حالة وليست خطأ) ────────────────
+  "storefront.catalogUnavailable": "هذا الكتالوج غير متاح حاليًا.",
+  "storefront.catalogUnavailableHint": "يرجى المحاولة مرة أخرى لاحقًا.",
 };

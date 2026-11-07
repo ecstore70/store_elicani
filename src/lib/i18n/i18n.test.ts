@@ -72,10 +72,13 @@ describe("tradutor", () => {
     // estiver registrado/traduzido, elas voltariam ao inglês e o teste falha.
     const mustTranslate = [
       "nav.dashboard",
+      "nav.catalog",
+      "catalog.deleteTypeConfirm",
       "settings.save",
       "locale.changeLanguage",
       "landing.heroTitle1",
       "storefront.addToCart",
+      "storefront.catalogUnavailable",
       "common.cancel",
     ] as const;
 

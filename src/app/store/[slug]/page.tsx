@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { CatalogUnavailable } from "@/components/storefront/catalog-unavailable";
 import { StoreShell } from "@/components/storefront/store-shell";
 import { StorefrontCatalog } from "@/components/storefront/storefront-catalog";
 import { normalizeLocale } from "@/lib/i18n/config";
@@ -7,7 +8,7 @@ import { getLocaleChoice, getTranslator } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 import { getPublicCatalog } from "@/lib/catalog/queries";
 import { normalizeAppearance } from "@/lib/stores/appearance";
-import { getPublicStoreBySlug } from "@/lib/stores/queries";
+import { getPublicStoreBySlug, getPublicStoreStatus } from "@/lib/stores/queries";
 import { resolveTheme } from "@/lib/storefront/theme";
 import { buildStorefrontStrings } from "@/lib/storefront/strings";
 
@@ -36,6 +37,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!store) {
     const t = await getTranslator();
+    // Loja inativa renderiza o estado indisponível (200): título genérico
+    // + noindex. Só loja INEXISTENTE cai no título de 404 do proxy.
+    if ((await getPublicStoreStatus(slug)) === "inactive") {
+      return {
+        title: t("storefront.catalogUnavailable"),
+        robots: { index: false, follow: false },
+      };
+    }
     return { title: t("storefront.notFound") };
   }
 
@@ -55,6 +64,12 @@ export default async function StorefrontPage({ params }: Props) {
   const store = await getPublicStoreBySlug(slug);
 
   if (!store) {
+    // Loja inativa → estado indisponível profissional (nunca 404 nem erro
+    // técnico); loja inexistente → 404 real. Defesa em profundidade do
+    // mesmo racional do proxy (aqui cobre falha em aberto do check lá).
+    if ((await getPublicStoreStatus(slug)) === "inactive") {
+      return <CatalogUnavailable />;
+    }
     notFound();
   }
 

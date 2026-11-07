@@ -23,6 +23,7 @@ import {
   selectedOptionsPrice,
   type SelectedOption,
 } from "@/lib/storefront/product-options";
+import { createClient as createBrowserClient } from "@/lib/supabase/client";
 import { CartDialog } from "./cart-dialog";
 
 /**
@@ -304,6 +305,9 @@ export function CartProvider({
   const [form, setForm] = useState<CheckoutForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
   const [justAdded, setJustAdded] = useState(false);
+  // Aviso quando o envio é bloqueado porque o catálogo ficou inativo
+  // (guarda server-side em `sendOrder` — ver ali).
+  const [orderError, setOrderError] = useState<string | null>(null);
   const addToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cartStore = useMemo(() => getCartStore(storeId), [storeId]);
 
@@ -349,6 +353,7 @@ export function CartProvider({
     if (!next) {
       setView("cart");
       setErrors({});
+      setOrderError(null);
       // O formulário é preservado ao fechar a meio do checkout (rascunho do
       // visitante); só um envio bem-sucedido o limpa (ver `sendOrder`).
     }
@@ -377,8 +382,10 @@ export function CartProvider({
   const whatsappDigits = whatsappNumber?.replace(/\D/g, "") ?? "";
   const hasChannel = whatsappDigits.length >= 7;
 
-  const updateForm = (key: keyof CheckoutForm, next: string) =>
+  const updateForm = (key: keyof CheckoutForm, next: string) => {
+    setOrderError(null);
     setForm((current) => ({ ...current, [key]: next }));
+  };
 
   const paymentLabel =
     form.payment === "cash"
@@ -389,7 +396,7 @@ export function CartProvider({
           ? strings.paymentOther
           : "";
 
-  const sendOrder = (event: FormEvent<HTMLFormElement>) => {
+  const sendOrder = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!hasChannel) return;
 
@@ -400,6 +407,27 @@ export function CartProvider({
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
+
+    // ── guarda server-side: catálogo inativo não fecha pedido ────────────
+    // A consulta roda no Supabase sob o RLS público (`is_active` no próprio
+    // WHERE): um cliente inativo é confirmado pelo SERVIDOR, não por um
+    // toggle de UI. Bloqueia só quando o estado é confirmado como inativo;
+    // erro de rede/DB falha em aberto para não perder um pedido válido.
+    try {
+      const supabase = createBrowserClient();
+      const { data, error } = await supabase
+        .from("stores")
+        .select("id")
+        .eq("id", storeId)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (!error && !data) {
+        setOrderError(strings.catalogUnavailable);
+        return;
+      }
+    } catch {
+      // falha em aberto: segue para o WhatsApp (mesma convenção do proxy).
+    }
 
     const message = buildOrderMessage({
       storeName,
@@ -433,6 +461,7 @@ export function CartProvider({
     );
     // Pedido enviado → formulário limpo para a próxima compra.
     setForm(EMPTY_FORM);
+    setOrderError(null);
     setView("sent");
   };
 
@@ -459,6 +488,7 @@ export function CartProvider({
         form={form}
         updateForm={updateForm}
         errors={errors}
+        orderError={orderError}
         onSubmit={sendOrder}
         increment={increment}
         decrement={decrement}

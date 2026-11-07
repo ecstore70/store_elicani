@@ -1,12 +1,13 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { isPlatformOwner } from "@/lib/auth/platform";
 import { requireUser } from "@/lib/auth/session";
 import { isValidCountry } from "@/lib/countries";
 import { isSupportedCurrency } from "@/lib/currency";
+import { MEDIA_BUCKET } from "@/lib/catalog/media";
 import { isSupportedLocale, normalizeLocale } from "@/lib/i18n/config";
 import { getTranslator } from "@/lib/i18n/locale";
 import type { Translator } from "@/lib/i18n/translate";
@@ -20,12 +21,14 @@ import {
   isOneOf,
   isValidHexColor,
 } from "./appearance";
+import { isCatalogDeleteConfirmation, type CatalogActionResult } from "./lifecycle";
 import {
   SLUG_MAX_LENGTH,
   SLUG_MESSAGE_KEYS,
   SLUG_MIN_LENGTH,
   validateSlugForCreation,
 } from "./slug";
+import { requireStore } from "./queries";
 import {
   emptyStoreFormValues,
   type NewStore,
@@ -411,4 +414,157 @@ export async function updateAppearanceAction(
 
   revalidatePath("/app", "layout");
   return { error: null, notice: t("appearance.saved") };
+}
+
+// ── ciclo de vida do catálogo ─────────────────────────────────────────────
+//
+// NESTA ARQUITETURA A LOJA É O CATÁLOGO (não existe tabela `stores` separada
+// de `catalogs`): ativar/desativar altera `stores.is_active` e apagar apaga a
+// própria linha da loja — o cascata remove APENAS products, categories e
+// product_media desta loja (FKs `on delete cascade`). profiles e auth NÃO são
+// tocados: as FKs apontam de stores → profiles, nunca ao contrário, e o
+// `owner_id UNIQUE` liberta-se para o lojista recriar outra loja depois.
+//
+// O tipo de resultado (`CatalogActionResult`) vive em ./lifecycle — módulo
+// puro compartilhado com a UI e com os testes.
+
+/**
+ * Revalida as rotas afetadas por uma mudança de ESTADO do catálogo.
+ * Chamado só enquanto a loja existe (ativar/desativar) — a revalidação do
+ * caminho atual é o que faz o badge atualizar na mesma resposta da action.
+ */
+function revalidateCatalogState(storeSlug: string): void {
+  revalidatePath("/app", "layout");
+  revalidatePath("/app/catalog");
+  revalidatePath("/app/products");
+  revalidatePath("/app/categories");
+  revalidatePath(`/store/${storeSlug}`);
+  revalidatePath("/", "layout");
+}
+
+/**
+ * Ativa ou desativa o catálogo (visibilidade pública) da PRÓPRIA loja.
+ *
+ * Enforce SERVER-SIDE: o estado é gravado no Supabase — o RLS público
+ * (`stores_public_select_active`) esconde a loja inativa da vitrine e o
+ * proxy passa a servir o estado indisponível. Nada aqui é só de UI.
+ *
+ * Defesa em profundidade: RLS já restringe às lojas próprias, e o
+ * `.eq("owner_id", user.id)` repete o filtro aqui (nunca só de UI).
+ */
+export async function setCatalogActiveAction(
+  active: boolean,
+): Promise<CatalogActionResult> {
+  const user = await requireUser();
+  const t = await getTranslator();
+  const store = await requireStore(user.id);
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("stores")
+    .update({ is_active: active })
+    .eq("id", store.id)
+    .eq("owner_id", user.id)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) {
+    return { ok: false, error: t("catalog.saveFailed") };
+  }
+
+  // A store mudou em TODAS as páginas: expira a entrada use-cache (tag
+  // "store") e revalida as rotas — painel e vitrine refletem na hora.
+  updateTag("store");
+  revalidateCatalogState(store.slug);
+  return { ok: true, error: null };
+}
+
+/**
+ * Limpeza best-effort dos ficheiros da loja nos buckets públicos.
+ *
+ * ANTES do delete da linha: as políticas de storage dependem dela
+ * (`owns_store_folder` verifica a existência da loja). Se falhar, o delete
+ * continua na mesma — arquivos órfãos em URL pública sem ligação é o menor
+ * dos mals, nunca um catálogo partido a meio. Falha nunca é lançada.
+ */
+async function cleanupStoreFiles(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  storeId: string,
+): Promise<void> {
+  const STORE_LOGOS_BUCKET = "store-logos";
+
+  for (const bucket of [MEDIA_BUCKET, STORE_LOGOS_BUCKET]) {
+    try {
+      const paths: string[] = [];
+      let offset = 0;
+      for (let page = 0; page < 20; page++) {
+        const { data, error } = await supabase.storage
+          .from(bucket)
+          .list(storeId, { limit: 100, offset });
+        if (error || !data || data.length === 0) break;
+        // `id` nulo = subpasta (não existe nos nossos uploads, mas por via
+        // das dúvidas só levamos ficheiros).
+        paths.push(
+          ...data.filter((entry) => entry.id).map((entry) => `${storeId}/${entry.name}`),
+        );
+        if (data.length < 100) break;
+        offset += 100;
+      }
+      for (let i = 0; i < paths.length; i += 100) {
+        await supabase.storage.from(bucket).remove(paths.slice(i, i + 100));
+      }
+    } catch {
+      // best-effort: erro de storage nunca impede a exclusão do catálogo.
+    }
+  }
+}
+
+/**
+ * Apaga o catálogo da própria loja — exclusão destrutiva REAL.
+ *
+ * A confirmação digitada é validada AQUI também (defesa em profundidade):
+ * o cliente só habilita o botão final com a palavra exata, e o servidor
+ * exige-a de volta — contornar a UI não apaga nada.
+ *
+ * Ordem: limpeza de storage (best-effort, depende da linha) → delete da
+ * linha (cascata no banco) → invalidação do cache. Sem `revalidatePath` da
+ * rota atual nem dos layouts: a resposta da action NÃO deve re-renderizar
+ * /app/catalog (o layout exigiria a loja que já não existe e redirecionaria
+ * antes do cliente mostrar o feedback de sucesso). O cliente encaminha para
+ * /app/onboarding?deleted=1 com a loja do cache já expirada (updateTag).
+ */
+export async function deleteCatalogAction(
+  confirmation: string,
+): Promise<CatalogActionResult> {
+  const user = await requireUser();
+  const t = await getTranslator();
+
+  if (!isCatalogDeleteConfirmation(confirmation)) {
+    return { ok: false, error: t("catalog.deleteFailed") };
+  }
+
+  const store = await requireStore(user.id);
+  const supabase = await createClient();
+
+  await cleanupStoreFiles(supabase, store.id);
+
+  const { data, error } = await supabase
+    .from("stores")
+    .delete()
+    .eq("id", store.id)
+    .eq("owner_id", user.id)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) {
+    return { ok: false, error: t("catalog.deleteFailed") };
+  }
+
+  // Sem isto o onboarding leria a loja fantasma do cache use-cache e
+  // redirecionaria de volta para o dashboard por até a janela de stale.
+  updateTag("store");
+  revalidatePath("/app/products");
+  revalidatePath("/app/categories");
+  revalidatePath(`/store/${store.slug}`);
+  return { ok: true, error: null };
 }

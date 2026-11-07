@@ -6,6 +6,7 @@ import {
   Palette,
   Settings,
   ShoppingCart,
+  Store,
   Truck,
   Users,
 } from "lucide-react";
@@ -20,6 +21,7 @@ import type { NavIconName } from "./nav-items";
  */
 export const NAV_ICONS: Record<NavIconName, LucideIcon> = {
   dashboard: LayoutDashboard,
+  catalog: Store,
   products: Package,
   orders: ShoppingCart,
   customers: Users,

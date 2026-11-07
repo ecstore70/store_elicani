@@ -525,4 +525,33 @@ export const ptBR: Messages = {
   "landing.pillOrder": "Encomenda enviada pelo WhatsApp",
   "landing.demoItemsOne": "{count} item",
   "landing.demoItemsMany": "{count} itens",
+
+  // ── gestão do catálogo (ciclo de vida: ativar / desativar / excluir) ────
+  "nav.catalog": "Catálogo",
+  "catalog.subtitle": "Controle se os clientes podem navegar pelo seu catálogo.",
+  "catalog.statusLabel": "Status do catálogo",
+  "catalog.activeDescription":
+    "Seu catálogo está no ar: os clientes podem navegar pelos produtos e pedir pelo WhatsApp.",
+  "catalog.inactiveDescription":
+    "Seu catálogo está oculto dos clientes. Produtos, categorias e imagens são mantidos — reative quando quiser.",
+  "catalog.activate": "Ativar catálogo",
+  "catalog.deactivate": "Desativar catálogo",
+  "catalog.delete": "Excluir catálogo",
+  "catalog.deactivateConfirm":
+    "Desativar este catálogo?\n\n• Os clientes não poderão mais navegar por ele.\n• Produtos, categorias e imagens NÃO serão excluídos.\n• Você poderá reativá-lo quando quiser.",
+  "catalog.activated": "Catálogo ativado. Sua vitrine está no ar novamente.",
+  "catalog.deactivated":
+    "Catálogo desativado. Os clientes não podem mais acessá-lo.",
+  "catalog.saveFailed": "Não foi possível atualizar o catálogo. Tente novamente.",
+  "catalog.deleteTitle": "Excluir o catálogo permanentemente?",
+  "catalog.deleteBody":
+    "Isto remove o catálogo com seus produtos, categorias e imagens de forma permanente. Sua conta Elicani e seu acesso são mantidos — mas o conteúdo do catálogo não pode ser recuperado.",
+  "catalog.deleteTypeConfirm": "Digite DELETE para confirmar",
+  "catalog.deleteConfirmButton": "Excluir permanentemente",
+  "catalog.deleted": "Catálogo excluído.",
+  "catalog.deleteFailed": "Não foi possível excluir o catálogo. Tente novamente.",
+
+  // ── vitrine: catálogo indisponível (estado, não erro) ──────────────────
+  "storefront.catalogUnavailable": "Este catálogo está indisponível no momento.",
+  "storefront.catalogUnavailableHint": "Tente novamente mais tarde.",
 };

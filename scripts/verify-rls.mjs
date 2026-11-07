@@ -460,6 +460,86 @@ try {
     !!productAfterCategoryDelete.data && productAfterCategoryDelete.data.category_id === null,
     errorDetail(productAfterCategoryDelete),
   );
+
+  // ── 10. Ciclo de vida do catálogo: RPC de status + exclusão segura ──────
+  // O RLS esconde lojas inativas do anon, mas o proxy e as páginas precisam
+  // DISTINGUIR "inativa" (estado indisponível, 200) de "inexistente" (404).
+  // A função SECURITY DEFINER `store_public_status` expõe só o estado.
+  const asService = createClient(URL_BASE, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  const statusActive = await asAnon.rpc("store_public_status", { p_slug: SLUG_A });
+  assert("rpc: loja ativa → 'active'", statusActive.data === "active", errorDetail(statusActive));
+
+  const statusMissing = await asAnon.rpc("store_public_status", {
+    p_slug: `nao-existe-${RUN_ID}`,
+  });
+  assert("rpc: loja inexistente → null", statusMissing.data === null, errorDetail(statusMissing));
+
+  await A.from("stores").update({ is_active: false }).eq("id", idA);
+  const statusInactive = await asAnon.rpc("store_public_status", { p_slug: SLUG_A });
+  assert("rpc: loja inativa → 'inactive'", statusInactive.data === "inactive", errorDetail(statusInactive));
+
+  const anonInactiveStore = await asAnon.from("stores").select("id").eq("id", idA);
+  assert(
+    "anon continua sem ler a loja inativa",
+    !anonInactiveStore.error && anonInactiveStore.data?.length === 0,
+    `linhas devolvidas: ${JSON.stringify(anonInactiveStore.data)}`,
+  );
+
+  await A.from("stores").update({ is_active: true }).eq("id", idA);
+  const statusReactivated = await asAnon.rpc("store_public_status", { p_slug: SLUG_A });
+  assert("rpc: reativada → 'active'", statusReactivated.data === "active", errorDetail(statusReactivated));
+
+  // Exclusão do catálogo pelo DONO (a loja É o catálogo): o cascata remove
+  // os produtos desta loja, mas perfil e auth ficam intactos. Verificado com
+  // service role para provar que as linhas sumiram (RLS não esconderia).
+  const deleteOwn = await A.from("stores").delete().eq("id", idA).select("id");
+  assert(
+    "dono apaga a própria loja",
+    !deleteOwn.error && deleteOwn.data?.length === 1,
+    errorDetail(deleteOwn),
+  );
+
+  const storeGone = await asService.from("stores").select("id").eq("id", idA);
+  assert("loja apagada não existe mais", storeGone.data?.length === 0, errorDetail(storeGone));
+
+  const productsGone = await asService.from("products").select("id").eq("store_id", idA);
+  assert(
+    "cascata apaga os produtos do catálogo",
+    !productsGone.error && productsGone.data?.length === 0,
+    errorDetail(productsGone),
+  );
+
+  const profileSurvives = await A.from("profiles")
+    .select("id")
+    .eq("id", createdUsers[0])
+    .maybeSingle();
+  assert(
+    "excluir catálogo mantém o perfil/auth do lojista",
+    !!profileSurvives.data,
+    errorDetail(profileSurvives),
+  );
+
+  // owner_id UNIQUE liberta-se com o delete: dá para recomeçar do zero.
+  const recreate = await A.from("stores")
+    .insert({
+      owner_id: createdUsers[0],
+      name: "Lojista A 2",
+      slug: `${SLUG_A}-2`.slice(0, 63),
+      country: "MZ",
+      language: "en",
+      currency: "USD",
+      whatsapp_number: "+258840000001",
+    })
+    .select("id")
+    .single();
+  assert(
+    "dono pode recriar loja após excluir",
+    !recreate.error && !!recreate.data,
+    errorDetail(recreate),
+  );
 } catch (error) {
   failed += 1;
   console.error(`\n\x1b[1;31m[rls]\x1b[0m erro inesperado: ${error.message}`);

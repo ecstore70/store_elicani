@@ -10,6 +10,7 @@ import type { MessageKey } from "@/lib/i18n/messages/en";
  */
 export type NavIconName =
   | "dashboard"
+  | "catalog"
   | "products"
   | "orders"
   | "customers"
@@ -32,6 +33,7 @@ export type NavItem = {
  */
 export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/app", labelKey: "nav.dashboard", icon: "dashboard", ready: true },
+  { href: "/app/catalog", labelKey: "nav.catalog", icon: "catalog", ready: true },
   { href: "/app/products", labelKey: "nav.products", icon: "products", ready: true },
   { href: "/app/orders", labelKey: "nav.orders", icon: "orders", ready: false },
   { href: "/app/customers", labelKey: "nav.customers", icon: "customers", ready: false },

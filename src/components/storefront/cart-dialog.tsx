@@ -58,6 +58,8 @@ export type CartDialogProps = {
   form: CheckoutForm;
   updateForm: (key: keyof CheckoutForm, value: string) => void;
   errors: { name?: string; phone?: string };
+  /** Aviso quando o envio foi bloqueado — catálogo inativo (ver provider). */
+  orderError?: string | null;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   increment: (key: string) => void;
   decrement: (key: string) => void;
@@ -282,6 +284,7 @@ export function CartDialog({
   form,
   updateForm,
   errors,
+  orderError,
   onSubmit,
   increment,
   decrement,
@@ -629,6 +632,11 @@ export function CartDialog({
                   <p className="text-xs text-[var(--sf-muted)]">
                     {strings.checkoutNote}
                   </p>
+                  {orderError && (
+                    <p role="alert" className="text-sm text-destructive">
+                      {orderError}
+                    </p>
+                  )}
                   <button
                     type="submit"
                     form={checkoutFormId}
@@ -647,6 +655,11 @@ export function CartDialog({
                   money={money}
                   strings={strings}
                 />
+                {orderError && (
+                  <p role="alert" className="mt-3 text-sm text-destructive">
+                    {orderError}
+                  </p>
+                )}
                 <button
                   type="submit"
                   form={checkoutFormId}

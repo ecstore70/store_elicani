@@ -520,4 +520,33 @@ export const fr: Messages = {
   "landing.pillOrder": "Commande envoyée sur WhatsApp",
   "landing.demoItemsOne": "{count} article",
   "landing.demoItemsMany": "{count} articles",
+
+  // ── gestion du catalogue (cycle de vie : activer / désactiver / supprimer) ──
+  "nav.catalog": "Catalogue",
+  "catalog.subtitle": "Contrôlez si les clients peuvent parcourir votre catalogue.",
+  "catalog.statusLabel": "État du catalogue",
+  "catalog.activeDescription":
+    "Votre catalogue est en ligne : les clients peuvent parcourir les produits et commander via WhatsApp.",
+  "catalog.inactiveDescription":
+    "Votre catalogue est masqué pour les clients. Produits, catégories et images sont conservés : réactivez-le quand vous voulez.",
+  "catalog.activate": "Activer le catalogue",
+  "catalog.deactivate": "Désactiver le catalogue",
+  "catalog.delete": "Supprimer le catalogue",
+  "catalog.deactivateConfirm":
+    "Désactiver ce catalogue ?\n\n• Les clients ne pourront plus le parcourir.\n• Les produits, catégories et images ne sont PAS supprimés.\n• Vous pourrez le réactiver à tout moment.",
+  "catalog.activated": "Catalogue activé. Votre vitrine est de nouveau en ligne.",
+  "catalog.deactivated":
+    "Catalogue désactivé. Les clients ne peuvent plus y accéder.",
+  "catalog.saveFailed": "Impossible de mettre à jour le catalogue. Réessayez.",
+  "catalog.deleteTitle": "Supprimer le catalogue définitivement ?",
+  "catalog.deleteBody":
+    "Cette action supprime définitivement le catalogue avec ses produits, catégories et images. Votre compte et votre connexion Elicani sont conservés, mais le contenu du catalogue ne pourra pas être récupéré.",
+  "catalog.deleteTypeConfirm": "Saisissez DELETE pour confirmer",
+  "catalog.deleteConfirmButton": "Supprimer définitivement",
+  "catalog.deleted": "Catalogue supprimé.",
+  "catalog.deleteFailed": "Impossible de supprimer le catalogue. Réessayez.",
+
+  // ── vitrine : catalogue indisponible (état, pas une erreur) ────────────
+  "storefront.catalogUnavailable": "Ce catalogue est actuellement indisponible.",
+  "storefront.catalogUnavailableHint": "Veuillez réessayer plus tard.",
 };

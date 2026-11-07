@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { getTranslator } from "@/lib/i18n/locale";
 
 /**
- * 404 global. Serve tanto páginas inexistentes quanto lojas desconhecidas
- * (o /store/[slug] chama notFound() quando a loja não existe ou está inativa).
+ * 404 global. Serve páginas inexistentes e lojas DESCONHECIDAS (o
+ * /store/[slug] chama notFound() quando a loja não existe — loja inativa
+ * NÃO vem parar aqui: ela tem o estado indisponível da vitrine, 200+noindex).
  * Segue o idioma do visitante (cookie `elicani_locale`).
  */
 export default async function NotFound() {

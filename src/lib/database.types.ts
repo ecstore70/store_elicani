@@ -319,6 +319,7 @@ export type Database = {
     }
     Functions: {
       owns_store_folder: { Args: { object_path: string }; Returns: boolean }
+      store_public_status: { Args: { p_slug: string }; Returns: string | null }
     }
     Enums: {
       [_ in never]: never
