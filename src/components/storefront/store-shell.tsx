@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Camera, Clock, Globe, Phone } from "lucide-react";
 import { CartProvider } from "./cart-provider";
 import { CartButton } from "./cart-button";
+import { ThemeVars } from "./theme-vars";
 import { Logo } from "@/components/shared/logo";
 import { LocaleSelector } from "@/components/shared/locale-selector";
 import { WhatsAppIcon } from "@/components/shared/whatsapp-icon";
@@ -68,6 +69,9 @@ export function StoreShell({
       style={theme.cssVars}
       className="flex min-h-svh flex-col bg-[var(--sf-bg)] text-[var(--sf-fg)]"
     >
+      {/* variáveis no documento: o portal do diálogo do carrinho fica
+          fora deste nó e precisa herdar o mesmo tema */}
+      <ThemeVars vars={theme.cssVars} />
       <CartProvider
         storeId={store.id}
         storeSlug={store.slug}
