@@ -37,7 +37,12 @@ export const metadata: Metadata = {
   // Verificação do Google Search Console — meta na raiz cobre todas as
   // páginas (o Google aceita a tag em qualquer URL da propriedade).
   verification: {
-    google: "PvmCbQE34svGKEnVqHMcwNODvoGyfKDiLBFoRzC3yEc",
+    // Duas propriedades do Search Console apontando para o mesmo site —
+    // o Next renderiza uma <meta> por valor do array.
+    google: [
+      "PvmCbQE34svGKEnVqHMcwNODvoGyfKDiLBFoRzC3yEc",
+      "VlHzCMttn0DhCuU2i8jPRqsIhVk-47ngzks5XJpYcDQ",
+    ],
   },
   openGraph: {
     type: "website",
