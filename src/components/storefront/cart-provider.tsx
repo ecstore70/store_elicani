@@ -9,7 +9,6 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
-  type FormEvent,
   type ReactNode,
 } from "react";
 import { CheckCircle2 } from "lucide-react";
@@ -17,13 +16,11 @@ import { formatCurrency } from "@/lib/currency";
 import { getLocaleDirection, type Locale } from "@/lib/i18n/config";
 import type { PublicProduct } from "@/lib/catalog/types";
 import type { StorefrontStrings } from "@/lib/storefront/strings";
-import { buildOrderMessage } from "@/lib/storefront/order-message";
 import {
   optionsSignature,
   selectedOptionsPrice,
   type SelectedOption,
 } from "@/lib/storefront/product-options";
-import { createClient as createBrowserClient } from "@/lib/supabase/client";
 import { CartDialog } from "./cart-dialog";
 
 /**
@@ -33,13 +30,16 @@ import { CartDialog } from "./cart-dialog";
  * WhatsApp (o canal de encomendas previsto pela Fase 1). Nada de pagamentos,
  * sessão ou tabelas.
  *
- * Fluxo: **carrinho → checkout → enviado**, apresentado pelo `CartDialog`
- * (ecrã-cheio no mobile, modal centrado no desktop — nunca uma gaveta
- * lateral). O checkout é um formulário SEM conta (nome, contacto, morada,
- * notas, pagamento) e a mensagem final é a ESTRUTURADA construída por
- * `buildOrderMessage` (testada em `order-message.test.ts`). A entrega fica
- * preparada para taxas futuras: `deliveryFee` entra na mensagem como linha
- * extra, mas hoje é sempre `null` (nenhuma zona/taxa é calculada).
+ * O fluxo de compra é **carrinho → rota de checkout → enviado**:
+ *  • o `CartDialog` (ecrã-cheio no mobile, modal no desktop) apresenta APENAS
+ *    o carrinho — o botão "Finalizar compra" navega para
+ *    `/store/{slug}/checkout`;
+ *  • o formulário (dados do cliente, entrega, pagamento), a validação e o
+ *    envio por WhatsApp vivem no `CheckoutProvider` + `CheckoutView`
+ *    (rota própria, superfície sólida de ecommerce) — ver
+ *    `checkout-provider.tsx`;
+ *  • a mensagem final é a ESTRUTURADA construída por `buildOrderMessage`
+ *    (testada em `order-message.test.ts`).
  *
  * Adicionar produto NÃO abre o carrinho: um aviso discreto ("Adicionado ao
  * carrinho") confirma a ação e o visitante continua a comprar — ele é quem
@@ -226,28 +226,6 @@ function getCartStore(storeId: string): CartStore {
   return store;
 }
 
-export type CartView = "cart" | "checkout" | "sent";
-
-export type CheckoutForm = {
-  name: string;
-  phone: string;
-  address: string;
-  neighborhood: string;
-  reference: string;
-  notes: string;
-  payment: string;
-};
-
-const EMPTY_FORM: CheckoutForm = {
-  name: "",
-  phone: "",
-  address: "",
-  neighborhood: "",
-  reference: "",
-  notes: "",
-  payment: "",
-};
-
 type CartContextValue = {
   items: CartItem[];
   count: number;
@@ -285,7 +263,7 @@ export function useOptionalCart(): CartContextValue | null {
 
 export function CartProvider({
   storeId,
-  storeName,
+  storeSlug,
   whatsappNumber,
   currency,
   locale,
@@ -293,7 +271,7 @@ export function CartProvider({
   children,
 }: {
   storeId: string;
-  storeName: string;
+  storeSlug: string;
   whatsappNumber: string | null;
   currency: string;
   locale: Locale;
@@ -301,13 +279,7 @@ export function CartProvider({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState<CartView>("cart");
-  const [form, setForm] = useState<CheckoutForm>(EMPTY_FORM);
-  const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
   const [justAdded, setJustAdded] = useState(false);
-  // Aviso quando o envio é bloqueado porque o catálogo ficou inativo
-  // (guarda server-side em `sendOrder` — ver ali).
-  const [orderError, setOrderError] = useState<string | null>(null);
   const addToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cartStore = useMemo(() => getCartStore(storeId), [storeId]);
 
@@ -348,17 +320,6 @@ export function CartProvider({
     [cartStore],
   );
 
-  const handleOpenChange = useCallback((next: boolean) => {
-    setOpen(next);
-    if (!next) {
-      setView("cart");
-      setErrors({});
-      setOrderError(null);
-      // O formulário é preservado ao fechar a meio do checkout (rascunho do
-      // visitante); só um envio bem-sucedido o limpa (ver `sendOrder`).
-    }
-  }, []);
-
   const value = useMemo<CartContextValue>(() => {
     const count = items.reduce((total, item) => total + item.qty, 0);
     const subtotal = items.reduce(
@@ -370,107 +331,20 @@ export function CartProvider({
       count,
       subtotal,
       open,
-      setOpen: handleOpenChange,
+      setOpen,
       add,
       increment,
       decrement,
       remove,
     };
-  }, [items, open, handleOpenChange, add, increment, decrement, remove]);
+  }, [items, open, add, increment, decrement, remove]);
 
-  const subtotal = value.subtotal;
-  const whatsappDigits = whatsappNumber?.replace(/\D/g, "") ?? "";
-  const hasChannel = whatsappDigits.length >= 7;
-
-  const updateForm = (key: keyof CheckoutForm, next: string) => {
-    setOrderError(null);
-    setForm((current) => ({ ...current, [key]: next }));
-  };
-
-  const paymentLabel =
-    form.payment === "cash"
-      ? strings.paymentCash
-      : form.payment === "transfer"
-        ? strings.paymentTransfer
-        : form.payment === "other"
-          ? strings.paymentOther
-          : "";
-
-  const sendOrder = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!hasChannel) return;
-
-    const nextErrors: { name?: string; phone?: string } = {};
-    if (!form.name.trim()) nextErrors.name = strings.nameRequired;
-    if (form.phone.replace(/\D/g, "").length < 7) {
-      nextErrors.phone = strings.phoneRequired;
-    }
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
-
-    // ── guarda server-side: catálogo inativo não fecha pedido ────────────
-    // A consulta roda no Supabase sob o RLS público (`is_active` no próprio
-    // WHERE): um cliente inativo é confirmado pelo SERVIDOR, não por um
-    // toggle de UI. Bloqueia só quando o estado é confirmado como inativo;
-    // erro de rede/DB falha em aberto para não perder um pedido válido.
-    try {
-      const supabase = createBrowserClient();
-      const { data, error } = await supabase
-        .from("stores")
-        .select("id")
-        .eq("id", storeId)
-        .eq("is_active", true)
-        .maybeSingle();
-      if (!error && !data) {
-        setOrderError(strings.catalogUnavailable);
-        return;
-      }
-    } catch {
-      // falha em aberto: segue para o WhatsApp (mesma convenção do proxy).
-    }
-
-    const message = buildOrderMessage({
-      storeName,
-      lines: items.map((item) => ({
-        name: item.name,
-        qty: item.qty,
-        unitPrice: item.price,
-        options: item.options,
-      })),
-      subtotal,
-      // Sem taxas de entrega hoje — a linha aparece quando existirem.
-      deliveryFee: null,
-      customer: {
-        name: form.name.trim(),
-        phone: form.phone.trim(),
-        address: form.address.trim() || undefined,
-        neighborhood: form.neighborhood.trim() || undefined,
-        reference: form.reference.trim() || undefined,
-        notes: form.notes || undefined,
-        payment: paymentLabel || undefined,
-      },
-      currency,
-      locale,
-      strings,
-    });
-
-    window.open(
-      `https://wa.me/${whatsappDigits}?text=${encodeURIComponent(message)}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
-    // Pedido enviado → formulário limpo para a próxima compra.
-    setForm(EMPTY_FORM);
-    setOrderError(null);
-    setView("sent");
-  };
+  const money = (amount: number) => formatCurrency(amount, currency, locale);
 
   // Sem canal de WhatsApp o carrinho nunca oferece checkout (a Fase 1 é
   // por WhatsApp) — mesma semântica de sempre: nenhum botão de envio.
-  const activeView: CartView =
-    items.length === 0 && view !== "cart" ? "cart" : view;
-
-  const money = (value: number) => formatCurrency(value, currency, locale);
+  const whatsappDigits = whatsappNumber?.replace(/\D/g, "") ?? "";
+  const hasChannel = whatsappDigits.length >= 7;
 
   return (
     <CartContext.Provider value={value}>
@@ -478,18 +352,12 @@ export function CartProvider({
 
       <CartDialog
         open={open}
-        onOpenChange={handleOpenChange}
-        view={activeView}
-        setView={setView}
+        onOpenChange={setOpen}
         items={items}
         count={value.count}
-        subtotal={subtotal}
+        subtotal={value.subtotal}
         hasChannel={hasChannel}
-        form={form}
-        updateForm={updateForm}
-        errors={errors}
-        orderError={orderError}
-        onSubmit={sendOrder}
+        checkoutHref={`/store/${storeSlug}/checkout`}
         increment={increment}
         decrement={decrement}
         remove={remove}

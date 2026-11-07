@@ -320,6 +320,8 @@ export const en = {
   "storefront.paymentOther": "Other",
   "storefront.nameRequired": "Enter your name",
   "storefront.phoneRequired": "Enter a valid WhatsApp number",
+  "storefront.neighborhoodRequired": "Enter your neighborhood / location",
+  "storefront.checkoutRequired": "Fill in the required fields to send your order",
   "storefront.checkoutNote":
     "Your order is sent to the store on WhatsApp. No account needed.",
   "storefront.msgNewOrder": "NEW ORDER",

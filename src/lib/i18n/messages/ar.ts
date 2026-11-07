@@ -317,6 +317,8 @@ export const ar: Messages = {
   "storefront.paymentOther": "أخرى",
   "storefront.nameRequired": "أدخل اسمك",
   "storefront.phoneRequired": "أدخل رقم WhatsApp صحيحاً",
+  "storefront.neighborhoodRequired": "أدخل حيّك / منطقتك",
+  "storefront.checkoutRequired": "املأ الحقول المطلوبة لإرسال طلبك",
   "storefront.checkoutNote":
     "يتم إرسال طلبك إلى المتجر عبر WhatsApp. دون الحاجة لحساب.",
   "storefront.msgNewOrder": "طلب جديد",

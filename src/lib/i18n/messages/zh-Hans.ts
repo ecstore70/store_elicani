@@ -304,6 +304,8 @@ export const zhHans: Messages = {
   "storefront.paymentOther": "其他",
   "storefront.nameRequired": "请输入您的姓名",
   "storefront.phoneRequired": "请输入有效的 WhatsApp 号码",
+  "storefront.neighborhoodRequired": "请输入您的街区 / 位置",
+  "storefront.checkoutRequired": "请填写必填项以发送订单",
   "storefront.checkoutNote": "您的订单将通过 WhatsApp 发送给店铺，无需注册账户。",
   "storefront.msgNewOrder": "新订单",
   "storefront.msgCustomer": "客户",

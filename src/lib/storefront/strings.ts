@@ -57,6 +57,8 @@ export type StorefrontStrings = {
   paymentOther: string;
   nameRequired: string;
   phoneRequired: string;
+  neighborhoodRequired: string;
+  checkoutRequired: string;
   checkoutNote: string;
   orderSent: string;
   // ── carrinho e checkout (apresentação) ───────────────────────────────
@@ -137,6 +139,8 @@ export function buildStorefrontStrings(t: Translator): StorefrontStrings {
     paymentOther: t("storefront.paymentOther"),
     nameRequired: t("storefront.nameRequired"),
     phoneRequired: t("storefront.phoneRequired"),
+    neighborhoodRequired: t("storefront.neighborhoodRequired"),
+    checkoutRequired: t("storefront.checkoutRequired"),
     checkoutNote: t("storefront.checkoutNote"),
     orderSent: t("storefront.orderSent"),
     orderSummary: t("storefront.orderSummary"),

@@ -321,6 +321,8 @@ export const ptBR: Messages = {
   "storefront.paymentOther": "Outra",
   "storefront.nameRequired": "Digite seu nome",
   "storefront.phoneRequired": "Digite um número de WhatsApp válido",
+  "storefront.neighborhoodRequired": "Digite seu bairro / região",
+  "storefront.checkoutRequired": "Preencha os campos obrigatórios para enviar seu pedido",
   "storefront.checkoutNote":
     "Seu pedido é enviado à loja pelo WhatsApp. Sem necessidade de conta.",
   "storefront.msgNewOrder": "NOVO PEDIDO",

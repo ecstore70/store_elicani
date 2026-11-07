@@ -18,7 +18,7 @@ export type StorefrontTheme = {
   template: StoreTemplate;
 };
 
-// ── cor utilitária ────────────────────────────────────────────────────────
+// ── utilitária de cor ─────────────────────────────────────────────────────
 function hexToRgb(hex: string): [number, number, number] {
   const value = hex.replace("#", "");
   return [
@@ -26,6 +26,16 @@ function hexToRgb(hex: string): [number, number, number] {
     parseInt(value.slice(2, 4), 16),
     parseInt(value.slice(4, 6), 16),
   ];
+}
+
+/** Mistura duas cores hexadecimais (`t = 0` → `from`, `t = 1` → `to`). */
+function mixHex(from: string, to: string, t: number): string {
+  const a = hexToRgb(from);
+  const b = hexToRgb(to);
+  const channel = (i: number) => Math.round(a[i] + (b[i] - a[i]) * t);
+  return `#${[0, 1, 2]
+    .map((i) => channel(i).toString(16).padStart(2, "0"))
+    .join("")}`;
 }
 
 /** Luminância relativa simplificada (WCAG-ish). */
@@ -141,6 +151,23 @@ export function resolveTheme(appearance: AppearanceValues): StorefrontTheme {
         foreground === "#0f172a" ? "rgba(15, 23, 42, 0.12)" : "rgba(248, 250, 252, 0.16)",
       "--sf-surface":
         foreground === "#0f172a" ? "rgba(15, 23, 42, 0.03)" : "rgba(248, 250, 252, 0.06)",
+      // Superfícies SÓLIDAS para o checkout (formulário e cartões de
+      // resumo): `--sf-surface` é quase transparente de propósito (cards
+      // sutis na vitrine), mas campos de formulário precisam de contraste
+      // garantido em qualquer tema do comerciante. Claros → branco puro;
+      // escuros → derivados do fundo da loja (nunca uma cor inventada).
+      "--sf-card":
+        foreground === "#0f172a" ? "#ffffff" : mixHex(background, "#ffffff", 0.06),
+      "--sf-card-border":
+        foreground === "#0f172a"
+          ? "rgba(15, 23, 42, 0.14)"
+          : "rgba(248, 250, 252, 0.16)",
+      "--sf-input-bg":
+        foreground === "#0f172a" ? "#ffffff" : mixHex(background, "#000000", 0.3),
+      "--sf-input-border":
+        foreground === "#0f172a"
+          ? "rgba(15, 23, 42, 0.3)"
+          : "rgba(248, 250, 252, 0.4)",
       "--sf-radius": CARD_RADIUS[appearance.card_style] ?? CARD_RADIUS.subtle,
       "--sf-btn-radius": BUTTON_RADIUS[appearance.button_style] ?? BUTTON_RADIUS.rounded,
       "--sf-btn-px": padding.px,

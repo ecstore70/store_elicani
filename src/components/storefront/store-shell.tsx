@@ -16,10 +16,12 @@ import type { StorefrontTheme } from "@/lib/storefront/theme";
  * CARRINHO sempre visível), conteúdo, informação da loja, rodapé e ação
  * flutuante de WhatsApp (ícone oficial — nunca um círculo verde falso).
  *
- * Partilhado pela home e pela página de produto: a navegação, o acesso ao
- * carrinho e o contacto são idênticos em qualquer ecrã. O `CartProvider`
- * envolve tudo porque o botão do cabeçalho e o diálogo de carrinho
- * (ecrã-cheio no mobile, modal no desktop) partilham o mesmo estado.
+ * Partilhado pela home, pela página de produto e pelo checkout: a
+ * navegação, o acesso ao carrinho e o contacto são idênticos em qualquer
+ * ecrã. O `CartProvider` envolve tudo porque o botão do cabeçalho e o
+ * diálogo de carrinho (ecrã-cheio no mobile, modal no desktop) partilham
+ * o mesmo estado; o checkout da rota monta o seu `CheckoutProvider`
+ * por dentro (itens/subtotal vêm do carrinho).
  */
 export function StoreShell({
   store,
@@ -27,6 +29,7 @@ export function StoreShell({
   languageLabel,
   strings,
   theme,
+  showFloatingAction = true,
   children,
 }: {
   store: PublicStore;
@@ -34,6 +37,11 @@ export function StoreShell({
   languageLabel: string;
   strings: StorefrontStrings;
   theme: StorefrontTheme;
+  /**
+   * Ação flutuante de WhatsApp no canto — desligada no checkout, onde a
+   * barra fixa do CTA ocupa o rodapé do ecrã.
+   */
+  showFloatingAction?: boolean;
   children: ReactNode;
 }) {
   const whatsappDigits = store.whatsapp_number?.replace(/\D/g, "") ?? "";
@@ -55,7 +63,7 @@ export function StoreShell({
     >
       <CartProvider
         storeId={store.id}
-        storeName={store.name}
+        storeSlug={store.slug}
         whatsappNumber={store.whatsapp_number}
         currency={store.currency}
         locale={locale}
@@ -217,7 +225,7 @@ export function StoreShell({
         </footer>
 
         {/* ação de WhatsApp sempre à mão — canto oposto ao carrinho */}
-        {whatsappHref && (
+        {showFloatingAction && whatsappHref && (
           <a
             href={whatsappHref}
             target="_blank"

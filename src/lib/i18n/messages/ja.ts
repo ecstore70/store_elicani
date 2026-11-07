@@ -315,6 +315,8 @@ export const ja: Messages = {
   "storefront.paymentOther": "その他",
   "storefront.nameRequired": "お名前を入力してください",
   "storefront.phoneRequired": "有効なWhatsApp番号を入力してください",
+  "storefront.neighborhoodRequired": "地区・住所を入力してください",
+  "storefront.checkoutRequired": "必須項目を入力して注文を送信してください",
   "storefront.checkoutNote":
     "ご注文はWhatsAppでストアに送信されます。アカウント登録は不要です。",
   "storefront.msgNewOrder": "新規注文",

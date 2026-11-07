@@ -316,6 +316,8 @@ export const es: Messages = {
   "storefront.paymentOther": "Otra",
   "storefront.nameRequired": "Escribe tu nombre",
   "storefront.phoneRequired": "Escribe un número de WhatsApp válido",
+  "storefront.neighborhoodRequired": "Escribe tu barrio / zona",
+  "storefront.checkoutRequired": "Completa los campos obligatorios para enviar tu pedido",
   "storefront.checkoutNote":
     "Tu pedido se envía a la tienda por WhatsApp. Sin necesidad de cuenta.",
   "storefront.msgNewOrder": "NUEVO PEDIDO",
