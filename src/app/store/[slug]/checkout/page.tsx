@@ -86,9 +86,9 @@ export default async function CheckoutPage({ params }: Props) {
       languageLabel={t("locale.changeLanguage")}
       strings={strings}
       theme={theme}
-      // A barra fixa do CTA ocupa o rodapé — a ação flutuante sairia por
-      // cima dela.
-      showFloatingAction={false}
+      // Ecrã independente: sem capa/cabeçalho/rodapé da vitrine — só a
+      // barra opaca "voltar + título" por cima do formulário.
+      variant="checkout"
     >
       <CheckoutProvider
         storeId={store.id}

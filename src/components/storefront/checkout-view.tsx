@@ -3,7 +3,6 @@
 import { type ReactNode } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
   CheckCircle2,
   MapPin,
   ShoppingCart,
@@ -339,19 +338,8 @@ export function CheckoutView({
 
   return (
     <div className="pb-2">
-      {/* voltar + título (mobile e desktop) */}
-      <div className="mb-5">
-        <Link
-          href={storeHref}
-          className="inline-flex h-10 items-center gap-1.5 rounded-[var(--sf-btn-radius)] ps-1 pe-2 text-sm font-medium text-[var(--sf-fg)] transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)]"
-        >
-          <ArrowLeft aria-hidden="true" className="size-5" />
-          {strings.backToStore}
-        </Link>
-        <h1 className="mt-1.5 text-xl font-semibold sm:text-2xl">
-          {strings.checkout}
-        </h1>
-      </div>
+      {/* O voltar + título moram na barra opaca do shell (`variant=
+          "checkout"`) — aqui só o conteúdo do checkout. */}
 
       <div className="grid items-start gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] xl:grid-cols-[minmax(0,1fr)_24rem]">
         {/* ── coluna 1: dados do cliente + entrega + pagamento ─────────── */}
@@ -508,7 +496,7 @@ export function CheckoutView({
         </form>
 
         {/* ── coluna 2: resumo do pedido (fixo no desktop) ─────────────── */}
-        <aside className="lg:sticky lg:top-6">
+        <aside className="lg:sticky lg:top-20">
           <div className={CARD_CLASSES}>
             <h2 className={SECTION_TITLE_CLASSES}>
               <span aria-hidden="true" className="text-[var(--sf-primary)]">

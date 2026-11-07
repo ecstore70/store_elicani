@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Camera, Clock, Globe, Phone } from "lucide-react";
+import { ArrowLeft, Camera, Clock, Globe, Phone } from "lucide-react";
 import { CartProvider } from "./cart-provider";
 import { CartButton } from "./cart-button";
 import { Logo } from "@/components/shared/logo";
@@ -12,16 +12,22 @@ import type { StorefrontStrings } from "@/lib/storefront/strings";
 import type { StorefrontTheme } from "@/lib/storefront/theme";
 
 /**
- * Chrome PADRÃO da vitrine pública — capa, cabeçalho (identidade + idioma +
- * CARRINHO sempre visível), conteúdo, informação da loja, rodapé e ação
- * flutuante de WhatsApp (ícone oficial — nunca um círculo verde falso).
+ * Chrome da vitrine pública, em DOIS modos:
  *
- * Partilhado pela home, pela página de produto e pelo checkout: a
- * navegação, o acesso ao carrinho e o contacto são idênticos em qualquer
- * ecrã. O `CartProvider` envolve tudo porque o botão do cabeçalho e o
- * diálogo de carrinho (ecrã-cheio no mobile, modal no desktop) partilham
- * o mesmo estado; o checkout da rota monta o seu `CheckoutProvider`
- * por dentro (itens/subtotal vêm do carrinho).
+ *  • `storefront` (default) — capa, cabeçalho (identidade + idioma +
+ *    CARRINHO sempre visível), conteúdo, informação da loja, rodapé e
+ *    ação flutuante de WhatsApp (ícone oficial — nunca um círculo verde
+ *    falso).
+ *  • `checkout` — ECRÃ INDEPENDENTE: apenas a barra opaca "voltar +
+ *    título". Nada da vitrine (capa, cabeçalho, secção de informação,
+ *    rodapé, botão flutuante) emoldura ou aparece por trás do checkout —
+ *    o cliente vê SÓ a superfície de compra, com fundo sólido do tema.
+ *
+ * Partilhado pela home, pela página de produto e pelo checkout. O
+ * `CartProvider` envolve tudo porque o botão do cabeçalho e o diálogo de
+ * carrinho (ecrã-cheio no mobile, modal no desktop) partilham o mesmo
+ * estado; o checkout da rota monta o seu `CheckoutProvider` por dentro
+ * (itens/subtotal vêm do carrinho).
  */
 export function StoreShell({
   store,
@@ -29,7 +35,7 @@ export function StoreShell({
   languageLabel,
   strings,
   theme,
-  showFloatingAction = true,
+  variant = "storefront",
   children,
 }: {
   store: PublicStore;
@@ -38,12 +44,13 @@ export function StoreShell({
   strings: StorefrontStrings;
   theme: StorefrontTheme;
   /**
-   * Ação flutuante de WhatsApp no canto — desligada no checkout, onde a
-   * barra fixa do CTA ocupa o rodapé do ecrã.
+   * `checkout` = superfície independente e opaca (sem chrome da
+   * vitrine). Default `storefront` = página normal da loja.
    */
-  showFloatingAction?: boolean;
+  variant?: "storefront" | "checkout";
   children: ReactNode;
 }) {
+  const isCheckout = variant === "checkout";
   const whatsappDigits = store.whatsapp_number?.replace(/\D/g, "") ?? "";
   const whatsappHref = whatsappDigits
     ? `https://wa.me/${whatsappDigits}`
@@ -69,64 +76,88 @@ export function StoreShell({
         locale={locale}
         strings={strings}
       >
-        {/* capa da loja (identidade do comerciante) */}
-        {store.banner_url && (
-          <div className="relative h-36 w-full overflow-hidden sm:h-48">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={store.banner_url}
-              alt={store.name}
-              className="size-full object-cover"
-            />
-          </div>
-        )}
-
-        {/* cabeçalho: logo + nome + descrição + idioma + carrinho */}
-        <header className="border-b border-[var(--sf-border)]">
-          <div className="mx-auto flex w-full max-w-[var(--sf-container)] items-center gap-3 px-4 py-4 sm:px-6">
-            <Link
-              href={`/store/${store.slug}`}
-              className="flex min-w-0 flex-1 items-center gap-3 rounded-[var(--sf-btn-radius)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)]"
-            >
-              {store.logo_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
+        {isCheckout ? (
+          /* ── checkout: barra opaca própria (voltar + título) ───────────
+             Nada da vitrine por trás: sem capa, sem cabeçalho da loja,
+             sem secção de informação, sem rodapé, sem ação flutuante. */
+          <header className="sticky top-0 z-20 border-b border-[var(--sf-border)] bg-[var(--sf-bg)]">
+            <div className="mx-auto flex w-full max-w-[var(--sf-container)] items-center gap-3 px-4 py-3 sm:px-6">
+              <Link
+                href={`/store/${store.slug}`}
+                className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[var(--sf-btn-radius)] ps-1 pe-2 text-sm font-medium text-[var(--sf-fg)] transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)]"
+              >
+                <ArrowLeft aria-hidden="true" className="size-5" />
+                {strings.backToStore}
+              </Link>
+              <h1 className="min-w-0 flex-1 truncate text-base font-semibold sm:text-lg">
+                {strings.checkout}
+              </h1>
+            </div>
+          </header>
+        ) : (
+          <>
+            {/* capa da loja (identidade do comerciante) */}
+            {store.banner_url && (
+              <div className="relative h-36 w-full overflow-hidden sm:h-48">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={store.logo_url}
+                  src={store.banner_url}
                   alt={store.name}
-                  className="size-10 shrink-0 rounded-[var(--sf-radius)] object-cover"
+                  className="size-full object-cover"
                 />
-              ) : null}
-
-              <div className="min-w-0">
-                <p className="truncate text-base font-semibold">{store.name}</p>
-                {store.description && (
-                  <p className="truncate text-sm text-[var(--sf-muted)]">
-                    {store.description}
-                  </p>
-                )}
               </div>
-            </Link>
+            )}
 
-            {/* idioma da UI do visitante — não confundir com o conteúdo da loja */}
-            <LocaleSelector
-              current={locale}
-              label={languageLabel}
-              align="end"
-              tone="storefront"
-              className="w-40 shrink-0"
-            />
+            {/* cabeçalho: logo + nome + descrição + idioma + carrinho */}
+            <header className="border-b border-[var(--sf-border)]">
+              <div className="mx-auto flex w-full max-w-[var(--sf-container)] items-center gap-3 px-4 py-4 sm:px-6">
+                <Link
+                  href={`/store/${store.slug}`}
+                  className="flex min-w-0 flex-1 items-center gap-3 rounded-[var(--sf-btn-radius)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)]"
+                >
+                  {store.logo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={store.logo_url}
+                      alt={store.name}
+                      className="size-10 shrink-0 rounded-[var(--sf-radius)] object-cover"
+                    />
+                  ) : null}
 
-            {/* acesso claro ao carrinho (além do botão flutuante) */}
-            <CartButton strings={strings} />
-          </div>
-        </header>
+                  <div className="min-w-0">
+                    <p className="truncate text-base font-semibold">
+                      {store.name}
+                    </p>
+                    {store.description && (
+                      <p className="truncate text-sm text-[var(--sf-muted)]">
+                        {store.description}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+
+                {/* idioma da UI do visitante — não confundir com o conteúdo da loja */}
+                <LocaleSelector
+                  current={locale}
+                  label={languageLabel}
+                  align="end"
+                  tone="storefront"
+                  className="w-40 shrink-0"
+                />
+
+                {/* acesso claro ao carrinho (além do botão flutuante) */}
+                <CartButton strings={strings} />
+              </div>
+            </header>
+          </>
+        )}
 
         <main className="mx-auto w-full max-w-[var(--sf-container)] flex-1 px-4 py-8 sm:px-6 sm:py-10">
           {children}
         </main>
 
-        {/* informação da loja / entrega / contacto */}
-        {hasStoreInfo && (
+        {/* informação da loja / entrega / contacto — só na vitrine */}
+        {!isCheckout && hasStoreInfo && (
           <section
             aria-labelledby="sf-info"
             className="border-t border-[var(--sf-border)] bg-[var(--sf-surface)]"
@@ -207,25 +238,29 @@ export function StoreShell({
           </section>
         )}
 
-        <footer className="border-t border-[var(--sf-border)]">
-          <div className="mx-auto flex w-full max-w-[var(--sf-container)] items-center justify-between gap-4 px-4 py-5 sm:px-6">
-            <Link
-              href="https://elicani.site"
-              target="_blank"
-              rel="noreferrer"
-              className="opacity-70 transition-opacity hover:opacity-100"
-              aria-label="Elicani"
-            >
-              <Logo variant="mono" className="h-4 text-[var(--sf-muted)]" />
-            </Link>
-            <span className="font-mono text-xs text-[var(--sf-muted)]">
-              {store.currency}
-            </span>
-          </div>
-        </footer>
+        {!isCheckout && (
+          <footer className="border-t border-[var(--sf-border)]">
+            <div className="mx-auto flex w-full max-w-[var(--sf-container)] items-center justify-between gap-4 px-4 py-5 sm:px-6">
+              <Link
+                href="https://elicani.site"
+                target="_blank"
+                rel="noreferrer"
+                className="opacity-70 transition-opacity hover:opacity-100"
+                aria-label="Elicani"
+              >
+                <Logo variant="mono" className="h-4 text-[var(--sf-muted)]" />
+              </Link>
+              <span className="font-mono text-xs text-[var(--sf-muted)]">
+                {store.currency}
+              </span>
+            </div>
+          </footer>
+        )}
 
-        {/* ação de WhatsApp sempre à mão — canto oposto ao carrinho */}
-        {showFloatingAction && whatsappHref && (
+        {/* ação de WhatsApp sempre à mão — canto oposto ao carrinho.
+            Nunca no checkout: a barra fixa do CTA ocupa o rodapé e nada
+            da vitrine pode aparecer por cima dos campos. */}
+        {!isCheckout && whatsappHref && (
           <a
             href={whatsappHref}
             target="_blank"
