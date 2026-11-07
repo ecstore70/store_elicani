@@ -74,6 +74,7 @@ describe("tradutor", () => {
       "nav.dashboard",
       "nav.catalog",
       "catalog.deleteTypeConfirm",
+      "catalog.identity",
       "settings.save",
       "locale.changeLanguage",
       "landing.heroTitle1",

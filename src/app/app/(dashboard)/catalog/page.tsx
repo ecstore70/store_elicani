@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { CatalogIdentity } from "@/components/catalog/catalog-identity";
 import { CatalogManager } from "@/components/catalog/catalog-manager";
 import { requireUser } from "@/lib/auth/session";
 import { getLocale } from "@/lib/i18n/locale";
@@ -30,6 +31,7 @@ export default async function CatalogPage() {
     <div className="space-y-8">
       <PageHeader title={t("nav.catalog")} description={t("catalog.subtitle")} />
       <CatalogManager isActive={store.is_active} locale={locale} />
+      <CatalogIdentity store={store} locale={locale} />
     </div>
   );
 }

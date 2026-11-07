@@ -23,6 +23,8 @@ export const STORE_FORM_FIELDS = [
   "description",
   "timezone",
   "primary_color",
+  "logo_url",
+  "favicon_url",
   "banner_url",
   "opening_hours",
   "instagram_url",
@@ -53,6 +55,8 @@ export function emptyStoreFormValues(): StoreFormValues {
     description: "",
     timezone: "",
     primary_color: "",
+    logo_url: "",
+    favicon_url: "",
     banner_url: "",
     opening_hours: "",
     instagram_url: "",
@@ -89,4 +93,6 @@ export type PublicStore = Pick<
   | "language"
   | "is_active"
   | "created_at"
+  | "updated_at"
+  | "favicon_url"
 >;

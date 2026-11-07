@@ -77,6 +77,8 @@ function readFormValues(formData: FormData): StoreFormValues {
     description: read("description"),
     timezone: read("timezone"),
     primary_color: read("primary_color"),
+    logo_url: read("logo_url"),
+    favicon_url: read("favicon_url"),
     banner_url: read("banner_url"),
     opening_hours: read("opening_hours"),
     instagram_url: read("instagram_url"),
@@ -151,7 +153,13 @@ function validateStoreValues(
     errors.primary_color = t("store.error.primaryColorInvalid");
   }
 
-  for (const field of ["banner_url", "instagram_url", "facebook_url"] as const) {
+  for (const field of [
+    "logo_url",
+    "favicon_url",
+    "banner_url",
+    "instagram_url",
+    "facebook_url",
+  ] as const) {
     const url = values[field].trim();
     if (url && !URL_PATTERN.test(url)) {
       errors[field] = t("store.error.urlInvalid");
@@ -179,6 +187,8 @@ function toStoreUpdatePayload(
     description: values.description.trim() || null,
     timezone: values.timezone.trim() || null,
     primary_color: values.primary_color.trim() || null,
+    logo_url: values.logo_url.trim() || null,
+    favicon_url: values.favicon_url.trim() || null,
     banner_url: values.banner_url.trim() || null,
     opening_hours: values.opening_hours.trim() || null,
     instagram_url: values.instagram_url.trim() || null,
@@ -315,7 +325,7 @@ export async function updateStoreAction(
     .from("stores")
     .update(toStoreUpdatePayload(values))
     .eq("owner_id", user.id)
-    .select("id")
+    .select("id, slug")
     .maybeSingle();
 
   if (error) {
@@ -327,7 +337,13 @@ export async function updateStoreAction(
     return withValues(values, { error: t("store.error.saveFailed") });
   }
 
+  // Identidade mudou (logo/favicon/capa/textos): expira as leituras
+  // cacheadas da loja (use-cache invalida por TAG, não por revalidatePath)
+  // e limpa o router cache da vitrine para o novo branding aparecer já
+  // na navegação do próprio comerciante.
+  updateTag("store");
   revalidatePath("/app", "layout");
+  revalidatePath(`/store/${data.slug}`);
   return withValues(values, { notice: t("settings.saved") });
 }
 
@@ -402,7 +418,7 @@ export async function updateAppearanceAction(
       background_color,
     })
     .eq("owner_id", user.id)
-    .select("id")
+    .select("id, slug")
     .maybeSingle();
 
   if (error) {
@@ -412,7 +428,11 @@ export async function updateAppearanceAction(
     return { error: t("store.error.sessionInvalid"), notice: null };
   }
 
+  // Aparência é identidade da loja: mesma invalidação de updateStoreAction
+  // (tag "store" para o use-cache + router cache da vitrine).
+  updateTag("store");
   revalidatePath("/app", "layout");
+  revalidatePath(`/store/${data.slug}`);
   return { error: null, notice: t("appearance.saved") };
 }
 

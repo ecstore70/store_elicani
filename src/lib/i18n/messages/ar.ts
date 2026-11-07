@@ -164,8 +164,7 @@ export const ar: Messages = {
   "settings.sectionAppearance": "المظهر",
   "settings.primaryColor": "اللون الأساسي",
   "settings.logo": "الشعار",
-  "settings.logoPending":
-    "رفع الشعار يصل في مرحلة لاحقة — مساحة التخزين جاهزة بالفعل.",
+  "settings.faviconUrl": "رابط الأيقونة المصغرة",
   "settings.save": "حفظ التغييرات",
   "settings.saving": "جارٍ الحفظ…",
   "settings.saved": "تم حفظ الإعدادات.",
@@ -546,6 +545,13 @@ export const ar: Messages = {
   "catalog.deleteConfirmButton": "حذف نهائي",
   "catalog.deleted": "تم حذف الكتالوج.",
   "catalog.deleteFailed": "تعذّر حذف الكتالوج. حاول مرة أخرى.",
+  "catalog.identity": "هوية المتجر",
+  "catalog.identityHelp":
+    "يشهد الشعار والأيقونة المصغرة وصورة الغلاف على واجهتك العامة في ألسنة المتصفح وروابط المشاركة ونتائج البحث. عند غياب الأيقونة المصغرة يُستخدم شعارك، ثم أيقونة Elicani.",
+  "catalog.assetFavicon": "الأيقونة المصغرة",
+  "catalog.assetCover": "صورة الغلاف",
+  "catalog.editInformation": "تعديل المعلومات",
+  "catalog.editAppearance": "تعديل المظهر",
 
   // ── الواجهة العامة: الكتالوج غير متاح (حالة وليست خطأ) ────────────────
   "storefront.catalogUnavailable": "هذا الكتالوج غير متاح حاليًا.",

@@ -165,8 +165,7 @@ export const ptPT: Messages = {
   "settings.sectionAppearance": "Aparência",
   "settings.primaryColor": "Cor principal",
   "settings.logo": "Logótipo",
-  "settings.logoPending":
-    "O carregamento do logótipo chega numa fase posterior — o armazenamento já está preparado.",
+  "settings.faviconUrl": "URL do favicon",
   "settings.save": "Guardar alterações",
   "settings.saving": "A guardar…",
   "settings.saved": "Definições guardadas.",
@@ -547,6 +546,13 @@ export const ptPT: Messages = {
   "catalog.deleteConfirmButton": "Eliminar permanentemente",
   "catalog.deleted": "Catálogo eliminado.",
   "catalog.deleteFailed": "Não foi possível eliminar o catálogo. Tente novamente.",
+  "catalog.identity": "Identidade da loja",
+  "catalog.identityHelp":
+    "Logótipo, favicon e capa identificam a sua vitrine pública em separadores do navegador, links partilhados e resultados de pesquisa. Sem favicon, é usado o seu logótipo — depois o ícone da Elicani.",
+  "catalog.assetFavicon": "Favicon",
+  "catalog.assetCover": "Capa",
+  "catalog.editInformation": "Editar informações",
+  "catalog.editAppearance": "Editar aspeto",
 
   // ── vitrine: catálogo indisponível (estado, não erro) ──────────────────
   "storefront.catalogUnavailable": "Este catálogo está indisponível de momento.",

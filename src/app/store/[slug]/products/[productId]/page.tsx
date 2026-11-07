@@ -13,7 +13,7 @@ import { normalizeLocale } from "@/lib/i18n/config";
 import { getLocaleChoice, getTranslator } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 import { normalizeAppearance } from "@/lib/stores/appearance";
-import { storePublicUrl } from "@/lib/stores/resolve";
+import { buildProductMetadata, productCanonicalUrl } from "@/lib/stores/metadata";
 import { getPublicStoreBySlug, getPublicStoreStatus } from "@/lib/stores/queries";
 import { discountPercent } from "@/lib/storefront/product-options";
 import { buildStorefrontStrings } from "@/lib/storefront/strings";
@@ -82,18 +82,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const { store, product } = loaded;
-  const description =
-    product.description ?? `${product.name} — ${store.name}`;
-
-  return {
-    title: product.name,
-    description,
-    openGraph: {
-      title: product.name,
-      description,
-      ...(product.image_url ? { images: [product.image_url] } : {}),
-    },
-  };
+  // Identidade do nível produto: título "Produto · Loja", imagem primária
+  // no OG, canonical no subdomínio e favicon resolvido pela loja dona —
+  // ver stores/metadata.ts.
+  return buildProductMetadata(store, product);
 }
 
 /**
@@ -132,7 +124,7 @@ export default async function ProductPage({ params }: Props) {
   const whatsappHref = whatsappDigits
     ? `https://wa.me/${whatsappDigits}`
     : null;
-  const productUrl = `${storePublicUrl(store.slug)}/store/${store.slug}/products/${product.id}`;
+  const productUrl = productCanonicalUrl(store.slug, product.id);
   const discount = discountPercent(product.price, product.promo_price);
 
   return (

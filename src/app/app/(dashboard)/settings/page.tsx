@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { StoreForm } from "@/components/store/store-form";
 import { LocaleSelector } from "@/components/shared/locale-selector";
@@ -14,7 +13,6 @@ import { requireUser } from "@/lib/auth/session";
 import { getLocale } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 import { requireStore } from "@/lib/stores/queries";
-import { storePublicUrl } from "@/lib/stores/resolve";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = createTranslator(await getLocale());
@@ -51,6 +49,12 @@ export default async function SettingsPage() {
               description: store.description ?? "",
               timezone: store.timezone ?? "",
               primary_color: store.primary_color ?? "",
+              logo_url: store.logo_url ?? "",
+              favicon_url: store.favicon_url ?? "",
+              banner_url: store.banner_url ?? "",
+              opening_hours: store.opening_hours ?? "",
+              instagram_url: store.instagram_url ?? "",
+              facebook_url: store.facebook_url ?? "",
             }}
           />
         </CardContent>
@@ -69,28 +73,6 @@ export default async function SettingsPage() {
             label={t("locale.changeLanguage")}
             className="w-full max-w-56"
           />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base tracking-tight">
-            {t("settings.logo")}
-          </CardTitle>
-          <CardDescription>{t("settings.logoPending")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {t("dashboard.publicUrl")}:{" "}
-            <Link
-              href={storePublicUrl(store.slug)}
-              target="_blank"
-              rel="noreferrer"
-              className="font-mono text-xs underline-offset-4 hover:underline"
-            >
-              {storePublicUrl(store.slug)}
-            </Link>
-          </p>
         </CardContent>
       </Card>
     </div>

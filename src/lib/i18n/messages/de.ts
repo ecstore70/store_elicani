@@ -163,8 +163,7 @@ export const de: Messages = {
   "settings.sectionAppearance": "Design",
   "settings.primaryColor": "Hauptfarbe",
   "settings.logo": "Logo",
-  "settings.logoPending":
-    "Der Logo-Upload kommt in einer späteren Phase — der Speicher ist bereits eingerichtet.",
+  "settings.faviconUrl": "Favicon-URL",
   "settings.save": "Änderungen speichern",
   "settings.saving": "Wird gespeichert…",
   "settings.saved": "Einstellungen gespeichert.",
@@ -545,6 +544,13 @@ export const de: Messages = {
   "catalog.deleteConfirmButton": "Endgültig löschen",
   "catalog.deleted": "Katalog gelöscht.",
   "catalog.deleteFailed": "Der Katalog konnte nicht gelöscht werden. Versuchen Sie es erneut.",
+  "catalog.identity": "Identität des Katalogs",
+  "catalog.identityHelp":
+    "Logo, Favicon und Titelbild identifizieren deinen öffentlichen Shop in Browser-Tabs, geteilten Links und Suchergebnissen. Ohne Favicon wird dein Logo verwendet — danach das Elicani-Symbol.",
+  "catalog.assetFavicon": "Favicon",
+  "catalog.assetCover": "Titelbild",
+  "catalog.editInformation": "Informationen bearbeiten",
+  "catalog.editAppearance": "Design bearbeiten",
 
   // ── Shop: Katalog derzeit nicht verfügbar (Zustand, kein Fehler) ───────
   "storefront.catalogUnavailable": "Dieser Katalog ist derzeit nicht verfügbar.",

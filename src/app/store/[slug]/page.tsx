@@ -8,6 +8,7 @@ import { getLocaleChoice, getTranslator } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 import { getPublicCatalog } from "@/lib/catalog/queries";
 import { normalizeAppearance } from "@/lib/stores/appearance";
+import { buildStoreMetadata } from "@/lib/stores/metadata";
 import { getPublicStoreBySlug, getPublicStoreStatus } from "@/lib/stores/queries";
 import { resolveTheme } from "@/lib/storefront/theme";
 import { buildStorefrontStrings } from "@/lib/storefront/strings";
@@ -48,15 +49,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: t("storefront.notFound") };
   }
 
-  return {
-    title: store.name,
-    description: store.description ?? `${store.name} on Elicani`,
-    openGraph: {
-      title: store.name,
-      description: store.description ?? `${store.name} on Elicani`,
-      ...(store.banner_url ? { images: [store.banner_url] } : {}),
-    },
-  };
+  // Identidade do nível catálogo: título/canonical/OG/favicon próprios da
+  // loja (nunca os da plataforma nem de outra loja) — ver stores/metadata.ts.
+  return buildStoreMetadata(store);
 }
 
 export default async function StorefrontPage({ params }: Props) {

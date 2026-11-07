@@ -156,7 +156,7 @@ export const zhHans: Messages = {
   "settings.sectionAppearance": "外观",
   "settings.primaryColor": "主色",
   "settings.logo": "标志",
-  "settings.logoPending": "标志上传将在后续阶段上线——存储空间已准备就绪。",
+  "settings.faviconUrl": "网站图标链接",
   "settings.save": "保存更改",
   "settings.saving": "保存中…",
   "settings.saved": "设置已保存。",
@@ -519,6 +519,13 @@ export const zhHans: Messages = {
   "catalog.deleteConfirmButton": "永久删除",
   "catalog.deleted": "目录已删除。",
   "catalog.deleteFailed": "无法删除目录，请重试。",
+  "catalog.identity": "店铺身份",
+  "catalog.identityHelp":
+    "徽标、网站图标和封面在浏览器标签页、分享链接和搜索结果中代表你的公开店铺。未设置网站图标时将使用你的徽标，其次为 Elicani 图标。",
+  "catalog.assetFavicon": "网站图标",
+  "catalog.assetCover": "封面",
+  "catalog.editInformation": "编辑信息",
+  "catalog.editAppearance": "编辑外观",
 
   // ── 店铺：目录当前不可用（状态，而非错误） ─────────────────────────────
   "storefront.catalogUnavailable": "此目录当前不可用。",

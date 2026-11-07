@@ -314,6 +314,32 @@ export function StoreForm({
           description={t("settings.sectionStorefrontHelp")}
         >
           <TextField
+            label={t("settings.logo")}
+            name="logo_url"
+            value={values.logo_url}
+            onChange={(event) => update("logo_url", event.target.value)}
+            placeholder="https://…"
+            hint={t("common.optional")}
+            inputMode="url"
+            autoCapitalize="none"
+            spellCheck={false}
+            error={state.fieldErrors.logo_url}
+          />
+
+          <TextField
+            label={t("settings.faviconUrl")}
+            name="favicon_url"
+            value={values.favicon_url}
+            onChange={(event) => update("favicon_url", event.target.value)}
+            placeholder="https://…"
+            hint={t("common.optional")}
+            inputMode="url"
+            autoCapitalize="none"
+            spellCheck={false}
+            error={state.fieldErrors.favicon_url}
+          />
+
+          <TextField
             className="sm:col-span-2"
             label={t("settings.bannerUrl")}
             name="banner_url"

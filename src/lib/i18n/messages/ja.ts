@@ -165,8 +165,7 @@ export const ja: Messages = {
   "settings.sectionAppearance": "外観",
   "settings.primaryColor": "プライマリカラー",
   "settings.logo": "ロゴ",
-  "settings.logoPending":
-    "ロゴのアップロードは後のフェーズで提供——ストレージはすでに準備済みです。",
+  "settings.faviconUrl": "ファビコン URL",
   "settings.save": "変更を保存",
   "settings.saving": "保存中…",
   "settings.saved": "設定を保存しました。",
@@ -544,6 +543,13 @@ export const ja: Messages = {
   "catalog.deleteConfirmButton": "完全に削除",
   "catalog.deleted": "カタログを削除しました。",
   "catalog.deleteFailed": "カタログを削除できませんでした。もう一度お試しください。",
+  "catalog.identity": "ストアのアイデンティティ",
+  "catalog.identityHelp":
+    "ロゴ・ファビコン・カバーは、ブラウザのタブ、共有リンク、検索結果で公開ストアを表します。ファビコン未設定の場合はロゴが使われ、それもなければ Elicani アイコンが使われます。",
+  "catalog.assetFavicon": "ファビコン",
+  "catalog.assetCover": "カバー",
+  "catalog.editInformation": "情報を編集",
+  "catalog.editAppearance": "外観を編集",
 
   // ── ストア：カタログは現在利用不可（状態でありエラーではありません） ───
   "storefront.catalogUnavailable": "このカタログは現在ご利用いただけません。",

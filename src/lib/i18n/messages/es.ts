@@ -163,8 +163,7 @@ export const es: Messages = {
   "settings.sectionAppearance": "Apariencia",
   "settings.primaryColor": "Color principal",
   "settings.logo": "Logo",
-  "settings.logoPending":
-    "La subida del logo llega en una fase posterior — el almacenamiento ya está preparado.",
+  "settings.faviconUrl": "URL del favicon",
   "settings.save": "Guardar cambios",
   "settings.saving": "Guardando…",
   "settings.saved": "Ajustes guardados.",
@@ -545,6 +544,13 @@ export const es: Messages = {
   "catalog.deleteConfirmButton": "Eliminar permanentemente",
   "catalog.deleted": "Catálogo eliminado.",
   "catalog.deleteFailed": "No se pudo eliminar el catálogo. Inténtalo de nuevo.",
+  "catalog.identity": "Identidad de la tienda",
+  "catalog.identityHelp":
+    "El logo, el favicon y la portada identifican tu escaparate público en pestañas del navegador, enlaces compartidos y resultados de búsqueda. Sin favicon, se usa tu logo; después, el icono de Elicani.",
+  "catalog.assetFavicon": "Favicon",
+  "catalog.assetCover": "Portada",
+  "catalog.editInformation": "Editar información",
+  "catalog.editAppearance": "Editar apariencia",
 
   // ── tienda: catálogo no disponible (estado, no error) ──────────────────
   "storefront.catalogUnavailable": "Este catálogo no está disponible en este momento.",

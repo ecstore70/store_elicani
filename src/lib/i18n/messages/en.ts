@@ -167,8 +167,7 @@ export const en = {
   "settings.sectionAppearance": "Appearance",
   "settings.primaryColor": "Primary color",
   "settings.logo": "Logo",
-  "settings.logoPending":
-    "Logo upload arrives in a later phase — the storage bucket is already provisioned.",
+  "settings.faviconUrl": "Favicon URL",
   "settings.save": "Save changes",
   "settings.saving": "Saving…",
   "settings.saved": "Settings saved.",
@@ -549,6 +548,13 @@ export const en = {
   "catalog.deleteConfirmButton": "Delete permanently",
   "catalog.deleted": "Catalog deleted.",
   "catalog.deleteFailed": "Could not delete the catalog. Try again.",
+  "catalog.identity": "Store identity",
+  "catalog.identityHelp":
+    "Logo, favicon and cover identify your public storefront in browser tabs, shared links and search results. Without a favicon, your logo is used — then the Elicani icon.",
+  "catalog.assetFavicon": "Favicon",
+  "catalog.assetCover": "Cover",
+  "catalog.editInformation": "Edit information",
+  "catalog.editAppearance": "Edit appearance",
 
   // ── vitrine: catálogo indisponível (estado, não erro) ──────────────────
   "storefront.catalogUnavailable": "This catalog is currently unavailable.",

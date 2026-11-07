@@ -163,8 +163,7 @@ export const fr: Messages = {
   "settings.sectionAppearance": "Apparence",
   "settings.primaryColor": "Couleur principale",
   "settings.logo": "Logo",
-  "settings.logoPending":
-    "Le téléversement du logo arrive dans une phase ultérieure — le stockage est déjà provisionné.",
+  "settings.faviconUrl": "URL du favicon",
   "settings.save": "Enregistrer les modifications",
   "settings.saving": "Enregistrement…",
   "settings.saved": "Paramètres enregistrés.",
@@ -545,6 +544,13 @@ export const fr: Messages = {
   "catalog.deleteConfirmButton": "Supprimer définitivement",
   "catalog.deleted": "Catalogue supprimé.",
   "catalog.deleteFailed": "Impossible de supprimer le catalogue. Réessayez.",
+  "catalog.identity": "Identité de la boutique",
+  "catalog.identityHelp":
+    "Le logo, le favicon et la couverture identifient votre vitrine publique dans les onglets du navigateur, les liens partagés et les résultats de recherche. Sans favicon, votre logo est utilisé — puis l'icône Elicani.",
+  "catalog.assetFavicon": "Favicon",
+  "catalog.assetCover": "Couverture",
+  "catalog.editInformation": "Modifier les informations",
+  "catalog.editAppearance": "Modifier l'apparence",
 
   // ── vitrine : catalogue indisponible (état, pas une erreur) ────────────
   "storefront.catalogUnavailable": "Ce catalogue est actuellement indisponible.",

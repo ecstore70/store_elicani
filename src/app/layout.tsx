@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { getMarketingUrl } from "@/lib/env";
 import { getLocaleDirection } from "@/lib/i18n/config";
 import { getLocale } from "@/lib/i18n/locale";
+import { PLATFORM_ICONS } from "@/lib/stores/metadata";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,6 +27,13 @@ export const metadata: Metadata = {
   description:
     "Elicani gives your business its own storefront. Products, customers and orders in one place — in any currency.",
   applicationName: "Elicani",
+  // Ícones da PLATAFORMA como objecto metadata (não file-conventions em
+  // src/app/): file-conventions têm prioridade absoluta no Next e seriam
+  // antepostas às do segmento filho — o favicon do comerciante perderia
+  // sempre para o da plataforma. Como objeto, vale o merge normal de
+  // segmentos: loja/produto substituem por identidade própria quando
+  // configurada, e herdam estes quando não estão (ver stores/metadata.ts).
+  icons: PLATFORM_ICONS,
   // Verificação do Google Search Console — meta na raiz cobre todas as
   // páginas (o Google aceita a tag em qualquer URL da propriedade).
   verification: {

@@ -222,6 +222,7 @@ export type Database = {
           currency: string
           description: string | null
           facebook_url: string | null
+          favicon_url: string | null
           id: string
           image_ratio: string
           instagram_url: string | null
@@ -253,6 +254,7 @@ export type Database = {
           currency?: string
           description?: string | null
           facebook_url?: string | null
+          favicon_url?: string | null
           id?: string
           image_ratio?: string
           instagram_url?: string | null
@@ -284,6 +286,7 @@ export type Database = {
           currency?: string
           description?: string | null
           facebook_url?: string | null
+          favicon_url?: string | null
           id?: string
           image_ratio?: string
           instagram_url?: string | null
