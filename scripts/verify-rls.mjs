@@ -417,6 +417,103 @@ try {
   const ownProductRead = await A.from("products").select("id").eq("id", productA.data?.id).maybeSingle();
   assert("A lê o próprio produto", !!ownProductRead.data);
 
+  // ── Blocos de conteúdo da página do produto ─────────────────────────────
+  const blockA = await A.from("product_page_blocks")
+    .insert({
+      product_id: productA.data?.id,
+      store_id: idA,
+      type: "text",
+      content: `Olá ${RUN_ID}`,
+      sort_order: 0,
+    })
+    .select("id")
+    .single();
+  assert(
+    "A cria bloco no próprio produto",
+    !blockA.error && !!blockA.data,
+    errorDetail(blockA),
+  );
+
+  const crossBlockRead = await B.from("product_page_blocks")
+    .select("id, content")
+    .eq("id", blockA.data?.id);
+  assert(
+    "B NÃO lê o bloco de A (por UUID direto)",
+    !crossBlockRead.error && crossBlockRead.data?.length === 0,
+    `linhas devolvidas: ${JSON.stringify(crossBlockRead.data)}`,
+  );
+
+  const crossBlockUpdate = await B.from("product_page_blocks")
+    .update({ content: "INVADIDO" })
+    .eq("id", blockA.data?.id)
+    .select("id");
+  assert(
+    "B NÃO atualiza o bloco de A",
+    !crossBlockUpdate.error && crossBlockUpdate.data?.length === 0,
+    `linhas afetadas: ${JSON.stringify(crossBlockUpdate.data)}`,
+  );
+
+  const forgedBlock = await B.from("product_page_blocks").insert({
+    product_id: productA.data?.id,
+    store_id: idA,
+    type: "text",
+    content: "Forjado",
+    sort_order: 1,
+  });
+  assert(
+    "B NÃO cria bloco no produto de A (RLS with check)",
+    !!forgedBlock.error && forgedBlock.error.code === "42501",
+    errorDetail(forgedBlock),
+  );
+
+  const crossBlockDelete = await B.from("product_page_blocks")
+    .delete()
+    .eq("id", blockA.data?.id);
+  assert(
+    "B NÃO apaga o bloco de A",
+    !crossBlockDelete.error,
+    errorDetail(crossBlockDelete),
+  );
+
+  const ownBlockRead = await A.from("product_page_blocks")
+    .select("id")
+    .eq("id", blockA.data?.id)
+    .maybeSingle();
+  assert("A lê o próprio bloco", !!ownBlockRead.data);
+
+  const anonBlockRead = await asAnon.from("product_page_blocks")
+    .select("id")
+    .eq("product_id", productA.data?.id);
+  assert(
+    "anônimo lê blocos da loja ATIVA",
+    !anonBlockRead.error && anonBlockRead.data?.length === 1,
+    errorDetail(anonBlockRead),
+  );
+
+  await A.from("stores").update({ is_active: false }).eq("id", idA);
+  const anonHiddenBlocks = await asAnon.from("product_page_blocks")
+    .select("id")
+    .eq("product_id", productA.data?.id);
+  assert(
+    "anônimo NÃO lê blocos de loja INATIVA",
+    !anonHiddenBlocks.error && anonHiddenBlocks.data?.length === 0,
+    `linhas devolvidas: ${JSON.stringify(anonHiddenBlocks.data)}`,
+  );
+  await A.from("stores").update({ is_active: true }).eq("id", idA);
+
+  const anonBlockWrite = await asAnon.from("product_page_blocks").insert({
+    product_id: productA.data?.id,
+    store_id: idA,
+    type: "text",
+    content: "Vândalo",
+    sort_order: 2,
+  });
+  assert(
+    "anônimo NÃO cria bloco",
+    !!anonBlockWrite.error,
+    errorDetail(anonBlockWrite),
+  );
+
   // ── 9. Vitrine (anon) lê o catálogo apenas de lojas ATIVAS ──────────────
   const anonCatalog = await asAnon.from("products").select("id").eq("id", productA.data?.id);
   assert(

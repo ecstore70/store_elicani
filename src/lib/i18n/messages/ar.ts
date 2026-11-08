@@ -411,6 +411,31 @@ export const ar: Messages = {
   "products.error.saveFailed": "تعذّر حفظ التغييرات. حاول مجددًا.",
   "products.error.mediaInvalid": "صحح المعرض: تحقق من الروابط وأنواع الملفات.",
   "products.error.mediaTooMany": "يمكن أن يحتوي المعرض على 64 عنصرًا كحد أقصى.",
+  "products.error.blocksInvalid":
+    "صحح محتوى الصفحة: تحقق من الروابط وأنواع الكتل.",
+  "products.error.blocksTooMany":
+    "يمكن أن يحتوي محتوى الصفحة على 30 كتلة كحد أقصى.",
+
+  // ── محتوى صفحة المنتج (كتل اختيارية) ──────────────────────────────────
+  "products.sectionPageContent": "محتوى صفحة المنتج",
+  "products.pageContentEmpty":
+    "لا يوجد محتوى إضافي — تعرض الصفحة معلومات المنتج فقط.",
+  "products.pageContentAdd": "إضافة محتوى",
+  "products.block.image": "صورة",
+  "products.block.text": "نص",
+  "products.block.video": "فيديو",
+  "products.block.altText": "النص البديل",
+  "products.block.caption": "تعليق",
+  "products.block.textPlaceholder": "اكتب محتوى هذا القسم…",
+  "products.block.textHint":
+    "استخدم ## للعنوان، **عريض**، *مائل*، - للقوائم و[نص](https://link) للروابط.",
+  "products.block.uploadImage": "رفع صورة",
+  "products.block.uploadVideo": "رفع فيديو",
+  "products.block.edit": "تعديل",
+  "products.block.remove": "إزالة",
+  "products.block.fromGallery": "من المعرض",
+  "products.pageContentPreview": "معاينة",
+  "products.pageContentPreviewHide": "إخفاء المعاينة",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "الفئات",

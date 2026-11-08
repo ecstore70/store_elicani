@@ -6,8 +6,13 @@ import { CatalogUnavailable } from "@/components/storefront/catalog-unavailable"
 import { StoreShell } from "@/components/storefront/store-shell";
 import { ProductGallery } from "@/components/storefront/product-gallery";
 import { ProductPurchase } from "@/components/storefront/product-purchase";
+import { PageContent } from "@/components/storefront/page-content";
 import { RelatedProducts } from "@/components/storefront/related-products";
-import { getPublicCatalog, getPublicProductMedia } from "@/lib/catalog/queries";
+import {
+  getPublicCatalog,
+  getPublicProductBlocks,
+  getPublicProductMedia,
+} from "@/lib/catalog/queries";
 import { formatCurrency } from "@/lib/currency";
 import { normalizeLocale } from "@/lib/i18n/config";
 import { getLocaleChoice, getTranslator } from "@/lib/i18n/locale";
@@ -109,7 +114,10 @@ export default async function ProductPage({ params }: Props) {
   }
 
   const { store, product, category, related } = loaded;
-  const media = await getPublicProductMedia(product.id);
+  const [media, blocks] = await Promise.all([
+    getPublicProductMedia(product.id),
+    getPublicProductBlocks(product.id),
+  ]);
 
   const visitorChoice = await getLocaleChoice();
   const locale = visitorChoice ?? normalizeLocale(store.language);
@@ -258,6 +266,14 @@ export default async function ProductPage({ params }: Props) {
           )}
         </div>
       </article>
+
+      {/* conteúdo opcional do lojista: sequência de blocos, abaixo das
+          informações do produto (sem blocos → nada muda na página) */}
+      <PageContent
+        blocks={blocks}
+        headingClass={classes.heading}
+        className="mt-10 sm:mt-12"
+      />
 
       {related.length > 0 && (
         <section aria-labelledby="sf-related" className="mt-10 sm:mt-12">

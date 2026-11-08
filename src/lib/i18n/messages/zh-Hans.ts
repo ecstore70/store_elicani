@@ -396,6 +396,28 @@ export const zhHans: Messages = {
   "products.error.saveFailed": "无法保存更改，请重试。",
   "products.error.mediaInvalid": "请修正图集：检查链接和文件类型。",
   "products.error.mediaTooMany": "图集最多 64 项。",
+  "products.error.blocksInvalid": "请修正页面内容：检查链接和内容块类型。",
+  "products.error.blocksTooMany": "页面内容最多可包含 30 个内容块。",
+
+  // ── 产品页面内容（可选内容块） ─────────────────────────────────────────
+  "products.sectionPageContent": "产品页面内容",
+  "products.pageContentEmpty": "无额外内容 — 页面仅显示产品信息。",
+  "products.pageContentAdd": "添加内容",
+  "products.block.image": "图片",
+  "products.block.text": "文字",
+  "products.block.video": "视频",
+  "products.block.altText": "替代文字",
+  "products.block.caption": "图注",
+  "products.block.textPlaceholder": "编写此部分的内容…",
+  "products.block.textHint":
+    "使用 ## 表示标题，**粗体**，*斜体*，- 表示列表，[文字](https://link) 表示链接。",
+  "products.block.uploadImage": "上传图片",
+  "products.block.uploadVideo": "上传视频",
+  "products.block.edit": "编辑",
+  "products.block.remove": "移除",
+  "products.block.fromGallery": "从图库选择",
+  "products.pageContentPreview": "预览",
+  "products.pageContentPreviewHide": "隐藏预览",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "分类",

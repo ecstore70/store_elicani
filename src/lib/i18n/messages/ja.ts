@@ -409,6 +409,31 @@ export const ja: Messages = {
   "products.error.saveFailed": "変更を保存できませんでした。もう一度お試しください。",
   "products.error.mediaInvalid": "ギャラリーを修正してください：リンクとファイル形式を確認してください。",
   "products.error.mediaTooMany": "ギャラリーは最大 64 項目です。",
+  "products.error.blocksInvalid":
+    "ページ内容を修正してください：リンクとブロックの種類を確認してください。",
+  "products.error.blocksTooMany":
+    "ページ内容は最大 30 個のブロックまでです。",
+
+  // ── 商品ページの内容（任意のブロック） ─────────────────────────────────
+  "products.sectionPageContent": "商品ページの内容",
+  "products.pageContentEmpty":
+    "追加コンテンツなし — ページには商品情報のみを表示します。",
+  "products.pageContentAdd": "コンテンツを追加",
+  "products.block.image": "画像",
+  "products.block.text": "テキスト",
+  "products.block.video": "動画",
+  "products.block.altText": "代替テキスト",
+  "products.block.caption": "キャプション",
+  "products.block.textPlaceholder": "このセクションの内容を入力…",
+  "products.block.textHint":
+    "## で見出し、**太字**、*斜体*、- で箇条書き、[テキスト](https://link) でリンクを作成できます。",
+  "products.block.uploadImage": "画像をアップロード",
+  "products.block.uploadVideo": "動画をアップロード",
+  "products.block.edit": "編集",
+  "products.block.remove": "削除",
+  "products.block.fromGallery": "ギャラリーから選択",
+  "products.pageContentPreview": "プレビュー",
+  "products.pageContentPreviewHide": "プレビューを非表示",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "カテゴリー",

@@ -1,5 +1,6 @@
 import type { Database } from "@/lib/database.types";
 import type { AppearanceValues } from "@/lib/stores/appearance";
+import type { PageBlockType } from "./page-blocks";
 
 /** Linhas das tabelas de catálogo, tipadas pelo Supabase. */
 export type Category = Database["public"]["Tables"]["categories"]["Row"];
@@ -37,6 +38,18 @@ export type PublicCategory = Pick<
 
 /** Item da galeria exposto à vitrine — sem id nem tenant (só tipo + URL). */
 export type PublicMediaItem = { type: "image" | "video"; url: string };
+
+/**
+ * Bloco de conteúdo da página exposto à vitrine — sem id nem tenant.
+ * A sequência (sort_order) já foi aplicada na consulta.
+ */
+export type PublicPageBlock = {
+  type: PageBlockType;
+  content: string | null;
+  media_url: string | null;
+  caption: string | null;
+  alt_text: string | null;
+};
 
 /** Catálogo público de uma loja — o que a vitrine renderiza. */
 export type StoreCatalog = {

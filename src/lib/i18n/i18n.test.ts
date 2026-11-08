@@ -81,6 +81,7 @@ describe("tradutor", () => {
       "storefront.addToCart",
       "storefront.catalogUnavailable",
       "storefront.checkoutRequired",
+      "products.sectionPageContent",
       "common.cancel",
     ] as const;
 

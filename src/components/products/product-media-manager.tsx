@@ -18,27 +18,18 @@ import { Label } from "@/components/ui/label";
 import {
   canonicalYouTubeUrl,
   extractYouTubeId,
-  IMAGE_MAX_BYTES,
   IMAGE_MIME_TYPES,
-  MEDIA_BUCKET,
   MEDIA_MAX_ITEMS,
-  VIDEO_MAX_BYTES,
   VIDEO_MIME_TYPES,
   type MediaItemInput,
 } from "@/lib/catalog/media";
+import {
+  uploadFailureMessageKey,
+  uploadProductMediaFile,
+} from "@/lib/catalog/media-upload";
 import type { Locale } from "@/lib/i18n/config";
 import { createTranslator } from "@/lib/i18n/translate";
 import { createClient } from "@/lib/supabase/client";
-
-const EXT_BY_MIME: Record<string, string> = {
-  "image/png": "png",
-  "image/jpeg": "jpg",
-  "image/webp": "webp",
-  "image/gif": "gif",
-  "video/mp4": "mp4",
-  "video/webm": "webm",
-  "video/quicktime": "mov",
-};
 
 /**
  * Gerenciador de galeria do produto (dentro do formulário).
@@ -83,8 +74,6 @@ export function ProductMediaManager({
     try {
       const supabase = createClient();
       const known = new Set(items.map((item) => item.url));
-      const allowed = kind === "image" ? IMAGE_MIME_TYPES : VIDEO_MIME_TYPES;
-      const maxBytes = kind === "image" ? IMAGE_MAX_BYTES : VIDEO_MAX_BYTES;
       const added: MediaItemInput[] = [];
 
       for (const file of files) {
@@ -92,34 +81,20 @@ export function ProductMediaManager({
           setError(t("products.error.mediaTooMany"));
           break;
         }
-        if (!(allowed as readonly string[]).includes(file.type)) {
-          setError(t("products.gallery.unsupportedType"));
-          continue;
-        }
-        if (file.size > maxBytes) {
-          setError(
-            kind === "image"
-              ? t("products.gallery.imageTooLarge")
-              : t("products.gallery.videoTooLarge"),
-          );
-          continue;
-        }
 
-        const path = `${storeId}/${crypto.randomUUID()}.${EXT_BY_MIME[file.type] ?? "bin"}`;
-        const { error: uploadError } = await supabase.storage
-          .from(MEDIA_BUCKET)
-          .upload(path, file, { contentType: file.type, upsert: false });
-        if (uploadError) {
-          setError(t("products.gallery.uploadFailed"));
+        const result = await uploadProductMediaFile(
+          supabase,
+          storeId,
+          file,
+          kind,
+        );
+        if ("failure" in result) {
+          setError(t(uploadFailureMessageKey(result.failure, kind)));
           continue;
         }
-
-        const { data: published } = supabase.storage
-          .from(MEDIA_BUCKET)
-          .getPublicUrl(path);
-        if (known.has(published.publicUrl)) continue;
-        known.add(published.publicUrl);
-        added.push({ type: kind, url: published.publicUrl });
+        if (known.has(result.url)) continue;
+        known.add(result.url);
+        added.push({ type: kind, url: result.url });
       }
 
       if (added.length > 0) {

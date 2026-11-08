@@ -415,6 +415,31 @@ export const ptBR: Messages = {
   "products.error.saveFailed": "Não foi possível guardar as alterações. Tente novamente.",
   "products.error.mediaInvalid": "Corrija a galeria: verifique os links e os tipos de arquivo.",
   "products.error.mediaTooMany": "A galeria pode ter no máximo 64 itens.",
+  "products.error.blocksInvalid":
+    "Corrija o conteúdo da página: verifique os links e os tipos de blocos.",
+  "products.error.blocksTooMany":
+    "O conteúdo da página pode ter no máximo 30 blocos.",
+
+  // ── conteúdo da página do produto (blocos opcionais) ───────────────────
+  "products.sectionPageContent": "Conteúdo da página do produto",
+  "products.pageContentEmpty":
+    "Sem conteúdo extra — a página mostra apenas as informações do produto.",
+  "products.pageContentAdd": "Adicionar conteúdo",
+  "products.block.image": "Imagem",
+  "products.block.text": "Texto",
+  "products.block.video": "Vídeo",
+  "products.block.altText": "Texto alternativo",
+  "products.block.caption": "Legenda",
+  "products.block.textPlaceholder": "Escreva o conteúdo desta seção…",
+  "products.block.textHint":
+    "Use ## para um título, **negrito**, *itálico*, - para listas e [texto](https://link) para links.",
+  "products.block.uploadImage": "Enviar imagem",
+  "products.block.uploadVideo": "Enviar vídeo",
+  "products.block.edit": "Editar",
+  "products.block.remove": "Remover",
+  "products.block.fromGallery": "Da galeria",
+  "products.pageContentPreview": "Pré-visualizar",
+  "products.pageContentPreviewHide": "Ocultar prévia",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "Categorias",

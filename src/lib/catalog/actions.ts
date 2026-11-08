@@ -18,6 +18,13 @@ import {
   primaryImageUrl,
   type MediaItemInput,
 } from "./media";
+import {
+  findPageBlocksErrorKey,
+  pageBlocksErrorMessage,
+  parsePageBlocksFormData,
+  planPageBlocksReconcile,
+  type PageBlockInput,
+} from "./page-blocks";
 import { validateProductValues } from "./validate";
 import {
   emptyProductFormValues,
@@ -98,6 +105,23 @@ function readMediaItems(
   return { items };
 }
 
+/**
+ * Lê e valida os blocos de conteúdo da página (JSON no campo `page_blocks`).
+ * Devolve os blocos prontos ou a mensagem de erro já traduzida.
+ */
+function readPageBlocks(
+  formData: FormData,
+  t: Translator,
+): { blocks: PageBlockInput[] } | { error: string } {
+  const blocks = parsePageBlocksFormData(formData.get("page_blocks"));
+  if (blocks === null) {
+    return { error: pageBlocksErrorMessage("blocksInvalid", t) };
+  }
+  const errorKey = findPageBlocksErrorKey(blocks);
+  if (errorKey) return { error: pageBlocksErrorMessage(errorKey, t) };
+  return { blocks };
+}
+
 /** Revalida as rotas do catálogo (lista + vitrine pública é dinâmica). */
 function revalidateCatalog(storeSlug: string) {
   revalidatePath("/app/products");
@@ -145,6 +169,12 @@ export async function createProductAction(
   }
   const mediaItems = media.items;
 
+  const blocks = readPageBlocks(formData, t);
+  if ("error" in blocks) {
+    return productValuesFrom(values, { error: blocks.error });
+  }
+  const pageBlocks = blocks.blocks;
+
   const supabase = await createClient();
   const { data: created, error } = await supabase
     .from("products")
@@ -174,6 +204,24 @@ export async function createProductAction(
       })),
     );
     if (mediaError) {
+      return productValuesFrom(values, {
+        error: t("products.error.saveFailed"),
+      });
+    }
+  }
+
+  if (pageBlocks.length > 0) {
+    const rows = planPageBlocksReconcile([], pageBlocks).rows;
+    const { error: blockError } = await supabase
+      .from("product_page_blocks")
+      .insert(
+        rows.map((row) => ({
+          product_id: created.id,
+          store_id: store.id,
+          ...row,
+        })),
+      );
+    if (blockError) {
       return productValuesFrom(values, {
         error: t("products.error.saveFailed"),
       });
@@ -221,6 +269,12 @@ export async function updateProductAction(
   }
   const mediaItems = media.items;
 
+  const blocks = readPageBlocks(formData, t);
+  if ("error" in blocks) {
+    return productValuesFrom(values, { error: blocks.error });
+  }
+  const pageBlocks = blocks.blocks;
+
   const supabase = await createClient();
 
   // Conjunto atual: troca segura (insert novo → delete antigo) + limpeza.
@@ -233,6 +287,16 @@ export async function updateProductAction(
     return productValuesFrom(values, { error: t("products.error.saveFailed") });
   }
   const plan = planMediaReconcile(existingMedia ?? [], mediaItems);
+
+  const { data: existingBlocks, error: blockListError } = await supabase
+    .from("product_page_blocks")
+    .select("id, media_url")
+    .eq("store_id", store.id)
+    .eq("product_id", productId);
+  if (blockListError) {
+    return productValuesFrom(values, { error: t("products.error.saveFailed") });
+  }
+  const blockPlan = planPageBlocksReconcile(existingBlocks ?? [], pageBlocks);
 
   const { data, error } = await supabase
     .from("products")
@@ -282,8 +346,48 @@ export async function updateProductAction(
     }
   }
 
-  // Limpeza best-effort dos arquivos que saíram da galeria (só o nosso bucket).
-  const storagePaths = plan.removeUrls
+  // Blocos: mesmo contrato da galeria — insert do novo conjunto primeiro,
+  // delete do antigo depois (nada se perde se o insert falhar).
+  if (blockPlan.rows.length > 0) {
+    const { error: insertBlocksError } = await supabase
+      .from("product_page_blocks")
+      .insert(
+        blockPlan.rows.map((row) => ({
+          product_id: productId,
+          store_id: store.id,
+          ...row,
+        })),
+      );
+    if (insertBlocksError) {
+      return productValuesFrom(values, { error: t("products.error.saveFailed") });
+    }
+  }
+
+  if (blockPlan.replaceIds.length > 0) {
+    const { error: deleteBlocksError } = await supabase
+      .from("product_page_blocks")
+      .delete()
+      .eq("store_id", store.id)
+      .in("id", blockPlan.replaceIds);
+    if (deleteBlocksError) {
+      return productValuesFrom(values, { error: t("products.error.saveFailed") });
+    }
+  }
+
+  // Limpeza best-effort dos arquivos que saíram da galeria E dos blocos
+  // (só o nosso bucket). Nada é removido enquanto a URL ainda for citada
+  // por qualquer um dos conjuntos — a mesma imagem pode viver na galeria
+  // e num bloco de conteúdo ao mesmo tempo.
+  const keepUrls = new Set([
+    ...mediaItems.map((item) => item.url),
+    ...pageBlocks
+      .map((block) => block.media_url)
+      .filter((url): url is string => typeof url === "string" && url.length > 0),
+  ]);
+  const leavingUrls = [
+    ...new Set([...plan.removeUrls, ...blockPlan.removeUrls]),
+  ].filter((url) => !keepUrls.has(url));
+  const storagePaths = leavingUrls
     .map((url) => mediaStoragePath(url, getSupabaseUrl()))
     .filter(
       (path): path is string => path !== null && path.startsWith(`${store.id}/`),

@@ -11,12 +11,14 @@ import {
   TextField,
 } from "@/components/store/fields";
 import { ProductMediaManager } from "@/components/products/product-media-manager";
+import { PageContentEditor } from "@/components/products/page-content-editor";
 import { Button } from "@/components/ui/button";
 import {
   createProductAction,
   updateProductAction,
 } from "@/lib/catalog/actions";
 import type { MediaItemInput } from "@/lib/catalog/media";
+import type { PageBlockInput } from "@/lib/catalog/page-blocks";
 import {
   emptyProductFormValues,
   type ProductFormState,
@@ -43,6 +45,7 @@ export function ProductForm({
   storeId,
   initialValues,
   initialMedia,
+  initialBlocks,
   categories,
 }: {
   locale: Locale;
@@ -51,6 +54,7 @@ export function ProductForm({
   storeId: string;
   initialValues?: Partial<ProductFormValues>;
   initialMedia?: MediaItemInput[];
+  initialBlocks?: PageBlockInput[];
   categories: { id: string; name: string }[];
 }) {
   const t = createTranslator(locale);
@@ -175,6 +179,15 @@ export function ProductForm({
           locale={locale}
           storeId={storeId}
           initialItems={initialMedia ?? []}
+        />
+      </FormSection>
+
+      <FormSection title={t("products.sectionPageContent")}>
+        <PageContentEditor
+          locale={locale}
+          storeId={storeId}
+          initialBlocks={initialBlocks}
+          galleryItems={initialMedia}
         />
       </FormSection>
 

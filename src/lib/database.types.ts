@@ -146,6 +146,60 @@ export type Database = {
           },
         ]
       }
+      product_page_blocks: {
+        Row: {
+          alt_text: string | null
+          caption: string | null
+          content: string | null
+          created_at: string
+          id: string
+          media_url: string | null
+          product_id: string
+          sort_order: number
+          store_id: string
+          type: string
+        }
+        Insert: {
+          alt_text?: string | null
+          caption?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          media_url?: string | null
+          product_id: string
+          sort_order?: number
+          store_id: string
+          type: string
+        }
+        Update: {
+          alt_text?: string | null
+          caption?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          media_url?: string | null
+          product_id?: string
+          sort_order?: number
+          store_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_page_blocks_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_page_blocks_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category_id: string | null

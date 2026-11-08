@@ -7,6 +7,7 @@ import {
   getProductForOwner,
   listCategoriesWithStoreForOwner,
   listMediaForOwner,
+  listPageBlocksForOwner,
 } from "@/lib/catalog/queries";
 import { getLocale } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
@@ -26,10 +27,11 @@ export default async function EditProductPage({ params }: Props) {
   const user = await requireUser();
   const store = await requireStore(user.id);
 
-  const [product, categories, media] = await Promise.all([
+  const [product, categories, media, pageBlocks] = await Promise.all([
     getProductForOwner(store.id, productId),
     listCategoriesWithStoreForOwner(store.id),
     listMediaForOwner(store.id, productId),
+    listPageBlocksForOwner(store.id, productId),
   ]);
 
   if (!product) {
@@ -50,6 +52,7 @@ export default async function EditProductPage({ params }: Props) {
         productId={product.id}
         storeId={store.id}
         initialMedia={media}
+        initialBlocks={pageBlocks}
         categories={categories}
         initialValues={{
           name: product.name,

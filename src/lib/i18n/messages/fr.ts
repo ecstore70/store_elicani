@@ -410,6 +410,31 @@ export const fr: Messages = {
   "products.error.saveFailed": "Impossible d'enregistrer les modifications. Veuillez réessayer.",
   "products.error.mediaInvalid": "Corrigez la galerie : vérifiez les liens et les types de fichiers.",
   "products.error.mediaTooMany": "La galerie peut contenir au maximum 64 éléments.",
+  "products.error.blocksInvalid":
+    "Corrigez le contenu de la page : vérifiez les liens et les types de blocs.",
+  "products.error.blocksTooMany":
+    "Le contenu de la page peut contenir au maximum 30 blocs.",
+
+  // ── contenu de la page produit (blocs facultatifs) ─────────────────────
+  "products.sectionPageContent": "Contenu de la page produit",
+  "products.pageContentEmpty":
+    "Aucun contenu supplémentaire — la page n’affiche que les informations du produit.",
+  "products.pageContentAdd": "Ajouter du contenu",
+  "products.block.image": "Image",
+  "products.block.text": "Texte",
+  "products.block.video": "Vidéo",
+  "products.block.altText": "Texte alternatif",
+  "products.block.caption": "Légende",
+  "products.block.textPlaceholder": "Rédigez le contenu de cette section…",
+  "products.block.textHint":
+    "Utilisez ## pour un titre, **gras**, *italique*, - pour les listes et [texte](https://link) pour les liens.",
+  "products.block.uploadImage": "Importer une image",
+  "products.block.uploadVideo": "Importer une vidéo",
+  "products.block.edit": "Modifier",
+  "products.block.remove": "Supprimer",
+  "products.block.fromGallery": "Depuis la galerie",
+  "products.pageContentPreview": "Aperçu",
+  "products.pageContentPreviewHide": "Masquer l’aperçu",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "Catégories",

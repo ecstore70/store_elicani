@@ -414,6 +414,30 @@ export const en = {
   "products.error.saveFailed": "Could not save the changes. Please try again.",
   "products.error.mediaInvalid": "Fix the gallery: check the links and file types.",
   "products.error.mediaTooMany": "The gallery can have at most 64 items.",
+  "products.error.blocksInvalid":
+    "Fix the page content: check the links and block types.",
+  "products.error.blocksTooMany": "The page content can have at most 30 blocks.",
+
+  // ── conteúdo da página do produto (blocos opcionais) ───────────────────
+  "products.sectionPageContent": "Product page content",
+  "products.pageContentEmpty":
+    "No extra content — the page shows only the product information.",
+  "products.pageContentAdd": "Add content",
+  "products.block.image": "Image",
+  "products.block.text": "Text",
+  "products.block.video": "Video",
+  "products.block.altText": "Alt text",
+  "products.block.caption": "Caption",
+  "products.block.textPlaceholder": "Write the content of this section…",
+  "products.block.textHint":
+    "Use ## for a heading, **bold**, *italic*, - for lists and [text](https://link) for links.",
+  "products.block.uploadImage": "Upload image",
+  "products.block.uploadVideo": "Upload video",
+  "products.block.edit": "Edit",
+  "products.block.remove": "Remove",
+  "products.block.fromGallery": "From gallery",
+  "products.pageContentPreview": "Preview",
+  "products.pageContentPreviewHide": "Hide preview",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "Categories",

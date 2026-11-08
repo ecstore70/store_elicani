@@ -410,6 +410,31 @@ export const es: Messages = {
   "products.error.saveFailed": "No se pudieron guardar los cambios. Inténtalo de nuevo.",
   "products.error.mediaInvalid": "Corrige la galería: revisa los enlaces y los tipos de archivo.",
   "products.error.mediaTooMany": "La galería puede tener como máximo 64 elementos.",
+  "products.error.blocksInvalid":
+    "Corrige el contenido de la página: revisa los enlaces y los tipos de bloques.",
+  "products.error.blocksTooMany":
+    "El contenido de la página puede tener como máximo 30 bloques.",
+
+  // ── contenido de la página del producto (bloques opcionales) ───────────
+  "products.sectionPageContent": "Contenido de la página del producto",
+  "products.pageContentEmpty":
+    "Sin contenido extra — la página muestra solo la información del producto.",
+  "products.pageContentAdd": "Añadir contenido",
+  "products.block.image": "Imagen",
+  "products.block.text": "Texto",
+  "products.block.video": "Vídeo",
+  "products.block.altText": "Texto alternativo",
+  "products.block.caption": "Pie de foto",
+  "products.block.textPlaceholder": "Escribe el contenido de esta sección…",
+  "products.block.textHint":
+    "Usa ## para un título, **negrita**, *cursiva*, - para listas y [texto](https://link) para enlaces.",
+  "products.block.uploadImage": "Subir imagen",
+  "products.block.uploadVideo": "Subir vídeo",
+  "products.block.edit": "Editar",
+  "products.block.remove": "Eliminar",
+  "products.block.fromGallery": "De la galería",
+  "products.pageContentPreview": "Vista previa",
+  "products.pageContentPreviewHide": "Ocultar vista previa",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "Categorías",

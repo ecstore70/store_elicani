@@ -3,7 +3,14 @@ import "server-only";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import type { MediaItemInput } from "./media";
-import type { PublicCategory, PublicMediaItem, PublicProduct, StoreCatalog } from "./types";
+import type { PageBlockInput, PageBlockType } from "./page-blocks";
+import type {
+  PublicCategory,
+  PublicMediaItem,
+  PublicPageBlock,
+  PublicProduct,
+  StoreCatalog,
+} from "./types";
 
 /**
  * Consultas PÚBLICAS do catálogo — usadas pela vitrine com o cliente SEM
@@ -184,5 +191,68 @@ export async function getPublicProductMedia(
   return (data ?? []).map((row) => ({
     type: row.media_type as PublicMediaItem["type"],
     url: row.source_url,
+  }));
+}
+
+// ── blocos de conteúdo da página do produto ─────────────────────────────────
+
+/**
+ * Blocos do produto da PRÓPRIA loja (edição), na sequência do comerciante.
+ */
+export async function listPageBlocksForOwner(
+  storeId: string,
+  productId: string,
+): Promise<PageBlockInput[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("product_page_blocks")
+    .select("id, type, content, media_url, caption, alt_text, sort_order")
+    .eq("store_id", storeId)
+    .eq("product_id", productId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to load page blocks: ${error.message}`);
+  }
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    type: row.type as PageBlockType,
+    content: row.content ?? undefined,
+    media_url: row.media_url ?? undefined,
+    caption: row.caption ?? undefined,
+    alt_text: row.alt_text ?? undefined,
+  }));
+}
+
+/**
+ * Blocos PÚBLICOS do produto — cliente `anon`; o RLS público só devolve
+ * blocos de produtos de lojas ATIVAS. A sequência é a do comerciante
+ * (sort_order) — nenhum id nem tenant trafega para a vitrine.
+ */
+export async function getPublicProductBlocks(
+  productId: string,
+): Promise<PublicPageBlock[]> {
+  const supabase = createPublicClient();
+
+  const { data, error } = await supabase
+    .from("product_page_blocks")
+    .select("type, content, media_url, caption, alt_text, sort_order")
+    .eq("product_id", productId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to load page blocks: ${error.message}`);
+  }
+
+  return (data ?? []).map((row) => ({
+    type: row.type as PageBlockType,
+    content: row.content,
+    media_url: row.media_url,
+    caption: row.caption,
+    alt_text: row.alt_text,
   }));
 }

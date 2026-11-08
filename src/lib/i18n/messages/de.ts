@@ -410,6 +410,31 @@ export const de: Messages = {
   "products.error.saveFailed": "Die Änderungen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.",
   "products.error.mediaInvalid": "Galerie korrigieren: Links und Dateitypen prüfen.",
   "products.error.mediaTooMany": "Die Galerie darf höchstens 64 Einträge haben.",
+  "products.error.blocksInvalid":
+    "Inhalt der Seite korrigieren: Links und Blocktypen prüfen.",
+  "products.error.blocksTooMany":
+    "Der Seiteninhalt darf höchstens 30 Blöcke haben.",
+
+  // ── Inhalt der Produktseite (optionale Blöcke) ─────────────────────────
+  "products.sectionPageContent": "Inhalt der Produktseite",
+  "products.pageContentEmpty":
+    "Kein zusätzlicher Inhalt — die Seite zeigt nur die Produktinformationen.",
+  "products.pageContentAdd": "Inhalt hinzufügen",
+  "products.block.image": "Bild",
+  "products.block.text": "Text",
+  "products.block.video": "Video",
+  "products.block.altText": "Alt-Text",
+  "products.block.caption": "Bildunterschrift",
+  "products.block.textPlaceholder": "Schreibe den Inhalt dieses Abschnitts …",
+  "products.block.textHint":
+    "Mit ## eine Überschrift, **fett**, *kursiv*, - für Listen und [Text](https://link) für Links.",
+  "products.block.uploadImage": "Bild hochladen",
+  "products.block.uploadVideo": "Video hochladen",
+  "products.block.edit": "Bearbeiten",
+  "products.block.remove": "Entfernen",
+  "products.block.fromGallery": "Aus der Galerie",
+  "products.pageContentPreview": "Vorschau",
+  "products.pageContentPreviewHide": "Vorschau ausblenden",
 
   // ── gestão de categorias ───────────────────────────────────────────────
   "categories.title": "Kategorien",
