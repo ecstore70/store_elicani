@@ -97,10 +97,13 @@ export async function getOrderDetail(
   if (!isUuid(orderId)) return null;
 
   const supabase = await createClient();
+  // Alias `items:` — o PostgREST devolve a chave do SELECT; sem o alias a
+  // chave seria `order_items` e `order.items` seria undefined (o detalhe
+  // quebra em `order.items.map`). O alias mantém o nome do tipo.
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "*, order_items(id, product_id, name, qty, unit_price, options)",
+      "*, items:order_items(id, product_id, name, qty, unit_price, options)",
     )
     .eq("store_id", storeId)
     .eq("id", orderId)
