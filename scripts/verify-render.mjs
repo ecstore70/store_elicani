@@ -306,7 +306,12 @@ try {
   let host = null;
   for (let attempt = 0; attempt < 3 && !host; attempt += 1) {
     for (const candidate of hosts) {
-      const probe = await req(`${candidate}/app/orders`, { cookie });
+      let probe;
+      try {
+        probe = await req(`${candidate}/app/orders`, { cookie });
+      } catch {
+        continue; // rede instável nesta tentativa — tenta o próximo host
+      }
       if (probe.status === 200 && probe.text.includes("Render Cliente")) {
         host = candidate;
         break;
