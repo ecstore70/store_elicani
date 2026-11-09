@@ -14,7 +14,15 @@ export const instant = false;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = createTranslator(await getLocale());
-  return { title: t("auth.signIn") };
+  return {
+    title: t("auth.signIn"),
+    // Auth não é conteúdo público: noindex para todas as rotas do grupo
+    // (login, signup, forgot-password, reset-password) — inclusive as
+    // variantes ?next=…, que resolvem para a mesma rota. O robots.txt
+    // NÃO bloqueia estas rotas de propósito, senão o Google não conseguiria
+    // LER este noindex.
+    robots: { index: false, follow: false },
+  };
 }
 
 /**
