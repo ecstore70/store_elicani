@@ -1,13 +1,15 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeft, Camera, Clock, Globe, Phone } from "lucide-react";
+import { ArrowLeft, Clock, Phone } from "lucide-react";
 import { CartProvider } from "./cart-provider";
 import { CartButton } from "./cart-button";
 import { ThemeVars } from "./theme-vars";
 import { Logo } from "@/components/shared/logo";
 import { LocaleSelector } from "@/components/shared/locale-selector";
+import { SocialIcon } from "@/components/shared/social-icon";
 import { WhatsAppIcon } from "@/components/shared/whatsapp-icon";
 import { getLocaleDirection, type Locale } from "@/lib/i18n/config";
+import { identifySocialNetwork, socialAriaLabel } from "@/lib/social";
 import type { PublicStore } from "@/lib/stores/types";
 import type { StorefrontStrings } from "@/lib/storefront/strings";
 import type { StorefrontTheme } from "@/lib/storefront/theme";
@@ -56,6 +58,14 @@ export function StoreShell({
   const whatsappHref = whatsappDigits
     ? `https://wa.me/${whatsappDigits}`
     : null;
+
+  // Links sociais configurados (apenas os DOIS campos existentes na base,
+  // sem campos novos nem sistema duplicado), deduplicados por URL. O ícone
+  // de cada ligação é decidido pela URL (hostname) — não pelo nome do
+  // campo — através do mapa interno de `SocialIcon`.
+  const socialLinks = Array.from(
+    new Set([store.instagram_url, store.facebook_url]),
+  ).filter((href): href is string => Boolean(href));
 
   const hasStoreInfo =
     Boolean(whatsappHref) ||
@@ -208,32 +218,22 @@ export function StoreShell({
                   </div>
                 )}
 
-                {(store.instagram_url || store.facebook_url) && (
+                {socialLinks.length > 0 && (
                   <div className="space-y-1.5">
                     <p className="text-sm font-medium">{strings.followUs}</p>
                     <div className="flex gap-3">
-                      {store.instagram_url && (
+                      {socialLinks.map((href) => (
                         <a
-                          href={store.instagram_url}
+                          key={href}
+                          href={href}
                           target="_blank"
                           rel="noreferrer"
-                          aria-label="Instagram"
+                          aria-label={socialAriaLabel(href)}
                           className="text-[var(--sf-muted)] transition-colors hover:text-[var(--sf-fg)]"
                         >
-                          <Camera aria-hidden="true" className="size-5" />
+                          <SocialIcon network={identifySocialNetwork(href)} />
                         </a>
-                      )}
-                      {store.facebook_url && (
-                        <a
-                          href={store.facebook_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label="Facebook"
-                          className="text-[var(--sf-muted)] transition-colors hover:text-[var(--sf-fg)]"
-                        >
-                          <Globe aria-hidden="true" className="size-5" />
-                        </a>
-                      )}
+                      ))}
                     </div>
                   </div>
                 )}
