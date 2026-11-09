@@ -203,6 +203,7 @@ export const en = {
 
   // ── botões genéricos ───────────────────────────────────────────────────
   "common.cancel": "Cancel",
+  "common.saveError": "Something went wrong. Please try again.",
 
   // ── validação de loja (novos campos de identidade) ─────────────────────
   "store.error.urlInvalid": "Use a full link, e.g. https://…",
@@ -585,6 +586,85 @@ export const en = {
   // ── vitrine: catálogo indisponível (estado, não erro) ──────────────────
   "storefront.catalogUnavailable": "This catalog is currently unavailable.",
   "storefront.catalogUnavailableHint": "Please try again later.",
+
+  // ── relatórios ─────────────────────────────────────────────────────────
+  "reports.subtitle": "Sales analysis for your store.",
+  "reports.rangeLabel": "Period",
+  "reports.rangeToday": "Today",
+  "reports.rangeYesterday": "Yesterday",
+  "reports.rangeLast7": "Last 7 days",
+  "reports.rangeLast30": "Last 30 days",
+  "reports.rangeThisMonth": "This month",
+  "reports.rangePrevMonth": "Previous month",
+  "reports.rangeCustom": "Custom",
+  "reports.rangeFrom": "From",
+  "reports.rangeTo": "To",
+  "reports.rangeApply": "Apply",
+  "reports.kpiSales": "Sales",
+  "reports.kpiOrders": "Orders",
+  "reports.kpiAvgOrder": "Average order",
+  "reports.kpiItemsSold": "Items sold",
+  "reports.chartSales": "Sales over time",
+  "reports.chartOrders": "Orders over time",
+  "reports.topProducts": "Top products",
+  "reports.recentOrders": "Recent orders",
+  "reports.viewAllOrders": "View all orders",
+  "status.pending": "Pending",
+  "status.confirmed": "Confirmed",
+  "status.completed": "Completed",
+  "status.cancelled": "Cancelled",
+  "reports.units": "units",
+  "reports.share": "of sales",
+  "reports.empty": "No sales in this period yet.",
+  "reports.emptyHint": "Sales will appear here once the first orders are recorded.",
+  "reports.loading": "Loading reports…",
+
+  // ── encomendas ─────────────────────────────────────────────────────────
+  "orders.subtitle": "All orders from your store.",
+  "orders.searchPlaceholder": "Search by name, phone or reference…",
+  "orders.search": "Search",
+  "orders.filterAll": "All",
+  "orders.emptyTitle": "No orders yet.",
+  "orders.emptyBody": "New orders will appear here.",
+  "orders.noResults": "No orders match your search.",
+  "orders.name": "Name",
+  "orders.phone": "Phone",
+  "orders.date": "Date",
+  "orders.total": "Total",
+  "orders.status": "Order status",
+  "orders.markPending": "Set as pending",
+  "orders.markConfirmed": "Confirm",
+  "orders.markCompleted": "Complete",
+  "orders.changeStatus": "Change status",
+  "orders.openDetail": "Open order {reference}",
+  "orders.number": "Order #{reference}",
+
+  // ── clientes ───────────────────────────────────────────────────────────
+  "customers.subtitle": "Customers who have ordered from your store.",
+  "customers.totalSpent": "Total spent",
+  "customers.lastOrder": "Last order",
+  "customers.emptyTitle": "No customers yet.",
+  "customers.emptyBody": "Customers are added when you receive orders.",
+  "customers.history": "History",
+  "customers.summary": "Summary",
+  "customers.back": "Back to customers",
+
+  // ── entrega ────────────────────────────────────────────────────────────
+  "delivery.subtitle": "Orders that need to be delivered.",
+  "delivery.statusPending": "Pending",
+  "delivery.statusPreparing": "Getting ready",
+  "delivery.statusOnTheWay": "On the way",
+  "delivery.statusDelivered": "Delivered",
+  "delivery.empty": "There are no deliveries in this period.",
+  "delivery.emptyBody": "Deliveries will appear here as orders need delivering.",
+  "delivery.labelDelivery": "Delivery",
+  "delivery.labelOrder": "Order",
+  "delivery.changeStatus": "Update delivery status",
+  "delivery.filterAll": "All",
+  "delivery.fee": "Delivery fee",
+  "delivery.markPreparing": "Mark as preparing",
+  "delivery.markOnTheWay": "Mark as on the way",
+  "delivery.markDelivered": "Mark as delivered",
 } as const;
 
 export type Messages = Record<keyof typeof en, string>;

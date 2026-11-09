@@ -558,13 +558,262 @@ try {
     errorDetail(productAfterCategoryDelete),
   );
 
+  // ── 9b. ENCOMENDAS: gravação, isolamento e estados ──────────────────────
+  // Cliente service role (compartilhado com a secção 10, verificação de
+  // dados "por baixo" do RLS).
+  const asService = createClient(URL_BASE, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  // `record_order` (SECURITY DEFINER) é o ÚNICO caminho de escrita do
+  // checkout: valida loja ativa, produto da loja e campos obrigatórios.
+  const orderCustomer = {
+    name: `Cliente RLS ${RUN_ID}`,
+    phone: "+258841112233",
+    neighborhood: `Bairro ${RUN_ID}`,
+    address: "Rua 1, nº 2",
+    reference: "Em frente à praça",
+    notes: "Entregar depois das 18h",
+  };
+  const orderLines = [{ productId: productA.data.id, qty: 2, options: [] }];
+
+  const created = await asAnon.rpc("record_order", {
+    p_store_id: idA,
+    p_customer: orderCustomer,
+    p_lines: orderLines,
+    p_payment: "cash",
+  });
+  assert(
+    "rpc record_order cria encomenda (anon, loja ativa)",
+    !created.error && typeof created.data === "string",
+    errorDetail(created),
+  );
+  const orderAId = created.data;
+
+  const orderRow = await asService
+    .from("orders")
+    .select(
+      "id, reference, status, delivery_status, subtotal, total, payment",
+    )
+    .eq("id", orderAId)
+    .maybeSingle();
+  assert(
+    "encomenda tem referência, estados e pagamento",
+    !!orderRow.data &&
+      /^[0-9A-F]{6}$/.test(orderRow.data.reference) &&
+      orderRow.data.status === "pending" &&
+      orderRow.data.delivery_status === "pending" &&
+      orderRow.data.payment === "cash",
+    JSON.stringify(orderRow.data) + (errorDetail(orderRow) ?? ""),
+  );
+
+  assert(
+    "total recalculado no banco (2 × preço 100 = 200)",
+    orderRow.data?.subtotal === 200 && orderRow.data?.total === 200,
+    `subtotal=${orderRow.data?.subtotal} total=${orderRow.data?.total}`,
+  );
+
+  const itemsA = await asService
+    .from("order_items")
+    .select("name, qty, unit_price, product_id")
+    .eq("order_id", orderAId);
+  assert(
+    "order_items guarda snapshot (nome/preço do banco)",
+    !itemsA.error &&
+      itemsA.data?.length === 1 &&
+      itemsA.data[0].qty === 2 &&
+      itemsA.data[0].unit_price === 100 &&
+      itemsA.data[0].product_id === productA.data.id,
+    errorDetail(itemsA) ?? JSON.stringify(itemsA.data),
+  );
+
+  // ── isolamento multi-tenant das encomendas ──────────────────────────────
+  const crossOrderRead = await B.from("orders").select("id").eq("id", orderAId);
+  assert(
+    "B NÃO lê a encomenda de A (por UUID direto)",
+    !crossOrderRead.error && crossOrderRead.data?.length === 0,
+    `linhas devolvidas: ${JSON.stringify(crossOrderRead.data)}`,
+  );
+
+  const crossItemRead = await B.from("order_items")
+    .select("id")
+    .eq("order_id", orderAId);
+  assert(
+    "B NÃO lê os itens da encomenda de A",
+    !crossItemRead.error && crossItemRead.data?.length === 0,
+    `linhas devolvidas: ${JSON.stringify(crossItemRead.data)}`,
+  );
+
+  const anonOrderRead = await asAnon.from("orders").select("id").eq("id", orderAId);
+  assert(
+    "anônimo NÃO lê encomendas",
+    !anonOrderRead.error && anonOrderRead.data?.length === 0,
+    `linhas devolvidas: ${JSON.stringify(anonOrderRead.data)}`,
+  );
+
+  const anonOrderInsert = await asAnon.from("orders").insert({
+    store_id: idA,
+    customer_name: "Hacker",
+    customer_phone: "+258840000000",
+    customer_neighborhood: "Baixa",
+    subtotal: 1,
+    total: 1,
+  });
+  assert(
+    "anônimo NÃO cria encomenda direto (REST)",
+    !!anonOrderInsert.error && anonOrderInsert.error.code === "42501",
+    errorDetail(anonOrderInsert),
+  );
+
+  const anonOrderUpdate = await asAnon
+    .from("orders")
+    .update({ status: "completed" })
+    .eq("id", orderAId)
+    .select("id");
+  assert(
+    "anônimo NÃO atualiza encomenda",
+    !anonOrderUpdate.error && anonOrderUpdate.data?.length === 0,
+    `linhas afetadas: ${JSON.stringify(anonOrderUpdate.data)} ${errorDetail(anonOrderUpdate) ?? ""}`,
+  );
+
+  const anonItemInsert = await asAnon.from("order_items").insert({
+    order_id: orderAId,
+    store_id: idA,
+    name: "Fake",
+    qty: 1,
+    unit_price: 0,
+  });
+  assert(
+    "anônimo NÃO cria item de encomenda",
+    !!anonItemInsert.error && anonItemInsert.error.code === "42501",
+    errorDetail(anonItemInsert),
+  );
+
+  // ── estados: o dono atualiza (policy orders_update_own) ─────────────────
+  const ownStatusUpdate = await A.from("orders")
+    .update({ status: "confirmed" })
+    .eq("id", orderAId)
+    .select("status");
+  assert(
+    "A atualiza o estado da própria encomenda",
+    !ownStatusUpdate.error &&
+      ownStatusUpdate.data?.[0]?.status === "confirmed",
+    errorDetail(ownStatusUpdate) ?? JSON.stringify(ownStatusUpdate.data),
+  );
+
+  const ownDeliveryUpdate = await A.from("orders")
+    .update({ delivery_status: "on_the_way" })
+    .eq("id", orderAId)
+    .select("delivery_status");
+  assert(
+    "A atualiza o estado de entrega da própria encomenda",
+    !ownDeliveryUpdate.error &&
+      ownDeliveryUpdate.data?.[0]?.delivery_status === "on_the_way",
+    errorDetail(ownDeliveryUpdate) ?? JSON.stringify(ownDeliveryUpdate.data),
+  );
+
+  const crossStatusUpdate = await B.from("orders")
+    .update({ status: "cancelled" })
+    .eq("id", orderAId)
+    .select("id");
+  assert(
+    "B NÃO atualiza o estado da encomenda de A",
+    !crossStatusUpdate.error && crossStatusUpdate.data?.length === 0,
+    `linhas afetadas: ${JSON.stringify(crossStatusUpdate.data)}`,
+  );
+
+  const crossDeliveryUpdate = await B.from("orders")
+    .update({ delivery_status: "delivered" })
+    .eq("id", orderAId)
+    .select("id");
+  assert(
+    "B NÃO atualiza a entrega da encomenda de A",
+    !crossDeliveryUpdate.error && crossDeliveryUpdate.data?.length === 0,
+    `linhas afetadas: ${JSON.stringify(crossDeliveryUpdate.data)}`,
+  );
+
+  // ── validações do record_order (regras do checkout, no banco) ───────────
+  const foreignProduct = await B.from("products")
+    .insert({ store_id: idB, name: `Produto B ${RUN_ID}`, price: 50 })
+    .select("id")
+    .single();
+  assert(
+    "B cria produto próprio para o teste cruzado",
+    !foreignProduct.error && !!foreignProduct.data,
+    errorDetail(foreignProduct),
+  );
+
+  const wrongProduct = await asAnon.rpc("record_order", {
+    p_store_id: idA,
+    p_customer: orderCustomer,
+    p_lines: [
+      {
+        productId:
+          foreignProduct.data?.id ?? "00000000-0000-4000-8000-000000000000",
+        qty: 1,
+        options: [],
+      },
+    ],
+    p_payment: null,
+  });
+  assert(
+    "record_order REJEITA produto de outra loja",
+    !!wrongProduct.error,
+    errorDetail(wrongProduct) ?? `criou: ${wrongProduct.data}`,
+  );
+
+  const missingNeighborhood = await asAnon.rpc("record_order", {
+    p_store_id: idA,
+    p_customer: { ...orderCustomer, neighborhood: "" },
+    p_lines: orderLines,
+    p_payment: null,
+  });
+  assert(
+    "record_order REJEITA encomenda sem bairro",
+    !!missingNeighborhood.error,
+    errorDetail(missingNeighborhood) ?? `criou: ${missingNeighborhood.data}`,
+  );
+
+  const badPhone = await asAnon.rpc("record_order", {
+    p_store_id: idA,
+    p_customer: { ...orderCustomer, phone: "12" },
+    p_lines: orderLines,
+    p_payment: null,
+  });
+  assert(
+    "record_order REJEITA telefone inválido",
+    !!badPhone.error,
+    errorDetail(badPhone) ?? `criou: ${badPhone.data}`,
+  );
+
+  await A.from("stores").update({ is_active: false }).eq("id", idA);
+  const inactiveOrder = await asAnon.rpc("record_order", {
+    p_store_id: idA,
+    p_customer: orderCustomer,
+    p_lines: orderLines,
+    p_payment: null,
+  });
+  assert(
+    "record_order REJEITA loja inativa",
+    !!inactiveOrder.error,
+    errorDetail(inactiveOrder) ?? `criou: ${inactiveOrder.data}`,
+  );
+  await A.from("stores").update({ is_active: true }).eq("id", idA);
+
+  const ownOrderRead = await A.from("orders")
+    .select("id, reference, customer_phone, total, status, delivery_status")
+    .eq("id", orderAId)
+    .maybeSingle();
+  assert(
+    "A lê a própria encomenda (painel)",
+    !!ownOrderRead.data && ownOrderRead.data.status === "confirmed",
+    errorDetail(ownOrderRead),
+  );
+
   // ── 10. Ciclo de vida do catálogo: RPC de status + exclusão segura ──────
   // O RLS esconde lojas inativas do anon, mas o proxy e as páginas precisam
   // DISTINGUIR "inativa" (estado indisponível, 200) de "inexistente" (404).
   // A função SECURITY DEFINER `store_public_status` expõe só o estado.
-  const asService = createClient(URL_BASE, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
 
   const statusActive = await asAnon.rpc("store_public_status", { p_slug: SLUG_A });
   assert("rpc: loja ativa → 'active'", statusActive.data === "active", errorDetail(statusActive));
@@ -607,6 +856,13 @@ try {
     "cascata apaga os produtos do catálogo",
     !productsGone.error && productsGone.data?.length === 0,
     errorDetail(productsGone),
+  );
+
+  const ordersGone = await asService.from("orders").select("id").eq("store_id", idA);
+  assert(
+    "cascata apaga as encomendas do catálogo",
+    !ordersGone.error && ordersGone.data?.length === 0,
+    errorDetail(ordersGone),
   );
 
   const profileSurvives = await A.from("profiles")

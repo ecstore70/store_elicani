@@ -21,6 +21,7 @@ import {
   type CheckoutForm,
   type RequiredCheckoutField,
 } from "@/lib/storefront/checkout-validation";
+import { recordOrderAction } from "@/lib/orders/actions";
 import { createClient as createBrowserClient } from "@/lib/supabase/client";
 import { useCart } from "./cart-provider";
 
@@ -276,6 +277,43 @@ export function CheckoutProvider({
     } catch {
       // falha em aberto: segue para o WhatsApp (mesma convenção do proxy).
     }
+
+    // ── gravação do pedido (adicional, best-effort) ──────────────────────
+    // O WhatsApp continua a ser o envio da Fase 1 e NUNCA é bloqueado por
+    // esta gravação: promessa lançada em paralelo, falha só logada. O que
+    // sai daqui é IDENTIDADE das linhas (produto/quantidade/opções) —
+    // nome, preço e totais são recalculados no servidor pela função
+    // `record_order`; valores do navegador nunca viram número.
+    void recordOrderAction({
+      storeId,
+      customer: {
+        name: current.name,
+        phone: current.phone,
+        address: current.address.trim() || undefined,
+        neighborhood: current.neighborhood.trim() || undefined,
+        reference: current.reference.trim() || undefined,
+        notes: current.notes || undefined,
+        payment:
+          current.payment === "cash" ||
+          current.payment === "transfer" ||
+          current.payment === "other"
+            ? current.payment
+            : null,
+      },
+      lines: items.map((item) => ({
+        productId: item.id,
+        qty: item.qty,
+        options: item.options,
+      })),
+    })
+      .then((result) => {
+        if (!result.ok) {
+          console.warn("[checkout] pedido não gravado:", result.code);
+        }
+      })
+      .catch((error) => {
+        console.error("[checkout] falha ao gravar pedido:", error);
+      });
 
     const paymentLabel =
       current.payment === "cash"

@@ -77,6 +77,130 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          options: Json
+          order_id: string
+          product_id: string | null
+          qty: number
+          store_id: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          options?: Json
+          order_id: string
+          product_id?: string | null
+          qty: number
+          store_id: string
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          options?: Json
+          order_id?: string
+          product_id?: string | null
+          qty?: number
+          store_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          customer_address: string | null
+          customer_name: string
+          customer_neighborhood: string | null
+          customer_notes: string | null
+          customer_phone: string
+          customer_reference: string | null
+          delivery_fee: number | null
+          delivery_status: string
+          id: string
+          payment: string | null
+          reference: string
+          status: string
+          store_id: string
+          subtotal: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_address?: string | null
+          customer_name: string
+          customer_neighborhood?: string | null
+          customer_notes?: string | null
+          customer_phone: string
+          customer_reference?: string | null
+          delivery_fee?: number | null
+          delivery_status?: string
+          id?: string
+          payment?: string | null
+          status?: string
+          store_id: string
+          subtotal: number
+          total: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_address?: string | null
+          customer_name?: string
+          customer_neighborhood?: string | null
+          customer_notes?: string | null
+          customer_phone?: string
+          customer_reference?: string | null
+          delivery_fee?: number | null
+          delivery_status?: string
+          id?: string
+          payment?: string | null
+          status?: string
+          store_id?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -376,6 +500,10 @@ export type Database = {
     }
     Functions: {
       owns_store_folder: { Args: { object_path: string }; Returns: boolean }
+      record_order: {
+        Args: { p_store_id: string; p_customer: Json; p_lines: Json; p_payment?: string }
+        Returns: string
+      }
       store_public_status: { Args: { p_slug: string }; Returns: string | null }
     }
     Enums: {

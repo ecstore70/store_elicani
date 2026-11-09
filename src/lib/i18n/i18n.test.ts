@@ -82,6 +82,10 @@ describe("tradutor", () => {
       "storefront.catalogUnavailable",
       "storefront.checkoutRequired",
       "products.sectionPageContent",
+      "reports.empty",
+      "reports.kpiAvgOrder",
+      "delivery.statusPreparing",
+      "customers.emptyTitle",
       "common.cancel",
     ] as const;
 

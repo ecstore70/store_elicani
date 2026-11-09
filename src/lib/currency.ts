@@ -83,9 +83,13 @@ export function formatCurrency(
 }
 
 /** Número formatado conforme o idioma (usado nos cartões de resumo). */
-export function formatNumber(value: number, locale: string = DEFAULT_LOCALE): string {
+export function formatNumber(
+  value: number,
+  locale: string = DEFAULT_LOCALE,
+  options?: Intl.NumberFormatOptions,
+): string {
   try {
-    return new Intl.NumberFormat(locale).format(value);
+    return new Intl.NumberFormat(locale, options).format(value);
   } catch {
     return String(value);
   }
