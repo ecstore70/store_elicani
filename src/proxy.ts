@@ -2,6 +2,8 @@
  * Proxy do Elicani (Next.js 16 — substitui o middleware.ts, deprecado).
  *
  * Responsabilidades da Fase 1:
+ *  0. Redirecionar valorfacil.elicani.site → valorfacil.blogspot.com
+ *     (blog externo no Blogger; 301 permanente preservando caminho e query);
  *  1. Encaminhar {slug}.{NEXT_PUBLIC_STORE_DOMAIN}/ → /store/[slug]
  *     (arquitetura de wildcard pronta para o storefront público);
  *  1b. Distinguir loja INEXISTENTE (404 real) de loja INATIVA: a inativa
@@ -102,6 +104,19 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const host = request.headers.get("host") ?? "";
   const domain = getStoreDomain();
   const hostname = host.split(":")[0].toLowerCase();
+
+  // ── 00. blog externo: valorfacil.elicani.site → blogspot ────────────────
+  //
+  // Domínio de blog hospedado no Blogger (fora do Elicani). Redireciona
+  // QUALQUER caminho/query (ex.: /?m=1) para o blog correspondente com 301
+  // permanente. Vem antes de todas as regras para nenhum redirecionamento
+  // interno (auth canônica, www) capturar este host.
+  if (hostname === "valorfacil.elicani.site") {
+    return NextResponse.redirect(
+      `https://valorfacil.blogspot.com${pathname}${search}`,
+      301,
+    );
+  }
 
   // ── 0. páginas de auth só no host canônico (getSiteUrl) ─────────────────
   //
