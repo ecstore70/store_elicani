@@ -32,6 +32,7 @@ export type StorefrontStrings = {
   contact: string;
   openingHours: string;
   followUs: string;
+  poweredBy: string;
   openCartAria: string;
   cartCountAria: string;
   productImageAlt: string;
@@ -119,6 +120,7 @@ export function buildStorefrontStrings(t: Translator): StorefrontStrings {
     contact: t("storefront.contact"),
     openingHours: t("storefront.openingHours"),
     followUs: t("storefront.followUs"),
+    poweredBy: t("storefront.poweredBy"),
     openCartAria: t("storefront.openCartAria"),
     cartCountAria: t("storefront.cartCountAria"),
     productImageAlt: t("storefront.productImageAlt"),

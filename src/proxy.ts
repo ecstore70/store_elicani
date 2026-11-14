@@ -9,9 +9,11 @@
  *  1b. Distinguir loja INEXISTENTE (404 real) de loja INATIVA: a inativa
  *     recebe o estado indisponível da vitrine (200 + noindex, ver ramo 2) —
  *     nunca 404, nunca página quebrada;
- *  1c. Responder 404 real em /store/{slug}/products/{id} quando a loja não
- *     existe ou o produto não pertence a ela (id malformado, URL cruzada);
- *     loja inativa → a página de produto renderiza o estado indisponível;
+ *  1c. Responder 404 real em /store/{slug}/products/{id-ou-slug} quando a
+ *     loja não existe ou o produto não pertence a ela (param malformado,
+ *     URL cruzada); 301 da forma antiga (UUID) para a forma canônica
+ *     (slug); loja inativa → a página de produto renderiza o estado
+ *     indisponível;
  *  2. Redirecionar www → domínio principal;
  *  2b. Manter páginas de auth (/login, /signup, …) no host canônico —
  *      evita o split dos cookies PKCE entre alias e host do app;
@@ -64,15 +66,23 @@ const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Consulta pública que responde se o produto EXISTE nesta loja ATIVA.
- * Devolve `false` (→ 404 real) para loja inativa/inexistente, id malformado
- * ou produto pertencente a outra loja; falha em aberto em erro de rede/DB.
+ * Resolve o produto na loja ATIVA por SLUG ou UUID (URL pública aceita
+ * os dois segmentos — ver src/lib/catalog/product-slug.ts).
+ *
+ * `found: false` (→ 404 real) para produto inexistente ou pertencente a
+ * OUTRA loja (URL cruzada); falha em aberto em erro de rede/DB
+ * (`found: true, slug: null` — a página revalida e NADA é redirecionado
+ * no escuro).
+ *
+ * `slug` devolvido habilita o 301 da forma antiga (UUID) para a forma
+ * canônica (slug) — chamador em proxy().
  */
-async function isStoreProduct(
+type ProductLookup = { found: boolean; slug: string | null };
+
+async function lookupStoreProduct(
   storeSlug: string,
-  productId: string,
-): Promise<boolean> {
-  if (!UUID_PATTERN.test(productId)) return false;
+  productParam: string,
+): Promise<ProductLookup> {
   try {
     const publicClient = createServerClient<Database>(getSupabaseUrl(), getSupabaseAnonKey(), {
       cookies: { getAll: () => [], setAll: () => {} },
@@ -83,19 +93,33 @@ async function isStoreProduct(
       .eq("slug", storeSlug)
       .eq("is_active", true)
       .maybeSingle();
-    if (storeError) return true; // falha em aberto: a página revalida
-    if (!store) return false;
+    if (storeError) return { found: true, slug: null }; // falha em aberto
+    if (!store) return { found: false, slug: null };
 
-    const { data: product, error: productError } = await publicClient
+    // UUID → tenta por id primeiro; slug → por slug. Format coincidente
+    // (slug com cara de uuid): id vence, slug é o fallback.
+    if (UUID_PATTERN.test(productParam)) {
+      const { data: byId, error: idError } = await publicClient
+        .from("products")
+        .select("id, slug")
+        .eq("id", productParam)
+        .eq("store_id", store.id)
+        .maybeSingle();
+      if (idError) return { found: true, slug: null };
+      if (byId) return { found: true, slug: byId.slug };
+    }
+
+    const { data: bySlug, error: slugError } = await publicClient
       .from("products")
-      .select("id")
-      .eq("id", productId)
+      .select("id, slug")
+      .eq("slug", productParam)
       .eq("store_id", store.id)
       .maybeSingle();
-    if (productError) return true; // falha em aberto: a página revalida
-    return Boolean(product);
+    if (slugError) return { found: true, slug: null };
+    if (bySlug) return { found: true, slug: bySlug.slug };
+    return { found: false, slug: null };
   } catch {
-    return true; // falha em aberto: a página revalida
+    return { found: true, slug: null }; // falha em aberto
   }
 }
 
@@ -165,12 +189,21 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
       const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
       return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
     }
-    if (
-      status === "active" &&
-      !(await isStoreProduct(productPath[1], productPath[2]))
-    ) {
-      const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
-      return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
+    if (status === "active") {
+      const lookup = await lookupStoreProduct(productPath[1], productPath[2]);
+      if (!lookup.found) {
+        const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
+        return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
+      }
+      // 301 da forma ANTIGA (UUID) para a forma canônica (slug), no MESMO
+      // host — o proxy só reescreve a raiz do subdomínio, então o redirect
+      // fica no path; a canônica/OG/sitemap continuam apontando para o
+      // subdomínio como sempre. Slug atual já passa direto (sem loop).
+      if (lookup.slug && UUID_PATTERN.test(productPath[2])) {
+        const url = request.nextUrl.clone();
+        url.pathname = `/store/${productPath[1]}/products/${lookup.slug}`;
+        return NextResponse.redirect(url, 301);
+      }
     }
   }
 

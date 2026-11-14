@@ -5,6 +5,7 @@ import { ArrowRight, Check, Coins, LayoutGrid, Settings, Store, Truck } from "lu
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/logo";
 import { WhatsAppIcon } from "@/components/shared/whatsapp-icon";
+import { JsonLd } from "@/components/shared/json-ld";
 import {
   Card,
   CardDescription,
@@ -18,6 +19,8 @@ import {
 import { DashboardMock } from "@/components/marketing/dashboard-mock";
 import { getLocale } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
+import { getMarketingUrl } from "@/lib/env";
+import { PLATFORM_DESCRIPTION } from "@/lib/stores/metadata";
 import type { MessageKey } from "@/lib/i18n/messages/en";
 import { cn } from "@/lib/utils";
 
@@ -132,9 +135,36 @@ function CheckList({
 export default async function LandingPage() {
   const locale = await getLocale();
   const t = createTranslator(locale);
+  const marketingUrl = getMarketingUrl();
 
   return (
     <>
+      {/* Entidade PLATAFORMA em JSON-LD — distinta das lojas (cada loja
+          declara a SUA identidade no /store/[slug]). Só fatos desta
+          página: nome, URL, descrição institucional e logo oficiais. */}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "WebSite",
+              "@id": `${marketingUrl}/#website`,
+              name: "Elicani",
+              url: marketingUrl,
+              description: PLATFORM_DESCRIPTION,
+            },
+            {
+              "@type": "Organization",
+              "@id": `${marketingUrl}/#organization`,
+              name: "Elicani",
+              url: marketingUrl,
+              description: PLATFORM_DESCRIPTION,
+              logo: `${marketingUrl}/brand/elicani-icon-512.png`,
+            },
+          ],
+        }}
+      />
+
       {/* ── 1. Hero ─────────────────────────────────────────────────────── */}
       <section aria-labelledby="hero-title" className="pt-12 sm:pt-14 lg:pt-16">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 pb-16 sm:px-6 sm:pb-20 lg:grid-cols-[1.05fr_1fr] lg:gap-12 lg:px-8 lg:pb-24">

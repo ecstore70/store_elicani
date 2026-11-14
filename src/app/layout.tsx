@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { getMarketingUrl } from "@/lib/env";
 import { getLocaleDirection } from "@/lib/i18n/config";
 import { getLocale } from "@/lib/i18n/locale";
-import { PLATFORM_ICONS } from "@/lib/stores/metadata";
+import { PLATFORM_DESCRIPTION, PLATFORM_ICONS } from "@/lib/stores/metadata";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,8 +24,7 @@ export const metadata: Metadata = {
     default: "Elicani — Sell online, take orders on WhatsApp",
     template: "%s · Elicani",
   },
-  description:
-    "Elicani gives your business its own storefront. Products, customers and orders in one place — in any currency.",
+  description: PLATFORM_DESCRIPTION,
   applicationName: "Elicani",
   // Ícones da PLATAFORMA como objecto metadata (não file-conventions em
   // src/app/): file-conventions têm prioridade absoluta no Next e seriam
@@ -48,15 +47,13 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "Elicani",
     title: "Elicani — Sell online, take orders on WhatsApp",
-    description:
-      "Elicani gives your business its own storefront. Products, customers and orders in one place — in any currency.",
+    description: PLATFORM_DESCRIPTION,
     images: [{ url: "/brand/elicani-og.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Elicani — Sell online, take orders on WhatsApp",
-    description:
-      "Elicani gives your business its own storefront. Products, customers and orders in one place — in any currency.",
+    description: PLATFORM_DESCRIPTION,
     images: ["/brand/elicani-og.png"],
   },
 };

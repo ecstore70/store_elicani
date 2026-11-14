@@ -48,6 +48,7 @@ export const SAMPLE_CATEGORIES: PublicCategory[] = [
 export const SAMPLE_PRODUCTS: PublicProduct[] = [
   {
     id: "p-shirt",
+    slug: "polo-shirt",
     category_id: "c-apparel",
     name: "Polo Shirt",
     description: "Breathable knit, relaxed fit.",
@@ -62,6 +63,7 @@ export const SAMPLE_PRODUCTS: PublicProduct[] = [
   },
   {
     id: "p-dress",
+    slug: "satin-bow-dress",
     category_id: "c-apparel",
     name: "Satin Bow Dress",
     description: "Statement look for special days.",
@@ -76,6 +78,7 @@ export const SAMPLE_PRODUCTS: PublicProduct[] = [
   },
   {
     id: "p-tote",
+    slug: "leather-handbag",
     category_id: "c-accessories",
     name: "Leather Handbag",
     description: "Structured carry with tassel charm.",
@@ -90,6 +93,7 @@ export const SAMPLE_PRODUCTS: PublicProduct[] = [
   },
   {
     id: "p-sneakers",
+    slug: "runner-sneakers",
     category_id: "c-shoes",
     name: "Runner Sneakers",
     description: "Cushioned sole, everyday comfort.",
@@ -102,6 +106,7 @@ export const SAMPLE_PRODUCTS: PublicProduct[] = [
   },
   {
     id: "p-cap",
+    slug: "cotton-cap",
     category_id: "c-accessories",
     name: "Cotton Cap",
     description: "Adjustable, one size.",
@@ -116,6 +121,7 @@ export const SAMPLE_PRODUCTS: PublicProduct[] = [
   },
   {
     id: "p-wallet",
+    slug: "leather-wallet",
     category_id: "c-accessories",
     name: "Leather Wallet",
     description: "Slim profile, six card slots.",

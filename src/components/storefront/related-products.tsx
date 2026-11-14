@@ -2,6 +2,7 @@
 
 import type { Locale } from "@/lib/i18n/config";
 import type { PublicProduct } from "@/lib/catalog/types";
+import { productSlugOrId } from "@/lib/catalog/product-slug";
 import type { StoreTemplate } from "@/lib/stores/appearance";
 import type { StorefrontStrings } from "@/lib/storefront/strings";
 import { useOptionalCart } from "./cart-provider";
@@ -42,7 +43,7 @@ export function RelatedProducts({
           locale={locale}
           onAdd={cart?.add}
           readOnly={!cart}
-          href={`/store/${storeSlug}/products/${product.id}`}
+          href={`/store/${storeSlug}/products/${productSlugOrId(product)}`}
         />
       ))}
     </div>

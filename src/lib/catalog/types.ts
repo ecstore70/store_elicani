@@ -25,6 +25,7 @@ export type PublicProduct = Pick<
   | "description"
   | "price"
   | "promo_price"
+  | "slug"
   | "image_url"
   | "is_available"
   | "is_featured"

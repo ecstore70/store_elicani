@@ -26,6 +26,7 @@ import {
   type PageBlockInput,
 } from "./page-blocks";
 import { validateProductValues } from "./validate";
+import { slugifyProductName, uniqueProductSlug } from "./product-slug";
 import {
   emptyProductFormValues,
   type CategoryFormState,
@@ -176,10 +177,26 @@ export async function createProductAction(
   const pageBlocks = blocks.blocks;
 
   const supabase = await createClient();
+
+  // Slug público do produto — gerado UMA vez, aqui: renomes futuros não
+  // alteram a URL (estabilidade é regra). Colisão dentro da loja → sufixo
+  // -2, -3…; o índice único por loja é a última barreira. Nome sem slug
+  // ASCII → null: o produto publica pelo UUID (fallback da aplicação).
+  const { data: siblings } = await supabase
+    .from("products")
+    .select("slug")
+    .eq("store_id", store.id);
+  const takenSlugs = new Set(
+    (siblings ?? []).flatMap((row) => (row.slug ? [row.slug] : [])),
+  );
+  const slugBase = slugifyProductName(values.name);
+  const slug = slugBase ? uniqueProductSlug(slugBase, takenSlugs) : null;
+
   const { data: created, error } = await supabase
     .from("products")
     .insert({
       store_id: store.id,
+      slug,
       ...toProductPayload(values),
       // Espelho: a primeira imagem da galeria vira a imagem do produto.
       image_url: primaryImageUrl(mediaItems),

@@ -298,6 +298,7 @@ export const en = {
   "storefront.contact": "Contact",
   "storefront.openingHours": "Opening hours",
   "storefront.followUs": "Follow us",
+  "storefront.poweredBy": "Powered by Elicani",
   "storefront.openCartAria": "Open cart",
   "storefront.cartCountAria": "Items in cart",
   "storefront.productImageAlt": "Product image",

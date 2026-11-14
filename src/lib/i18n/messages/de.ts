@@ -294,6 +294,7 @@ export const de: Messages = {
   "storefront.contact": "Kontakt",
   "storefront.openingHours": "Öffnungszeiten",
   "storefront.followUs": "Folgen Sie uns",
+  "storefront.poweredBy": "Betrieben mit Elicani",
   "storefront.openCartAria": "Warenkorb öffnen",
   "storefront.cartCountAria": "Artikel im Warenkorb",
   "storefront.productImageAlt": "Produktbild",

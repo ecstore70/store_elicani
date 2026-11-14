@@ -299,6 +299,7 @@ export const ptBR: Messages = {
   "storefront.contact": "Contacto",
   "storefront.openingHours": "Horário",
   "storefront.followUs": "Siga-nos",
+  "storefront.poweredBy": "Powered by Elicani",
   "storefront.openCartAria": "Abrir carrinho",
   "storefront.cartCountAria": "Itens no carrinho",
   "storefront.productImageAlt": "Imagem do produto",

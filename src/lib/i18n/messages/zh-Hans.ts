@@ -282,6 +282,7 @@ export const zhHans: Messages = {
   "storefront.contact": "联系方式",
   "storefront.openingHours": "营业时间",
   "storefront.followUs": "关注我们",
+  "storefront.poweredBy": "由 Elicani 提供支持",
   "storefront.openCartAria": "打开购物车",
   "storefront.cartCountAria": "购物车中的商品数",
   "storefront.productImageAlt": "商品图片",

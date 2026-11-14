@@ -295,6 +295,7 @@ export const ar: Messages = {
   "storefront.contact": "التواصل",
   "storefront.openingHours": "مواعيد العمل",
   "storefront.followUs": "تابعنا",
+  "storefront.poweredBy": "مدعوم من Elicani",
   "storefront.openCartAria": "فتح السلة",
   "storefront.cartCountAria": "عدد عناصر السلة",
   "storefront.productImageAlt": "صورة المنتج",

@@ -245,14 +245,24 @@ export function StoreShell({
         {!isCheckout && (
           <footer className="border-t border-[var(--sf-border)]">
             <div className="mx-auto flex w-full max-w-[var(--sf-container)] items-center justify-between gap-4 px-4 py-5 sm:px-6">
+              {/* Crédito da PLATAFORMA — subordinado visualmente (texto
+                  pequeno, muted) mas explícito e rastreável: o link é a
+                  ÚNICA relação loja→plataforma visível e maquinável da
+                  vitrine ("esta loja opera no Elicani"). Nome acessível =
+                  texto visível (Label in Name). */}
               <Link
                 href="https://elicani.site"
                 target="_blank"
                 rel="noreferrer"
-                className="opacity-70 transition-opacity hover:opacity-100"
-                aria-label="Elicani"
+                className="flex items-center gap-1.5 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)]"
               >
-                <Logo variant="mono" className="h-4 text-[var(--sf-muted)]" />
+                <Logo
+                  variant="mono"
+                  className="h-4 shrink-0 text-[var(--sf-muted)]"
+                />
+                <span className="text-xs text-[var(--sf-muted)]">
+                  {strings.poweredBy}
+                </span>
               </Link>
               <span className="font-mono text-xs text-[var(--sf-muted)]">
                 {store.currency}

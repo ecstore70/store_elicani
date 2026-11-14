@@ -7,6 +7,7 @@ import type {
   PublicCategory,
   PublicProduct,
 } from "@/lib/catalog/types";
+import { productSlugOrId } from "@/lib/catalog/product-slug";
 import type {
   ImageRatio,
   ProductLayout,
@@ -104,7 +105,7 @@ export function StorefrontCatalog({
 
   const productHref = (product: PublicProduct): string | null =>
     storeSlug && !readOnly
-      ? `/store/${storeSlug}/products/${product.id}`
+      ? `/store/${storeSlug}/products/${productSlugOrId(product)}`
       : null;
 
   const renderProducts = (list: PublicProduct[]) =>

@@ -293,6 +293,7 @@ export const ja: Messages = {
   "storefront.contact": "お問い合わせ",
   "storefront.openingHours": "営業時間",
   "storefront.followUs": "フォローする",
+  "storefront.poweredBy": "Elicani 提供",
   "storefront.openCartAria": "カートを開く",
   "storefront.cartCountAria": "カート内の商品数",
   "storefront.productImageAlt": "商品画像",

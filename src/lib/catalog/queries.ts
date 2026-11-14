@@ -18,7 +18,7 @@ import type {
  * de lojas ATIVAS; campos são selecionados explicitamente (nada de "*").
  */
 const PRODUCT_PUBLIC_FIELDS =
-  "id, category_id, name, description, price, promo_price, image_url, is_available, is_featured, sort_order";
+  "id, category_id, name, description, price, promo_price, slug, image_url, is_available, is_featured, sort_order";
 
 const CATEGORY_PUBLIC_FIELDS = "id, name, sort_order, is_active";
 

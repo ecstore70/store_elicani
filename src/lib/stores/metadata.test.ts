@@ -258,6 +258,25 @@ describe("buildProductMetadata — nível produto", () => {
     assert.equal(productCanonicalUrl("cafe-aurora", product.id), expected);
   });
 
+  it("segmento final da canonical = SLUG; UUID só como fallback", () => {
+    const withSlug = buildProductMetadata(store, {
+      ...product,
+      slug: "graos-torrados",
+    });
+    assert.equal(
+      withSlug.alternates?.canonical,
+      `https://cafe-aurora.${DOMAIN}/store/cafe-aurora/products/graos-torrados`,
+    );
+
+    // Slug null (nome sem ASCII / dado antigo): UUID segue canônico —
+    // nunca uma URL quebrada, e a mesma fórmula do sitemap.
+    const withoutSlug = buildProductMetadata(store, product);
+    assert.match(
+      String(withoutSlug.alternates?.canonical),
+      /\/products\/7c50cd8e-adac-48a4-bfa7-d395d53f1106$/,
+    );
+  });
+
   it("og:image = imagem primária do produto; twitter espelha", () => {
     const meta = buildProductMetadata(store, product);
     assert.equal(imageUrls(meta.openGraph?.images)[0], "https://cdn/graos.jpg");

@@ -49,7 +49,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = visitorChoice ?? normalizeLocale(store.language);
   const t = createTranslator(locale);
   return {
-    title: `${t("storefront.checkout")} · ${store.name}`,
+    // `absolute`: numa URL de loja o template "%s · Elicani" do root é
+    // proibido — antes saía "Finalizar compra · Elicani Shop · Elicani".
+    title: { absolute: `${t("storefront.checkout")} · ${store.name}` },
     robots: { index: false, follow: false },
   };
 }

@@ -18,8 +18,8 @@ import { storePublicUrl } from "@/lib/stores/resolve";
  *
  * URLs: loja = subdomínio real (`{slug}.elicani.site`, cuja raiz o proxy
  * reescreve para /store/[slug]); produto = caminho absoluto
- * `/store/{slug}/products/{id}`, que funciona no subdomínio E no domínio
- * principal (o proxy só reescreve a raiz do subdomínio).
+ * `/store/{slug}/products/{id-ou-slug}`, que funciona no subdomínio E no
+ * domínio principal (o proxy só reescreve a raiz do subdomínio).
  *
  * Com `cacheComponents`, o comportamento por-requisição vem de
  * `connection()` (segment config `dynamic = "force-dynamic"` não é
@@ -29,12 +29,12 @@ import { storePublicUrl } from "@/lib/stores/resolve";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   await connection(); // só a partir daqui, em tempo de requisição
   const marketingUrl = getMarketingUrl();
-  const now = new Date();
 
   const entries: MetadataRoute.Sitemap = [
     {
+      // Sem lastModified: a landing não tem data de conteúdo estável e um
+      // "now" por requisição mentiria para o crawler ("muda sempre").
       url: marketingUrl,
-      lastModified: now,
       changeFrequency: "weekly",
       priority: 1,
     },
@@ -47,7 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .from("stores")
         .select("id, slug, updated_at")
         .eq("is_active", true),
-      supabase.from("products").select("id, store_id, updated_at"),
+      supabase.from("products").select("id, store_id, slug, updated_at"),
     ]);
 
     if (storesResult.error) throw new Error(storesResult.error.message);
@@ -70,7 +70,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const slug = slugByStoreId.get(product.store_id);
         if (!slug) continue; // loja inativa ou ausente → fora do sitemap
         productEntries.push({
-          url: `${storePublicUrl(slug)}/store/${slug}/products/${product.id}`,
+          // Mesma fórmula da canônica/OG: segmento final = slug, UUID só
+          // como fallback (produto sem slug ASCII).
+          url: `${storePublicUrl(slug)}/store/${slug}/products/${product.slug ?? product.id}`,
           lastModified: new Date(product.updated_at),
           changeFrequency: "weekly" as const,
           priority: 0.6,

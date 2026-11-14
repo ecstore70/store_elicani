@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,14 @@ import { getTranslator } from "@/lib/i18n/locale";
  * NÃO vem parar aqui: ela tem o estado indisponível da vitrine, 200+noindex).
  * Segue o idioma do visitante (cookie `elicani_locale`).
  */
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslator();
+  // 404 é página da PLATAFORMA (logo Elicani + voltar ao início): usa o
+  // template normal "%s · Elicani". O que NUNCA aparece aqui é o default
+  // de marketing do root (título da landing) — inexistente não é oferta.
+  return { title: t("notFound.title") };
+}
+
 export default async function NotFound() {
   const t = await getTranslator();
 

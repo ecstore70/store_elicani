@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+// Relativa com extensão (estilo de ./resolve.ts): os testes rodam em
+// node --test puro, sem o resolver de aliases do bundler.
+import { productSlugOrId } from "../catalog/product-slug.ts";
 import type { PublicStore } from "./types";
 import { storePublicUrl } from "./resolve.ts";
 
@@ -35,6 +38,14 @@ import { storePublicUrl } from "./resolve.ts";
 
 /** OG social da plataforma — último fallback de qualquer nível. */
 export const PLATFORM_OG_IMAGE = "/brand/elicani-og.png";
+
+/**
+ * Descrição institucional da plataforma — fonte ÚNICA para o metadata do
+ * root layout (description/openGraph/twitter) e para o JSON-LD da landing:
+ * os dois sinais nunca podem divergir.
+ */
+export const PLATFORM_DESCRIPTION =
+  "Elicani gives your business its own storefront. Products, customers and orders in one place — in any currency.";
 
 /**
  * Ícones da plataforma, declarados como OBJECTO METADATA no root layout
@@ -80,6 +91,7 @@ export type StoreIdentity = Pick<
 /** Produto com os campos usados na resolução de metadados. */
 export type ProductIdentity = {
   id: string;
+  slug?: string | null;
   name: string;
   description: string | null;
   image_url: string | null;
@@ -120,9 +132,13 @@ export function storeCanonicalUrl(slug: string): string {
   return storePublicUrl(slug);
 }
 
-/** URL canônica do produto — `/store/{slug}/products/{id}` no subdomínio. */
-export function productCanonicalUrl(slug: string, productId: string): string {
-  return `${storePublicUrl(slug)}/store/${slug}/products/${productId}`;
+/**
+ * URL canônica do produto — `/store/{slug}/products/{id-ou-slug}` no
+ * subdomínio. O segmento final é o SLUG quando existe (UUID só como
+ * fallback): mesma fórmula de cards, canônica, OG e sitemap.
+ */
+export function productCanonicalUrl(slug: string, idOrSlug: string): string {
+  return `${storePublicUrl(slug)}/store/${slug}/products/${idOrSlug}`;
 }
 
 /** Tipo MIME deduzido da extensão — só quando é inequívoco. */
@@ -254,7 +270,10 @@ export function buildProductMetadata(
     product.description,
     `${product.name} — ${store.name}`,
   );
-  const canonical = productCanonicalUrl(store.slug, product.id);
+  const canonical = productCanonicalUrl(
+    store.slug,
+    productSlugOrId(product),
+  );
   const images = resolveProductOgImages(store, product);
   const icons = resolveStoreIcons(store);
 

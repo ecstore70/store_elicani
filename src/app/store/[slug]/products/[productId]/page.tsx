@@ -8,6 +8,7 @@ import { ProductGallery } from "@/components/storefront/product-gallery";
 import { ProductPurchase } from "@/components/storefront/product-purchase";
 import { PageContent } from "@/components/storefront/page-content";
 import { RelatedProducts } from "@/components/storefront/related-products";
+import { JsonLd } from "@/components/shared/json-ld";
 import {
   getPublicCatalog,
   getPublicProductBlocks,
@@ -18,7 +19,12 @@ import { normalizeLocale } from "@/lib/i18n/config";
 import { getLocaleChoice, getTranslator } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 import { normalizeAppearance } from "@/lib/stores/appearance";
-import { buildProductMetadata, productCanonicalUrl } from "@/lib/stores/metadata";
+import { productSlugOrId } from "@/lib/catalog/product-slug";
+import {
+  buildProductMetadata,
+  productCanonicalUrl,
+  storeCanonicalUrl,
+} from "@/lib/stores/metadata";
 import { getPublicStoreBySlug, getPublicStoreStatus } from "@/lib/stores/queries";
 import { discountPercent } from "@/lib/storefront/product-options";
 import { buildStorefrontStrings } from "@/lib/storefront/strings";
@@ -35,11 +41,17 @@ export const instant = false;
  * Carrega loja, produto, categoria e relacionados num só ponto (usado
  * pela página E pelas metadados).
  *
+ * O segmento público aceita SLUG ou UUID: o proxy 301 a forma antiga
+ * (UUID) para a slug antes daqui, mas a página resolve os dois direto —
+ * UUID vence em empatte teórico (formato de slug e de UUID coincidem
+ * na forma). Loja/produto de outra loja → null (404 real, defesa do
+ * proxy reforçada aqui).
+ *
  *  • `{ unavailable: true }` — catálogo da loja INATIVO: renderiza o
  *    estado indisponível (200 + noindex), nunca 404;
  *  • `null` — loja inexistente OU produto não encontrado → 404 real.
  */
-async function loadProduct(slug: string, productId: string) {
+async function loadProduct(slug: string, idOrSlug: string) {
   const store = await getPublicStoreBySlug(slug);
   if (!store) {
     return (await getPublicStoreStatus(slug)) === "inactive"
@@ -49,7 +61,9 @@ async function loadProduct(slug: string, productId: string) {
 
   const catalog = await getPublicCatalog(store.id);
   const product =
-    catalog.products.find((item) => item.id === productId) ?? null;
+    catalog.products.find((item) => item.id === idOrSlug) ??
+    catalog.products.find((item) => item.slug === idOrSlug) ??
+    null;
   if (!product) return null;
 
   const category =
@@ -74,14 +88,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!loaded) {
     const t = await getTranslator();
-    return { title: t("storefront.notFound") };
+    // `absolute`: em URL de produto o template "%s · Elicani" do root é
+    // proibido — título de página do comerciante nunca herda marca da
+    // plataforma (ver stores/metadata.ts).
+    return { title: { absolute: t("storefront.notFound") } };
   }
 
   // Catálogo inativo: título genérico + noindex (nunca dado do produto).
   if ("unavailable" in loaded) {
     const t = await getTranslator();
     return {
-      title: t("storefront.catalogUnavailable"),
+      title: { absolute: t("storefront.catalogUnavailable") },
       robots: { index: false, follow: false },
     };
   }
@@ -132,7 +149,11 @@ export default async function ProductPage({ params }: Props) {
   const whatsappHref = whatsappDigits
     ? `https://wa.me/${whatsappDigits}`
     : null;
-  const productUrl = productCanonicalUrl(store.slug, product.id);
+  const storeUrl = storeCanonicalUrl(store.slug);
+  const productUrl = productCanonicalUrl(
+    store.slug,
+    productSlugOrId(product),
+  );
   const discount = discountPercent(product.price, product.promo_price);
 
   return (
@@ -143,6 +164,58 @@ export default async function ProductPage({ params }: Props) {
       strings={strings}
       theme={theme}
     >
+      {/* Entidade PRODUTO em JSON-LD — só o que esta página mostra:
+          nome, descrição, imagem, preço vigente (promo > normal),
+          disponibilidade e o dono. O `seller.@id` é o MESMO `@id` do
+          JSON-LD da loja (/store/[slug]) — entidades resolvem entre
+          páginas, sem contradição de sinais. */}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: product.name,
+          ...(product.description ? { description: product.description } : {}),
+          url: productUrl,
+          ...(product.image_url ? { image: [product.image_url] } : {}),
+          offers: {
+            "@type": "Offer",
+            url: productUrl,
+            priceCurrency: store.currency,
+            price: String(product.promo_price ?? product.price),
+            availability: product.is_available
+              ? "https://schema.org/InStock"
+              : "https://schema.org/OutOfStock",
+            seller: {
+              "@type": "Store",
+              "@id": storeUrl,
+              name: store.name,
+              url: storeUrl,
+            },
+          },
+        }}
+      />
+      {/* BreadcrumbList espelha o breadcrumb VISUAL logo abaixo
+          (loja → produto) — markup = conteúdo visível. */}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: store.name,
+              item: storeUrl,
+            },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: product.name,
+              item: productUrl,
+            },
+          ],
+        }}
+      />
       <nav className="mb-5">
         <ol className="flex flex-wrap items-center gap-1.5 text-sm text-[var(--sf-muted)]">
           <li>
