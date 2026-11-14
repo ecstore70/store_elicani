@@ -348,6 +348,8 @@ export const ar: Messages = {
   "storefront.galleryNext": "الوسائط التالية",
   "storefront.galleryUnavailable": "الفيديو غير متاح",
   "storefront.galleryPlay": "تشغيل الفيديو",
+  "storefront.videoSoundOn": "تشغيل الصوت",
+  "storefront.videoSoundOff": "كتم الصوت",
 
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "أدر منتجات متجرك.",

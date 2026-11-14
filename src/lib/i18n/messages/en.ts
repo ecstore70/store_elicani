@@ -351,6 +351,8 @@ export const en = {
   "storefront.galleryNext": "Next media",
   "storefront.galleryUnavailable": "Video unavailable",
   "storefront.galleryPlay": "Play video",
+  "storefront.videoSoundOn": "Turn sound on",
+  "storefront.videoSoundOff": "Turn sound off",
 
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "Manage the products of your store.",

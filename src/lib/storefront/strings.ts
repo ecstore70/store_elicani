@@ -78,6 +78,9 @@ export type StorefrontStrings = {
   galleryNext: string;
   galleryUnavailable: string;
   galleryPlay: string;
+  // ── vídeo do conteúdo (bloco da página de produto) ───────────────────
+  videoSoundOn: string;
+  videoSoundOff: string;
   // ── rótulos da mensagem de pedido (WhatsApp) ────────────────────────
   msgNewOrder: string;
   msgCustomer: string;
@@ -158,6 +161,8 @@ export function buildStorefrontStrings(t: Translator): StorefrontStrings {
     galleryNext: t("storefront.galleryNext"),
     galleryUnavailable: t("storefront.galleryUnavailable"),
     galleryPlay: t("storefront.galleryPlay"),
+    videoSoundOn: t("storefront.videoSoundOn"),
+    videoSoundOff: t("storefront.videoSoundOff"),
     msgNewOrder: t("storefront.msgNewOrder"),
     msgCustomer: t("storefront.msgCustomer"),
     msgPhone: t("storefront.msgPhone"),

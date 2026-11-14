@@ -31,6 +31,7 @@ import {
 import type { PageBlockInput, PageBlockType } from "@/lib/catalog/page-blocks";
 import type { Locale } from "@/lib/i18n/config";
 import { createTranslator } from "@/lib/i18n/translate";
+import { buildStorefrontStrings } from "@/lib/storefront/strings";
 import { createClient } from "@/lib/supabase/client";
 
 /** Bloco no estado do editor: o `key` é só para o React (não é serializado). */
@@ -561,6 +562,7 @@ export function PageContentEditor({
       {previewing && blocks.length > 0 && (
         <div className="rounded-lg border border-border/70 bg-background p-4">
           <PageContent
+            strings={buildStorefrontStrings(t)}
             blocks={blocks.map((block) => ({
               type: block.type,
               content: block.content ?? null,

@@ -11,6 +11,7 @@ import {
   type RichInline,
 } from "@/lib/catalog/rich-text";
 import type { PublicPageBlock } from "@/lib/catalog/types";
+import type { StorefrontStrings } from "@/lib/storefront/strings";
 import { ContentVideo } from "./content-video";
 
 /**
@@ -122,10 +123,12 @@ function MediaPlaceholder({ video }: { video?: boolean }) {
 
 function Block({
   block,
+  strings,
   headingClass,
   index,
 }: {
   block: PublicPageBlock;
+  strings: StorefrontStrings;
   headingClass: string;
   index: number;
 }) {
@@ -175,7 +178,7 @@ function Block({
             />
           </div>
         ) : block.media_url ? (
-          <ContentVideo src={block.media_url} />
+          <ContentVideo src={block.media_url} strings={strings} />
         ) : (
           <MediaPlaceholder video />
         )}
@@ -206,10 +209,13 @@ function Block({
  */
 export function PageContent({
   blocks,
+  strings,
   headingClass = "font-semibold",
   className = "",
 }: {
   blocks: PublicPageBlock[];
+  /** Strings da vitrine (rótulos acessíveis do vídeo, etc.). */
+  strings: StorefrontStrings;
   /** Mesma classe de fonte dos títulos da página (template da loja). */
   headingClass?: string;
   className?: string;
@@ -219,7 +225,13 @@ export function PageContent({
   return (
     <div className={`space-y-8 sm:space-y-10 ${className}`}>
       {blocks.map((block, index) => (
-        <Block key={index} block={block} headingClass={headingClass} index={index} />
+        <Block
+          key={index}
+          block={block}
+          strings={strings}
+          headingClass={headingClass}
+          index={index}
+        />
       ))}
     </div>
   );

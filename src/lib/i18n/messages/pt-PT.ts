@@ -349,6 +349,8 @@ export const ptPT: Messages = {
   "storefront.galleryNext": "Próxima mídia",
   "storefront.galleryUnavailable": "Vídeo indisponível",
   "storefront.galleryPlay": "Reproduzir vídeo",
+  "storefront.videoSoundOn": "Ativar som",
+  "storefront.videoSoundOff": "Desativar som",
 
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "Faça a gestão dos produtos da sua loja.",

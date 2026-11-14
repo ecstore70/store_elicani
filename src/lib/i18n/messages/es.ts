@@ -347,6 +347,8 @@ export const es: Messages = {
   "storefront.galleryNext": "Medio siguiente",
   "storefront.galleryUnavailable": "Vídeo no disponible",
   "storefront.galleryPlay": "Reproducir vídeo",
+  "storefront.videoSoundOn": "Activar sonido",
+  "storefront.videoSoundOff": "Desactivar sonido",
 
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "Gestiona los productos de tu tienda.",

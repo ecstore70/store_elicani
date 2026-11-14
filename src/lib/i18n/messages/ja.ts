@@ -346,6 +346,8 @@ export const ja: Messages = {
   "storefront.galleryNext": "次のメディア",
   "storefront.galleryUnavailable": "動画を利用できません",
   "storefront.galleryPlay": "動画を再生",
+  "storefront.videoSoundOn": "サウンドをオンにする",
+  "storefront.videoSoundOff": "サウンドをオフにする",
 
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "ストアの商品を管理します。",

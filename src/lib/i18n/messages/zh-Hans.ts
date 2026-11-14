@@ -334,6 +334,8 @@ export const zhHans: Messages = {
   "storefront.galleryNext": "下一项媒体",
   "storefront.galleryUnavailable": "视频不可用",
   "storefront.galleryPlay": "播放视频",
+  "storefront.videoSoundOn": "开启声音",
+  "storefront.videoSoundOff": "关闭声音",
 
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "管理您店铺的商品。",

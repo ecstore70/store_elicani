@@ -352,6 +352,8 @@ export const ptBR: Messages = {
   "storefront.galleryNext": "Próxima mídia",
   "storefront.galleryUnavailable": "Vídeo indisponível",
   "storefront.galleryPlay": "Reproduzir vídeo",
+  "storefront.videoSoundOn": "Ativar som",
+  "storefront.videoSoundOff": "Desativar som",
 
   // ── gestão de produtos ─────────────────────────────────────────────────
   "products.subtitle": "Gerencie os produtos da sua loja.",

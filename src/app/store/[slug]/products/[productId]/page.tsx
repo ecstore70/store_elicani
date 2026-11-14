@@ -271,6 +271,7 @@ export default async function ProductPage({ params }: Props) {
           informações do produto (sem blocos → nada muda na página) */}
       <PageContent
         blocks={blocks}
+        strings={strings}
         headingClass={classes.heading}
         className="mt-10 sm:mt-12"
       />
