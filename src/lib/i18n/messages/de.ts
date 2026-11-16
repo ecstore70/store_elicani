@@ -665,4 +665,39 @@ export const de: Messages = {
   "delivery.markPreparing": "Als in Vorbereitung markieren",
   "delivery.markOnTheWay": "Als unterwegs markieren",
   "delivery.markDelivered": "Als zugestellt markieren",
+
+  // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
+  "legal.terms": "Nutzungsbedingungen",
+  "legal.privacy": "Datenschutzerklärung",
+  "legal.faq": "FAQ",
+  "legal.faqFull": "Häufig gestellte Fragen",
+  "settings.sectionPolicies": "Richtlinien & FAQ",
+  "settings.policiesHelp":
+    "Veröffentliche die Nutzungsbedingungen und die Datenschutzerklärung deines Shops und beantworte die häufigsten Fragen der Kunden. Du bist für den veröffentlichten Inhalt verantwortlich.",
+  "settings.termsLabel": "Nutzungsbedingungen des Shops",
+  "settings.termsPlaceholder":
+    "Füge die Bedingungen hinzu, die die Nutzung deines Shops regeln.",
+  "settings.privacyLabel": "Datenschutzerklärung des Shops",
+  "settings.privacyPlaceholder":
+    "Füge die Datenschutzerklärung hinzu, die für deinen Shop gilt.",
+  "settings.policyTooLong": "Dieser Inhalt ist zu lang.",
+  "faq.sectionHelp":
+    "Füge die Fragen hinzu, die Kunden am häufigsten zu deinem Shop stellen.",
+  "faq.question": "Frage",
+  "faq.answer": "Antwort",
+  "faq.questionPlaceholder": "Wie kann ich eine Bestellung aufgeben?",
+  "faq.answerPlaceholder": "Kontaktiere uns über WhatsApp…",
+  "faq.addQuestion": "Frage hinzufügen",
+  "faq.empty": "Noch keine Fragen.",
+  "faq.save": "Speichern",
+  "faq.moveUp": "Nach oben verschieben",
+  "faq.moveDown": "Nach unten verschieben",
+  "faq.delete": "Löschen",
+  "faq.deleteConfirm": "Frage \"{name}\" löschen?",
+  "faq.questionRequired": "Gib eine Frage ein.",
+  "faq.answerRequired": "Gib eine Antwort ein.",
+  "faq.saved": "Frage gespeichert.",
+  "storefront.termsLink": "Nutzungsbedingungen",
+  "storefront.privacyLink": "Datenschutzerklärung",
+  "storefront.faqLink": "FAQ",
 };

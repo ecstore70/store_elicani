@@ -10,6 +10,7 @@ import { SocialIcon } from "@/components/shared/social-icon";
 import { WhatsAppIcon } from "@/components/shared/whatsapp-icon";
 import { getLocaleDirection, type Locale } from "@/lib/i18n/config";
 import { identifySocialNetwork, socialAriaLabel } from "@/lib/social";
+import { hasPublicStoreFaq } from "@/lib/stores/queries";
 import type { PublicStore } from "@/lib/stores/types";
 import type { StorefrontStrings } from "@/lib/storefront/strings";
 import type { StorefrontTheme } from "@/lib/storefront/theme";
@@ -26,13 +27,14 @@ import type { StorefrontTheme } from "@/lib/storefront/theme";
  *    rodapé, botão flutuante) emoldura ou aparece por trás do checkout —
  *    o cliente vê SÓ a superfície de compra, com fundo sólido do tema.
  *
- * Partilhado pela home, pela página de produto e pelo checkout. O
- * `CartProvider` envolve tudo porque o botão do cabeçalho e o diálogo de
- * carrinho (ecrã-cheio no mobile, modal no desktop) partilham o mesmo
- * estado; o checkout da rota monta o seu `CheckoutProvider` por dentro
- * (itens/subtotal vêm do carrinho).
+ * Partilhado pela home, pelas páginas de produto e de documentos da
+ * loja (terms/privacy/faq) e pelo checkout. O `CartProvider` envolve
+ * tudo porque o botão do cabeçalho e o diálogo de carrinho (ecrã-cheio
+ * no mobile, modal no desktop) partilham o mesmo estado; o checkout da
+ * rota monta o seu `CheckoutProvider` por dentro (itens/subtotal vêm
+ * do carrinho).
  */
-export function StoreShell({
+export async function StoreShell({
   store,
   locale,
   languageLabel,
@@ -72,6 +74,25 @@ export function StoreShell({
     Boolean(store.opening_hours) ||
     Boolean(store.instagram_url) ||
     Boolean(store.facebook_url);
+
+  // ── rodapé: links de políticas da loja ────────────────────────────────
+  // Só aparece conteúdo PUBLICADO (nunca link partido nem página em
+  // branco): terms/privacy vêm dos campos públicos da própria loja; a
+  // existência de FAQ é consultada com a credencial pública (RLS só
+  // devolve itens de lojas ATIVAS; falha → link oculto, não arriscar
+  // 404). O checkout não tem rodapé — lá a consulta é pulada.
+  const hasFaq = isCheckout ? false : await hasPublicStoreFaq(store.id);
+  const policyLinks = [
+    ...(store.terms
+      ? [{ href: `/store/${store.slug}/terms`, label: strings.termsLink }]
+      : []),
+    ...(store.privacy_policy
+      ? [{ href: `/store/${store.slug}/privacy`, label: strings.privacyLink }]
+      : []),
+    ...(hasFaq
+      ? [{ href: `/store/${store.slug}/faq`, label: strings.faqLink }]
+      : []),
+  ];
 
   return (
     <div
@@ -244,7 +265,7 @@ export function StoreShell({
 
         {!isCheckout && (
           <footer className="border-t border-[var(--sf-border)]">
-            <div className="mx-auto flex w-full max-w-[var(--sf-container)] items-center justify-between gap-4 px-4 py-5 sm:px-6">
+            <div className="mx-auto flex w-full max-w-[var(--sf-container)] flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-5 sm:px-6">
               {/* Crédito da PLATAFORMA — subordinado visualmente (texto
                   pequeno, muted) mas explícito e rastreável: o link é a
                   ÚNICA relação loja→plataforma visível e maquinável da
@@ -254,7 +275,7 @@ export function StoreShell({
                 href="https://elicani.site"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-1.5 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)]"
+                className="order-1 flex items-center gap-1.5 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)]"
               >
                 <Logo
                   variant="mono"
@@ -264,7 +285,28 @@ export function StoreShell({
                   {strings.poweredBy}
                 </span>
               </Link>
-              <span className="font-mono text-xs text-[var(--sf-muted)]">
+
+              {/* Políticas da loja — apenas links com conteúdo publicado
+                  (calculados acima). Desktop: crédito | links | moeda;
+                  mobile: links quebram para a segunda linha. */}
+              {policyLinks.length > 0 && (
+                <nav
+                  aria-label={strings.footerNav}
+                  className="order-3 flex flex-wrap gap-x-5 gap-y-2 text-xs sm:order-2"
+                >
+                  {policyLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="text-[var(--sf-muted)] underline-offset-4 transition-colors hover:text-[var(--sf-fg)] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)]"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </nav>
+              )}
+
+              <span className="order-2 font-mono text-xs text-[var(--sf-muted)] sm:order-3">
                 {store.currency}
               </span>
             </div>

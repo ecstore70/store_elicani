@@ -48,6 +48,15 @@ export default async function MarketingLayout({
     { href: "/#how-it-works", label: t("landing.navHow") },
   ];
 
+  // Documentos legais da PLATAFORMA — usados APENAS no rodapé (o array
+  // `links` também alimenta o cabeçalho e o menu mobile; links legais
+  // não devem aparecer na navegação principal).
+  const legalLinks: MenuLink[] = [
+    { href: "/terms", label: t("legal.terms") },
+    { href: "/privacy", label: t("legal.privacy") },
+    { href: "/faq", label: t("legal.faq") },
+  ];
+
   return (
     <div className="flex min-h-svh flex-col bg-background">
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background">
@@ -146,6 +155,15 @@ export default async function MarketingLayout({
               >
                 {t("landing.createStore")}
               </Link>
+              {legalLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {link.label}
+                </Link>
+              ))}
             </nav>
           </div>
 

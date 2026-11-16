@@ -37,6 +37,11 @@ export type StorefrontStrings = {
   cartCountAria: string;
   productImageAlt: string;
   noImageAlt: string;
+  // ── rodapé: políticas da loja ─────────────────────────────────────────
+  footerNav: string;
+  termsLink: string;
+  privacyLink: string;
+  faqLink: string;
   // ── página de produto ───────────────────────────────────────────────
   backToStore: string;
   productDescription: string;
@@ -121,6 +126,10 @@ export function buildStorefrontStrings(t: Translator): StorefrontStrings {
     openingHours: t("storefront.openingHours"),
     followUs: t("storefront.followUs"),
     poweredBy: t("storefront.poweredBy"),
+    footerNav: t("landing.footerNav"),
+    termsLink: t("storefront.termsLink"),
+    privacyLink: t("storefront.privacyLink"),
+    faqLink: t("storefront.faqLink"),
     openCartAria: t("storefront.openCartAria"),
     cartCountAria: t("storefront.cartCountAria"),
     productImageAlt: t("storefront.productImageAlt"),

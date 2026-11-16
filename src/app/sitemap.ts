@@ -28,7 +28,7 @@ import { storePublicUrl } from "@/lib/stores/resolve";
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   await connection(); // só a partir daqui, em tempo de requisição
-  const marketingUrl = getMarketingUrl();
+  const marketingUrl = getMarketingUrl().replace(/\/+$/, "");
 
   const entries: MetadataRoute.Sitemap = [
     {
@@ -38,16 +38,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 1,
     },
+    // Documentos legais da PLATAFORMA — páginas estáticas de conteúdo,
+    // mesmo racional da landing (sem lastModified). Só entram URLs que
+    // existem de fato (as três rotas são publicadas no build).
+    {
+      url: `${marketingUrl}/terms`,
+      changeFrequency: "yearly" as const,
+      priority: 0.5,
+    },
+    {
+      url: `${marketingUrl}/privacy`,
+      changeFrequency: "yearly" as const,
+      priority: 0.5,
+    },
+    {
+      url: `${marketingUrl}/faq`,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    },
   ];
 
   try {
     const supabase = createPublicClient();
-    const [storesResult, productsResult] = await Promise.all([
+    const [storesResult, productsResult, faqResult] = await Promise.all([
       supabase
         .from("stores")
-        .select("id, slug, updated_at")
+        .select("id, slug, updated_at, terms, privacy_policy")
         .eq("is_active", true),
       supabase.from("products").select("id, store_id, slug, updated_at"),
+      // RLS pública = só itens de lojas ATIVAS (nenhuma URL de loja
+      // inativada vaza para cá). Falha → segue sem as URLs de FAQ.
+      supabase.from("store_faq_items").select("store_id, updated_at"),
     ]);
 
     if (storesResult.error) throw new Error(storesResult.error.message);
@@ -63,6 +84,50 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.8,
     }));
+
+    // Páginas de documento da loja — SÓ com conteúdo publicado (URL sem
+    // conteúdo é 404 e nunca entra no sitemap). FAQ: presença e
+    // lastModified vêm dos itens (edição mais recente da loja).
+    const faqByStoreId = new Map<string, string>();
+    if (!faqResult.error && faqResult.data) {
+      for (const item of faqResult.data) {
+        const previous = faqByStoreId.get(item.store_id);
+        if (!previous || item.updated_at > previous) {
+          faqByStoreId.set(item.store_id, item.updated_at);
+        }
+      }
+    }
+
+    const policyEntries: MetadataRoute.Sitemap = [];
+    for (const store of stores) {
+      // Mesma fórmula da canônica/OG: subdomínio + /store/{slug}/…
+      const base = `${storePublicUrl(store.slug)}/store/${store.slug}`;
+      if (store.terms) {
+        policyEntries.push({
+          url: `${base}/terms`,
+          lastModified: new Date(store.updated_at),
+          changeFrequency: "monthly" as const,
+          priority: 0.5,
+        });
+      }
+      if (store.privacy_policy) {
+        policyEntries.push({
+          url: `${base}/privacy`,
+          lastModified: new Date(store.updated_at),
+          changeFrequency: "monthly" as const,
+          priority: 0.5,
+        });
+      }
+      const faqUpdated = faqByStoreId.get(store.id);
+      if (faqUpdated) {
+        policyEntries.push({
+          url: `${base}/faq`,
+          lastModified: new Date(faqUpdated),
+          changeFrequency: "monthly" as const,
+          priority: 0.5,
+        });
+      }
+    }
 
     const productEntries: MetadataRoute.Sitemap = [];
     if (!productsResult.error && productsResult.data) {
@@ -80,7 +145,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     }
 
-    entries.push(...storeEntries, ...productEntries);
+    entries.push(...storeEntries, ...policyEntries, ...productEntries);
   } catch {
     // Rede/RLS fora do ar: mantém ao menos a home no sitemap.
   }

@@ -667,4 +667,39 @@ export const ptPT: Messages = {
   "delivery.markPreparing": "Marcar como em preparação",
   "delivery.markOnTheWay": "Marcar como a caminho",
   "delivery.markDelivered": "Marcar como entregue",
+
+  // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
+  "legal.terms": "Termos de Utilização",
+  "legal.privacy": "Política de Privacidade",
+  "legal.faq": "FAQ",
+  "legal.faqFull": "Perguntas Frequentes",
+  "settings.sectionPolicies": "Políticas e FAQ",
+  "settings.policiesHelp":
+    "Publique os termos e a política de privacidade da sua loja e responda às perguntas mais frequentes dos clientes. É responsável pelo conteúdo que publicar.",
+  "settings.termsLabel": "Termos de utilização da loja",
+  "settings.termsPlaceholder":
+    "Adicione os termos que regem a utilização da sua loja.",
+  "settings.privacyLabel": "Política de privacidade da loja",
+  "settings.privacyPlaceholder":
+    "Adicione a política de privacidade que se aplica à sua loja.",
+  "settings.policyTooLong": "Este conteúdo é demasiado longo.",
+  "faq.sectionHelp":
+    "Adicione as perguntas que os clientes mais fazem sobre a sua loja.",
+  "faq.question": "Pergunta",
+  "faq.answer": "Resposta",
+  "faq.questionPlaceholder": "Como posso fazer uma encomenda?",
+  "faq.answerPlaceholder": "Fale connosco pelo WhatsApp…",
+  "faq.addQuestion": "Adicionar pergunta",
+  "faq.empty": "Ainda não há perguntas.",
+  "faq.save": "Guardar",
+  "faq.moveUp": "Mover para cima",
+  "faq.moveDown": "Mover para baixo",
+  "faq.delete": "Eliminar",
+  "faq.deleteConfirm": "Eliminar a pergunta \"{name}\"?",
+  "faq.questionRequired": "Introduza uma pergunta.",
+  "faq.answerRequired": "Introduza uma resposta.",
+  "faq.saved": "Pergunta guardada.",
+  "storefront.termsLink": "Termos de Utilização",
+  "storefront.privacyLink": "Política de Privacidade",
+  "storefront.faqLink": "FAQ",
 };

@@ -838,6 +838,156 @@ try {
   const statusReactivated = await asAnon.rpc("store_public_status", { p_slug: SLUG_A });
   assert("rpc: reativada → 'active'", statusReactivated.data === "active", errorDetail(statusReactivated));
 
+  // ── 10b. Políticas e FAQ da loja (terms/privacy/store_faq_items) ────────
+  // Conteúdo do COMERCIANTE com as mesmas regras do catálogo: escrita só
+  // do dono, leitura pública só de loja ATIVA, e um lojista nunca
+  // alcança políticas/FAQ de outro (update, insert com store_id alheio,
+  // leitura autenticada). O editor do painel usa sessão própria — por
+  // isso as políticas `*_own` não dependem de is_active.
+
+  const setPolicies = await A.from("stores")
+    .update({ terms: "Termos da loja A", privacy_policy: "Privacidade da loja A" })
+    .eq("id", idA)
+    .select("id");
+  assert(
+    "A grava as próprias políticas",
+    !setPolicies.error && setPolicies.data?.length === 1,
+    errorDetail(setPolicies),
+  );
+
+  const policiesByB = await B.from("stores")
+    .update({ terms: "Termos invasivos" })
+    .eq("id", idA)
+    .select("id");
+  assert(
+    "B NÃO altera as políticas da loja A",
+    !policiesByB.error && policiesByB.data?.length === 0,
+    errorDetail(policiesByB),
+  );
+
+  const policiesReadB = await B.from("stores").select("terms").eq("id", idA).maybeSingle();
+  assert(
+    "B não lê as políticas da loja A",
+    !policiesReadB.data,
+    errorDetail(policiesReadB),
+  );
+
+  const policiesAnon = await asAnon
+    .from("stores")
+    .select("terms, privacy_policy")
+    .eq("id", idA)
+    .maybeSingle();
+  assert(
+    "anon lê as políticas da loja ATIVA (vitrine)",
+    policiesAnon.data?.terms === "Termos da loja A",
+    errorDetail(policiesAnon),
+  );
+
+  const faqCreateA = await A.from("store_faq_items")
+    .insert({
+      store_id: idA,
+      question: "Como faço um pedido?",
+      answer: "Fale conosco no WhatsApp.",
+      sort_order: 0,
+    })
+    .select("id")
+    .single();
+  assert(
+    "A cria pergunta na própria loja",
+    !faqCreateA.error && !!faqCreateA.data,
+    errorDetail(faqCreateA),
+  );
+
+  const faqCreateB = await B.from("store_faq_items")
+    .insert({ store_id: idA, question: "Invasão", answer: "x", sort_order: 1 })
+    .select("id");
+  assert(
+    "B NÃO cria FAQ na loja A (with check do dono)",
+    faqCreateB.data?.length === 0 || faqCreateB.error?.code === "42501",
+    errorDetail(faqCreateB),
+  );
+
+  const faqCreateAnon = await asAnon
+    .from("store_faq_items")
+    .insert({ store_id: idA, question: "Anon", answer: "x", sort_order: 2 })
+    .select("id");
+  assert(
+    "anon NÃO cria FAQ (sem política de insert)",
+    faqCreateAnon.data?.length === 0 || faqCreateAnon.error?.code === "42501",
+    errorDetail(faqCreateAnon),
+  );
+
+  const faqCreateC = await C.from("store_faq_items")
+    .insert({ store_id: idA, question: "C sem loja", answer: "x", sort_order: 3 })
+    .select("id");
+  assert(
+    "C (sem loja) NÃO cria FAQ na loja A",
+    faqCreateC.data?.length === 0 || faqCreateC.error?.code === "42501",
+    errorDetail(faqCreateC),
+  );
+
+  const faqReadB = await B.from("store_faq_items").select("id").eq("store_id", idA);
+  assert(
+    "B não lê o FAQ da loja A (authenticated sem política pública)",
+    !faqReadB.error && faqReadB.data?.length === 0,
+    errorDetail(faqReadB),
+  );
+
+  const faqReadAnon = await asAnon.from("store_faq_items").select("id, question").eq("store_id", idA);
+  assert(
+    "anon lê o FAQ da loja ATIVA (vitrine)",
+    !faqReadAnon.error && faqReadAnon.data?.length === 1,
+    errorDetail(faqReadAnon),
+  );
+
+  const faqUpdateByB = await B.from("store_faq_items")
+    .update({ question: "Hackeada" })
+    .eq("id", faqCreateA.data.id)
+    .select("id");
+  assert(
+    "B não edita a FAQ da loja A",
+    !faqUpdateByB.error && faqUpdateByB.data?.length === 0,
+    errorDetail(faqUpdateByB),
+  );
+
+  const faqDeleteByB = await B.from("store_faq_items")
+    .delete()
+    .eq("id", faqCreateA.data.id)
+    .select("id");
+  assert(
+    "B não apaga a FAQ da loja A",
+    !faqDeleteByB.error && faqDeleteByB.data?.length === 0,
+    errorDetail(faqDeleteByB),
+  );
+
+  // Loja INATIVA: políticas e FAQ somem da leitura pública — nada de
+  // conteúdo de loja desativada na vitrine (o link no rodapé também some
+  // porque a loja inteira nem é resolvida).
+  await A.from("stores").update({ is_active: false }).eq("id", idA);
+
+  const policiesHidden = await asAnon.from("stores").select("id").eq("id", idA).maybeSingle();
+  assert(
+    "anon não lê políticas da loja INATIVA",
+    !policiesHidden.data,
+    errorDetail(policiesHidden),
+  );
+
+  const faqHidden = await asAnon.from("store_faq_items").select("id").eq("store_id", idA);
+  assert(
+    "anon não lê o FAQ da loja INATIVA",
+    !faqHidden.error && faqHidden.data?.length === 0,
+    errorDetail(faqHidden),
+  );
+
+  const faqOwnInactive = await A.from("store_faq_items").select("id").eq("store_id", idA);
+  assert(
+    "dono lê o próprio FAQ mesmo com loja inativa (editor)",
+    !faqOwnInactive.error && faqOwnInactive.data?.length === 1,
+    errorDetail(faqOwnInactive),
+  );
+
+  await A.from("stores").update({ is_active: true }).eq("id", idA);
+
   // Exclusão do catálogo pelo DONO (a loja É o catálogo): o cascata remove
   // os produtos desta loja, mas perfil e auth ficam intactos. Verificado com
   // service role para provar que as linhas sumiram (RLS não esconderia).
@@ -863,6 +1013,13 @@ try {
     "cascata apaga as encomendas do catálogo",
     !ordersGone.error && ordersGone.data?.length === 0,
     errorDetail(ordersGone),
+  );
+
+  const faqGone = await asService.from("store_faq_items").select("id").eq("store_id", idA);
+  assert(
+    "cascata apaga as perguntas FAQ do catálogo",
+    !faqGone.error && faqGone.data?.length === 0,
+    errorDetail(faqGone),
   );
 
   const profileSurvives = await A.from("profiles")

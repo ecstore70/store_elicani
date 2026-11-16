@@ -43,6 +43,24 @@ export type StoreFormState = {
   values: StoreFormValues;
 };
 
+/** Item de FAQ da loja — linha do editor do painel e da vitrine. */
+export type PublicFaqItem = Database["public"]["Tables"]["store_faq_items"]["Row"];
+
+/** Estado do formulário de políticas da loja (terms / privacy_policy). */
+export type PoliciesFormState = {
+  error: string | null;
+  notice: string | null;
+  fieldErrors: Partial<Record<"terms" | "privacy_policy", string>>;
+  values: { terms: string; privacy_policy: string };
+};
+
+/** Estado por-item do editor de FAQ (pergunta/resposta repetíveis). */
+export type FaqItemFormState = {
+  error: string | null;
+  notice: string | null;
+  fieldErrors: Partial<Record<"question" | "answer", string>>;
+};
+
 export function emptyStoreFormValues(): StoreFormValues {
   return {
     name: "",
@@ -95,4 +113,6 @@ export type PublicStore = Pick<
   | "created_at"
   | "updated_at"
   | "favicon_url"
+  | "terms"
+  | "privacy_policy"
 >;

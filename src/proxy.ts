@@ -14,6 +14,9 @@
  *     URL cruzada); 301 da forma antiga (UUID) para a forma canônica
  *     (slug); loja inativa → a página de produto renderiza o estado
  *     indisponível;
+ *  1d. Responder 404 real em /store/{slug}/terms|privacy|faq quando a loja
+ *     não existe ou o documento não está publicado (o rodapé só mostra
+ *     links com conteúdo); loja inativa → estado indisponível;
  *  2. Redirecionar www → domínio principal;
  *  2b. Manter páginas de auth (/login, /signup, …) no host canônico —
  *      evita o split dos cookies PKCE entre alias e host do app;
@@ -58,6 +61,63 @@ async function getStoreStatus(
     return "missing";
   } catch {
     return "active"; // falha em aberto: a página revalida
+  }
+}
+
+/** Documento público de uma loja — segmento depois de /store/{slug}/. */
+type PolicyDoc = "terms" | "privacy" | "faq";
+
+/**
+ * Há conteúdo PUBLICADO do documento da loja? Devolve:
+ *  - `true`  → existe texto/itens: a página renderiza normalmente;
+ *  - `false` → loja ativa SEM conteúdo → 404 real (o rodapé só liga
+ *    links com conteúdo, então esta URL nunca tem tráfego legítimo);
+ *  - `null`  → não deu para verificar (falha em aberto) → a página
+ *    revalida e decide por conta própria (nunca derrubar a vitrine).
+ *
+ * Só é chamada com status "active" — loja inativa nunca chega aqui (a
+ * página dela é o estado indisponível: 200 + noindex).
+ */
+async function isPolicyPublished(
+  slug: string,
+  doc: PolicyDoc,
+): Promise<boolean | null> {
+  try {
+    const publicClient = createServerClient<Database>(getSupabaseUrl(), getSupabaseAnonKey(), {
+      // O proxy não tem cookies a manipular nesta consulta.
+      cookies: { getAll: () => [], setAll: () => {} },
+    });
+
+    if (doc === "faq") {
+      const { data: store, error: storeError } = await publicClient
+        .from("stores")
+        .select("id")
+        .eq("slug", slug)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (storeError) return null;
+      if (!store) return null; // corrida (desativada entre consultas)
+
+      const { count, error } = await publicClient
+        .from("store_faq_items")
+        .select("id", { count: "exact", head: true })
+        .eq("store_id", store.id);
+      if (error) return null;
+      return (count ?? 0) > 0;
+    }
+
+    const { data, error } = await publicClient
+      .from("stores")
+      .select("terms, privacy_policy")
+      .eq("slug", slug)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (error) return null;
+    if (!data) return null; // corrida → a página revalida
+    const value = doc === "terms" ? data.terms : data.privacy_policy;
+    return Boolean(value && value.trim().length > 0);
+  } catch {
+    return null; // falha em aberto
   }
 }
 
@@ -142,7 +202,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // ── 0. páginas de auth só no host canônico (getSiteUrl) ─────────────────
+  // ── 0. páginas de auth e documentos da plataforma no host canônico ─────
   //
   // Os cookies PKCE do login Google são HOST-ONLY: a ação de login grava o
   // code verifier no host onde a página foi servida, mas o /auth/callback
@@ -151,15 +211,23 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   // lê outro jar de cookies → "code challenge does not match previously
   // saved code verifier" e o login Google falha. Redirecionar /login,
   // /signup, /forgot-password e /reset-password para o host canônico
-  // garante ação → Google → callback no MESMO host. As demais rotas
-  // (landing, /app, vitrine) não são afetadas.
+  // garante ação → Google → callback no MESMO host.
+  //
+  // /terms, /privacy e /faq são documentos da PLATAFORMA: servidos sob um
+  // subdomínio de loja misturariam identidades (conteúdo institucional
+  // com cara de loja) — saem sempre do host canônico, pela mesma regra.
+  // As demais rotas (landing, /app, vitrine) não são afetadas.
   const canonicalHost = new URL(getSiteUrl()).hostname;
   const isAuthOnlyPath =
     pathname === "/login" ||
     pathname === "/signup" ||
     pathname === "/forgot-password" ||
     pathname === "/reset-password";
-  if (isAuthOnlyPath && hostname !== canonicalHost) {
+  const isPlatformDocPath =
+    pathname === "/terms" ||
+    pathname === "/privacy" ||
+    pathname === "/faq";
+  if ((isAuthOnlyPath || isPlatformDocPath) && hostname !== canonicalHost) {
     const url = request.nextUrl.clone();
     url.hostname = canonicalHost;
     return NextResponse.redirect(url);
@@ -203,6 +271,33 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
         const url = request.nextUrl.clone();
         url.pathname = `/store/${productPath[1]}/products/${lookup.slug}`;
         return NextResponse.redirect(url, 301);
+      }
+    }
+  }
+
+  // ── 1d. documentos da loja: /store/{slug}/terms|privacy|faq ─────────────
+  //
+  // Mesma armadilha dos ramos 1c/2: sob cacheComponents/PPR o notFound()
+  // da página cai no hole dinâmico com status 200 (soft-404). O check
+  // cobre loja INEXISTENTE e documento NÃO publicado (ambos → 404 real;
+  // o rodapé só liga quando há conteúdo, então não há tráfego legítimo
+  // para essas URLs). Loja INATIVA não é 404: a página renderiza o estado
+  // indisponível (200 + noindex). Falha em aberto → a página revalida.
+  const policyPath = /^\/store\/([^/]+)\/(terms|privacy|faq)\/?$/.exec(pathname);
+  if (policyPath) {
+    const status = await getStoreStatus(policyPath[1]);
+    if (status === "missing") {
+      const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
+      return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
+    }
+    if (status === "active") {
+      const published = await isPolicyPublished(
+        policyPath[1],
+        policyPath[2] as PolicyDoc,
+      );
+      if (published === false) {
+        const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
+        return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
       }
     }
   }

@@ -390,6 +390,44 @@ export type Database = {
           },
         ]
       }
+      store_faq_items: {
+        Row: {
+          answer: string
+          created_at: string
+          id: string
+          question: string
+          sort_order: number
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          id?: string
+          question: string
+          sort_order?: number
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          id?: string
+          question?: string
+          sort_order?: number
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_faq_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           accent_color: string | null
@@ -415,10 +453,12 @@ export type Database = {
           owner_id: string
           phone: string | null
           phone_country_code: string | null
+          privacy_policy: string | null
           primary_color: string | null
           product_layout: string
           slug: string
           template: string
+          terms: string | null
           timezone: string | null
           updated_at: string
           whatsapp_number: string | null
@@ -447,10 +487,12 @@ export type Database = {
           owner_id: string
           phone?: string | null
           phone_country_code?: string | null
+          privacy_policy?: string | null
           primary_color?: string | null
           product_layout?: string
           slug: string
           template?: string
+          terms?: string | null
           timezone?: string | null
           updated_at?: string
           whatsapp_number?: string | null
@@ -479,10 +521,12 @@ export type Database = {
           owner_id?: string
           phone?: string | null
           phone_country_code?: string | null
+          privacy_policy?: string | null
           primary_color?: string | null
           product_layout?: string
           slug?: string
           template?: string
+          terms?: string | null
           timezone?: string | null
           updated_at?: string
           whatsapp_number?: string | null

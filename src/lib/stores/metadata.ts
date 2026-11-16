@@ -141,6 +141,16 @@ export function productCanonicalUrl(slug: string, idOrSlug: string): string {
   return `${storePublicUrl(slug)}/store/${slug}/products/${idOrSlug}`;
 }
 
+/**
+ * URL canônica de subpágina de loja (`terms`, `privacy`, `faq`) — mesma
+ * forma do produto: caminho absoluto no subdomínio da PRÓPRIA loja, com
+ * o prefixo `/store/{slug}` obrigatório (evita colidir com as rotas de
+ * plataforma em qualquer host).
+ */
+export function storeSubpageCanonicalUrl(slug: string, subpath: string): string {
+  return `${storePublicUrl(slug)}/store/${slug}/${subpath}`;
+}
+
 /** Tipo MIME deduzido da extensão — só quando é inequívoco. */
 function guessImageType(url: string): string | undefined {
   const path = url.split(/[?#]/)[0].toLowerCase();
@@ -249,6 +259,48 @@ export function buildStoreMetadata(store: StoreIdentity): Metadata {
     twitter: {
       card: "summary_large_image",
       title: store.name,
+      description,
+      images: images.map((image) => image.url),
+    },
+  };
+}
+
+/**
+ * Metadados de SUBPÁGINA de loja (`terms`, `privacy`, `faq`). Título
+ * absoluto "{Título} · {Loja}" (nunca o template da plataforma),
+ * canonical no subdomínio PRÓPRIO com o prefixo `/store/{slug}` — mesma
+ * fórmula do produto — e ícones/OG/twitter resolvidos pela identidade
+ * da loja dona da página (nenhum asset da plataforma entra aqui).
+ */
+export function buildStoreSubpageMetadata(
+  store: StoreIdentity,
+  title: string,
+  subpath: string,
+): Metadata {
+  const description = truncateMetaDescription(
+    store.description,
+    `${title} — ${store.name}`,
+  );
+  const canonical = storeSubpageCanonicalUrl(store.slug, subpath);
+  const images = resolveStoreOgImages(store);
+  const icons = resolveStoreIcons(store);
+
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical },
+    ...(icons ? { icons } : {}),
+    openGraph: {
+      type: "website",
+      siteName: store.name,
+      title,
+      description,
+      url: canonical,
+      images,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
       description,
       images: images.map((image) => image.url),
     },

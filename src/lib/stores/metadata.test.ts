@@ -11,6 +11,8 @@ import {
   resolveStoreIcons,
   resolveStoreOgImages,
   storeCanonicalUrl,
+  storeSubpageCanonicalUrl,
+  buildStoreSubpageMetadata,
   truncateMetaDescription,
   withAssetVersion,
   type StoreIdentity,
@@ -333,5 +335,42 @@ describe("isolamento entre catálogos (dois tenants)", () => {
       resolveStoreIconUrl(a),
       resolveStoreIconUrl({ ...a, updated_at: b.updated_at }),
     );
+  });
+});
+
+describe("buildStoreSubpageMetadata — documentos da loja (terms/privacy/faq)", () => {
+  const store = makeStore({ name: "Café Aurora", slug: "cafe-aurora" });
+
+  it("canonical = subdomínio + /store/{slug}/… (mesma fórmula do produto)", () => {
+    assert.equal(
+      storeSubpageCanonicalUrl("cafe-aurora", "terms"),
+      `https://cafe-aurora.${DOMAIN}/store/cafe-aurora/terms`,
+    );
+
+    const meta = buildStoreSubpageMetadata(
+      store,
+      "Café Aurora — Termos de Uso",
+      "terms",
+    );
+    const expected = `https://cafe-aurora.${DOMAIN}/store/cafe-aurora/terms`;
+    assert.equal(meta.alternates?.canonical, expected);
+    assert.equal(meta.openGraph?.url, expected);
+  });
+
+  it("título absoluto vindo da página (identidade da loja, sem template)", () => {
+    const meta = buildStoreSubpageMetadata(store, "Café Aurora — FAQ", "faq");
+    assert.deepEqual(meta.title, { absolute: "Café Aurora — FAQ" });
+    assert.equal(meta.openGraph?.title, "Café Aurora — FAQ");
+    assert.equal(meta.twitter?.title, "Café Aurora — FAQ");
+  });
+
+  it("isolamento: documento de A nunca aponta para B (dois tenants)", () => {
+    const other = makeStore({ slug: "atelie-costura" });
+    const metaA = buildStoreSubpageMetadata(store, "A — Termos", "terms");
+    const metaB = buildStoreSubpageMetadata(other, "B — Termos", "terms");
+
+    const rawA = JSON.stringify(metaA);
+    assert.ok(rawA.includes("cafe-aurora") && !rawA.includes("atelie-costura"));
+    assert.notEqual(metaA.alternates?.canonical, metaB.alternates?.canonical);
   });
 });

@@ -31,7 +31,9 @@ import {
 import { requireStore } from "./queries";
 import {
   emptyStoreFormValues,
+  type FaqItemFormState,
   type NewStore,
+  type PoliciesFormState,
   type StoreFormField,
   type StoreFormState,
   type StoreFormValues,
@@ -587,4 +589,262 @@ export async function deleteCatalogAction(
   revalidatePath("/app/categories");
   revalidatePath(`/store/${store.slug}`);
   return { ok: true, error: null };
+}
+
+// ── políticas da loja (terms / privacy) ────────────────────────────────────
+
+/** Limite de caracteres por texto de política (o textarea impõe o mesmo). */
+const POLICY_MAX_LENGTH = 20000;
+/** Limites de FAQ — casam exatamente com os CHECKs de store_faq_items. */
+const FAQ_QUESTION_MAX_LENGTH = 300;
+const FAQ_ANSWER_MAX_LENGTH = 5000;
+
+/**
+ * Grava os textos de políticas da loja (terms / privacy_policy) —
+ * conteúdo do COMERCIANTE em texto puro (sem HTML: a vitrine renderiza
+ * com `whitespace-pre-wrap`).
+ *
+ * Segurança: RLS do dono + `.eq("owner_id", user.id)` (a outra loja
+ * nunca é alcançável), limites validados aqui. `updateTag("store")`
+ * expira o cache use-cache da loja (o editor e o rodapé da vitrine
+ * mostram o novo conteúdo já na navegação seguinte).
+ */
+export async function updateStorePoliciesAction(
+  _prevState: PoliciesFormState,
+  formData: FormData,
+): Promise<PoliciesFormState> {
+  const user = await requireUser();
+  const t = await getTranslator();
+
+  const terms = String(formData.get("terms") ?? "").trim();
+  const privacyPolicy = String(formData.get("privacy_policy") ?? "").trim();
+  const values = { terms, privacy_policy: privacyPolicy };
+
+  const fieldErrors: PoliciesFormState["fieldErrors"] = {};
+  if (terms.length > POLICY_MAX_LENGTH) {
+    fieldErrors.terms = t("settings.policyTooLong");
+  }
+  if (privacyPolicy.length > POLICY_MAX_LENGTH) {
+    fieldErrors.privacy_policy = t("settings.policyTooLong");
+  }
+  if (Object.keys(fieldErrors).length > 0) {
+    return { error: null, notice: null, fieldErrors, values };
+  }
+
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("stores")
+    .update({ terms, privacy_policy: privacyPolicy })
+    .eq("owner_id", user.id)
+    .select("id, slug")
+    .maybeSingle();
+
+  if (error || !data) {
+    return {
+      error: t("store.error.saveFailed"),
+      notice: null,
+      fieldErrors: {},
+      values,
+    };
+  }
+
+  updateTag("store");
+  revalidatePath("/app", "layout");
+  revalidatePath(`/store/${data.slug}`);
+  revalidatePath(`/store/${data.slug}/terms`);
+  revalidatePath(`/store/${data.slug}/privacy`);
+  return { error: null, notice: t("settings.saved"), fieldErrors: {}, values };
+}
+
+// ── FAQ da loja (store_faq_items) ──────────────────────────────────────────
+
+type FaqValues = { question: string; answer: string };
+
+function readFaqValues(formData: FormData): FaqValues {
+  return {
+    question: String(formData.get("question") ?? "").trim(),
+    answer: String(formData.get("answer") ?? "").trim(),
+  };
+}
+
+/** Obrigatório + limites do CHECK — mensagens do catálogo i18n. */
+function validateFaqValues(
+  values: FaqValues,
+  t: Translator,
+): FaqItemFormState["fieldErrors"] {
+  const fieldErrors: FaqItemFormState["fieldErrors"] = {};
+  if (!values.question) {
+    fieldErrors.question = t("faq.questionRequired");
+  } else if (values.question.length > FAQ_QUESTION_MAX_LENGTH) {
+    fieldErrors.question = t("settings.policyTooLong");
+  }
+  if (!values.answer) {
+    fieldErrors.answer = t("faq.answerRequired");
+  } else if (values.answer.length > FAQ_ANSWER_MAX_LENGTH) {
+    fieldErrors.answer = t("settings.policyTooLong");
+  }
+  return fieldErrors;
+}
+
+function faqState(
+  patch: Partial<FaqItemFormState>,
+): FaqItemFormState {
+  return { error: null, notice: null, fieldErrors: {}, ...patch };
+}
+
+/** Limpa o router cache da página pública de FAQ (rodapé + página). */
+function revalidateStoreFaq(slug: string): void {
+  revalidatePath(`/store/${slug}/faq`);
+}
+
+/**
+ * Cria uma pergunta no FIM da lista da loja (sort_order = maior + 1).
+ * `store_id` vem do `requireStore` do PRÓPIO usuário — o RLS e o eq
+ * garantem que só a loja do editor é alcançável.
+ */
+export async function createFaqItemAction(
+  _prevState: FaqItemFormState,
+  formData: FormData,
+): Promise<FaqItemFormState> {
+  const user = await requireUser();
+  const t = await getTranslator();
+  const store = await requireStore(user.id);
+
+  const values = readFaqValues(formData);
+  const fieldErrors = validateFaqValues(values, t);
+  if (Object.keys(fieldErrors).length > 0) {
+    return faqState({ fieldErrors });
+  }
+
+  const supabase = await createClient();
+
+  const { data: last, error: lastError } = await supabase
+    .from("store_faq_items")
+    .select("sort_order")
+    .eq("store_id", store.id)
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (lastError) {
+    return faqState({ error: t("store.error.saveFailed") });
+  }
+
+  const { error } = await supabase.from("store_faq_items").insert({
+    store_id: store.id,
+    question: values.question,
+    answer: values.answer,
+    sort_order: (last?.sort_order ?? -1) + 1,
+  });
+
+  if (error) {
+    return faqState({ error: t("store.error.saveFailed") });
+  }
+
+  revalidateStoreFaq(store.slug);
+  return faqState({ notice: t("faq.saved") });
+}
+
+/** Atualiza pergunta/resposta de um item da PRÓPRIA loja. */
+export async function updateFaqItemAction(
+  itemId: string,
+  _prevState: FaqItemFormState,
+  formData: FormData,
+): Promise<FaqItemFormState> {
+  const user = await requireUser();
+  const t = await getTranslator();
+  const store = await requireStore(user.id);
+
+  const values = readFaqValues(formData);
+  const fieldErrors = validateFaqValues(values, t);
+  if (Object.keys(fieldErrors).length > 0) {
+    return faqState({ fieldErrors });
+  }
+
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("store_faq_items")
+    .update({ question: values.question, answer: values.answer })
+    .eq("store_id", store.id)
+    .eq("id", itemId)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) {
+    return faqState({ error: t("store.error.saveFailed") });
+  }
+
+  revalidateStoreFaq(store.slug);
+  return faqState({ notice: t("faq.saved") });
+}
+
+/** Remove uma pergunta da própria loja (confirmação fica na UI). */
+export async function deleteFaqItemAction(itemId: string): Promise<void> {
+  const user = await requireUser();
+  const store = await requireStore(user.id);
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("store_faq_items")
+    .delete()
+    .eq("store_id", store.id)
+    .eq("id", itemId);
+
+  if (error) {
+    throw new Error(`Failed to delete FAQ item: ${error.message}`);
+  }
+
+  revalidateStoreFaq(store.slug);
+}
+
+/** Move uma pergunta uma posição (mecanismo simples ↑/↓, como categorias). */
+export async function moveFaqItemAction(
+  itemId: string,
+  direction: "up" | "down",
+): Promise<void> {
+  const user = await requireUser();
+  const store = await requireStore(user.id);
+
+  const supabase = await createClient();
+  const { data: items, error } = await supabase
+    .from("store_faq_items")
+    .select("id, sort_order, created_at")
+    .eq("store_id", store.id)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error || !items) {
+    throw new Error(`Failed to load FAQ items: ${error?.message}`);
+  }
+
+  const index = items.findIndex((item) => item.id === itemId);
+  const targetIndex = direction === "up" ? index - 1 : index + 1;
+  if (index === -1 || targetIndex < 0 || targetIndex >= items.length) return;
+
+  const current = items[index];
+  const target = items[targetIndex];
+
+  const first = await supabase
+    .from("store_faq_items")
+    .update({ sort_order: target.sort_order })
+    .eq("store_id", store.id)
+    .eq("id", current.id);
+
+  if (first.error) {
+    throw new Error(`Failed to reorder FAQ items: ${first.error.message}`);
+  }
+
+  const second = await supabase
+    .from("store_faq_items")
+    .update({ sort_order: current.sort_order })
+    .eq("store_id", store.id)
+    .eq("id", target.id);
+
+  if (second.error) {
+    throw new Error(`Failed to reorder FAQ items: ${second.error.message}`);
+  }
+
+  revalidateStoreFaq(store.slug);
 }

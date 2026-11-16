@@ -664,4 +664,38 @@ export const ja: Messages = {
   "delivery.markPreparing": "準備中にする",
   "delivery.markOnTheWay": "配送中にする",
   "delivery.markDelivered": "配達済みにする",
+
+  // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
+  "legal.terms": "利用規約",
+  "legal.privacy": "プライバシーポリシー",
+  "legal.faq": "FAQ",
+  "legal.faqFull": "よくある質問",
+  "settings.sectionPolicies": "ポリシーとFAQ",
+  "settings.policiesHelp":
+    "ストアの利用規約とプライバシーポリシーを公開し、お客様からよく寄せられる質問に答えてください。公開する内容の責任はあなたにあります。",
+  "settings.termsLabel": "ストアの利用規約",
+  "settings.termsPlaceholder": "ストアの利用を定める規約を追加してください。",
+  "settings.privacyLabel": "ストアのプライバシーポリシー",
+  "settings.privacyPlaceholder":
+    "ストアに適用されるプライバシーポリシーを追加してください。",
+  "settings.policyTooLong": "内容が長すぎます。",
+  "faq.sectionHelp":
+    "お客様からよく寄せられる質問を追加してください。",
+  "faq.question": "質問",
+  "faq.answer": "回答",
+  "faq.questionPlaceholder": "注文はどのようにすればいいですか？",
+  "faq.answerPlaceholder": "WhatsApp でお問い合わせください…",
+  "faq.addQuestion": "質問を追加",
+  "faq.empty": "質問はまだありません。",
+  "faq.save": "保存",
+  "faq.moveUp": "上へ移動",
+  "faq.moveDown": "下へ移動",
+  "faq.delete": "削除",
+  "faq.deleteConfirm": "質問「{name}」を削除しますか？",
+  "faq.questionRequired": "質問を入力してください。",
+  "faq.answerRequired": "回答を入力してください。",
+  "faq.saved": "質問を保存しました。",
+  "storefront.termsLink": "利用規約",
+  "storefront.privacyLink": "プライバシーポリシー",
+  "storefront.faqLink": "FAQ",
 };

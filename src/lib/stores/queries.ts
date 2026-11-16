@@ -4,7 +4,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
-import type { Profile, PublicStore, Store } from "./types";
+import type { Profile, PublicFaqItem, PublicStore, Store } from "./types";
 
 /**
  * Store do lojista autenticado.
@@ -52,6 +52,28 @@ export async function requireStore(ownerId: string): Promise<Store> {
   return store;
 }
 
+/**
+ * Itens de FAQ da PRÓPRIA loja — editor do painel. Usa o cliente com
+ * SESSÃO: a política `store_faq_items_*_own` devolve os itens mesmo
+ * quando a loja está inativa (a vitrine pública, não).
+ */
+export async function getFaqItemsForStore(storeId: string): Promise<PublicFaqItem[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("store_faq_items")
+    .select("id, store_id, question, answer, sort_order, created_at, updated_at")
+    .eq("store_id", storeId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to load FAQ items: ${error.message}`);
+  }
+
+  return data ?? [];
+}
+
 /** Profile do usuário autenticado. */
 export async function getProfile(userId: string): Promise<Profile | null> {
   "use cache: private";
@@ -86,7 +108,7 @@ export async function getPublicStoreBySlug(slug: string): Promise<PublicStore | 
   const { data, error } = await supabase
     .from("stores")
     .select(
-      "id, name, slug, description, logo_url, favicon_url, banner_url, whatsapp_number, primary_color, template, button_color, accent_color, background_color, product_layout, image_ratio, button_style, card_style, opening_hours, instagram_url, facebook_url, currency, language, is_active, created_at, updated_at",
+      "id, name, slug, description, logo_url, favicon_url, banner_url, whatsapp_number, primary_color, template, button_color, accent_color, background_color, product_layout, image_ratio, button_style, card_style, opening_hours, instagram_url, facebook_url, currency, language, is_active, created_at, updated_at, terms, privacy_policy",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -98,6 +120,51 @@ export async function getPublicStoreBySlug(slug: string): Promise<PublicStore | 
   if (!data || !data.is_active) return null;
 
   return data;
+}
+
+/**
+ * Itens de FAQ PÚBLICOS de uma loja (vitrine + visibilidade do link no
+ * rodapé). O RLS público só devolve itens de lojas ATIVAS; a página
+ * decide 404/ocultar quando a lista vem vazia.
+ */
+export async function getPublicStoreFaq(storeId: string): Promise<PublicFaqItem[]> {
+  const supabase = createPublicClient();
+
+  const { data, error } = await supabase
+    .from("store_faq_items")
+    .select("id, store_id, question, answer, sort_order, created_at, updated_at")
+    .eq("store_id", storeId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to load store FAQ: ${error.message}`);
+  }
+
+  return data ?? [];
+}
+
+/**
+ * A loja tem FAQ publicado? — consulta mínima (head count) usada pelo
+ * RODAPÉ da vitrine para decidir se o link "FAQ" aparece: sem conteúdo
+ * não há link (nunca página em branco nem link partido).
+ *
+ * Falha de consulta → `false` (oculta o link em vez de arriscar um
+ * link para 404). Só o rodapé público usa isto — o editor do painel
+ * carrega os itens completos via `getFaqItemsForStore`.
+ */
+export async function hasPublicStoreFaq(storeId: string): Promise<boolean> {
+  const supabase = createPublicClient();
+
+  const { count, error } = await supabase
+    .from("store_faq_items")
+    .select("id", { count: "exact", head: true })
+    .eq("store_id", storeId)
+    .limit(1);
+
+  if (error) return false;
+
+  return (count ?? 0) > 0;
 }
 
 /** Estado público de uma loja pelo slug — ver `getPublicStoreStatus`. */

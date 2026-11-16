@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { StoreForm } from "@/components/store/store-form";
+import { PoliciesForm } from "@/components/store/policies-form";
+import { FaqManager } from "@/components/store/faq-manager";
 import { LocaleSelector } from "@/components/shared/locale-selector";
+import { Separator } from "@/components/ui/separator";
 import {
   Card,
   CardContent,
@@ -12,7 +15,7 @@ import {
 import { requireUser } from "@/lib/auth/session";
 import { getLocale } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
-import { requireStore } from "@/lib/stores/queries";
+import { getFaqItemsForStore, requireStore } from "@/lib/stores/queries";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = createTranslator(await getLocale());
@@ -22,6 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function SettingsPage() {
   const user = await requireUser();
   const store = await requireStore(user.id);
+  const faqItems = await getFaqItemsForStore(store.id);
 
   const locale = await getLocale();
   const t = createTranslator(locale);
@@ -57,6 +61,29 @@ export default async function SettingsPage() {
               facebook_url: store.facebook_url ?? "",
             }}
           />
+        </CardContent>
+      </Card>
+
+      {/* Políticas e FAQ — conteúdo do COMERCIANTE que alimenta os links
+          do rodapé da vitrine (aparecem só quando há conteúdo publicado)
+          e as páginas /store/{slug}/terms|privacy|faq. */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base tracking-tight">
+            {t("settings.sectionPolicies")}
+          </CardTitle>
+          <CardDescription>{t("settings.policiesHelp")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          <PoliciesForm
+            locale={locale}
+            initialValues={{
+              terms: store.terms ?? "",
+              privacy_policy: store.privacy_policy ?? "",
+            }}
+          />
+          <Separator />
+          <FaqManager items={faqItems} locale={locale} />
         </CardContent>
       </Card>
 

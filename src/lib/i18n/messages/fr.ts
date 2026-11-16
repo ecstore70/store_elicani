@@ -665,4 +665,39 @@ export const fr: Messages = {
   "delivery.markPreparing": "Marquer en préparation",
   "delivery.markOnTheWay": "Marquer en route",
   "delivery.markDelivered": "Marquer livrée",
+
+  // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
+  "legal.terms": "Conditions d'utilisation",
+  "legal.privacy": "Politique de confidentialité",
+  "legal.faq": "FAQ",
+  "legal.faqFull": "Questions fréquentes",
+  "settings.sectionPolicies": "Politiques et FAQ",
+  "settings.policiesHelp":
+    "Publiez les conditions d'utilisation et la politique de confidentialité de votre boutique et répondez aux questions les plus fréquentes des clients. Vous êtes responsable du contenu publié.",
+  "settings.termsLabel": "Conditions d'utilisation de la boutique",
+  "settings.termsPlaceholder":
+    "Ajoutez les conditions qui régissent l'utilisation de votre boutique.",
+  "settings.privacyLabel": "Politique de confidentialité de la boutique",
+  "settings.privacyPlaceholder":
+    "Ajoutez la politique de confidentialité applicable à votre boutique.",
+  "settings.policyTooLong": "Ce contenu est trop long.",
+  "faq.sectionHelp":
+    "Ajoutez les questions que les clients posent le plus souvent sur votre boutique.",
+  "faq.question": "Question",
+  "faq.answer": "Réponse",
+  "faq.questionPlaceholder": "Comment passer commande ?",
+  "faq.answerPlaceholder": "Contactez-nous sur WhatsApp…",
+  "faq.addQuestion": "Ajouter une question",
+  "faq.empty": "Aucune question pour le moment.",
+  "faq.save": "Enregistrer",
+  "faq.moveUp": "Déplacer vers le haut",
+  "faq.moveDown": "Déplacer vers le bas",
+  "faq.delete": "Supprimer",
+  "faq.deleteConfirm": "Supprimer la question « {name} » ?",
+  "faq.questionRequired": "Saisissez une question.",
+  "faq.answerRequired": "Saisissez une réponse.",
+  "faq.saved": "Question enregistrée.",
+  "storefront.termsLink": "Conditions d'utilisation",
+  "storefront.privacyLink": "Politique de confidentialité",
+  "storefront.faqLink": "FAQ",
 };

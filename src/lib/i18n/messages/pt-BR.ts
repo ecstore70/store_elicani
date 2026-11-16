@@ -670,4 +670,38 @@ export const ptBR: Messages = {
   "delivery.markPreparing": "Marcar como em preparação",
   "delivery.markOnTheWay": "Marcar como a caminho",
   "delivery.markDelivered": "Marcar como entregue",
+
+  // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
+  "legal.terms": "Termos de Uso",
+  "legal.privacy": "Política de Privacidade",
+  "legal.faq": "FAQ",
+  "legal.faqFull": "Perguntas Frequentes",
+  "settings.sectionPolicies": "Políticas e FAQ",
+  "settings.policiesHelp":
+    "Publique os termos e a política de privacidade da sua loja e responda às perguntas mais frequentes dos clientes. Você é responsável pelo conteúdo que publicar.",
+  "settings.termsLabel": "Termos de uso da loja",
+  "settings.termsPlaceholder": "Adicione os termos que regem o uso da sua loja.",
+  "settings.privacyLabel": "Política de privacidade da loja",
+  "settings.privacyPlaceholder":
+    "Adicione a política de privacidade que se aplica à sua loja.",
+  "settings.policyTooLong": "Este conteúdo é muito longo.",
+  "faq.sectionHelp":
+    "Adicione as perguntas que os clientes mais fazem sobre a sua loja.",
+  "faq.question": "Pergunta",
+  "faq.answer": "Resposta",
+  "faq.questionPlaceholder": "Como faço um pedido?",
+  "faq.answerPlaceholder": "Fale conosco pelo WhatsApp…",
+  "faq.addQuestion": "Adicionar pergunta",
+  "faq.empty": "Nenhuma pergunta ainda.",
+  "faq.save": "Salvar",
+  "faq.moveUp": "Mover para cima",
+  "faq.moveDown": "Mover para baixo",
+  "faq.delete": "Excluir",
+  "faq.deleteConfirm": "Excluir a pergunta \"{name}\"?",
+  "faq.questionRequired": "Digite uma pergunta.",
+  "faq.answerRequired": "Digite uma resposta.",
+  "faq.saved": "Pergunta salva.",
+  "storefront.termsLink": "Termos de Uso",
+  "storefront.privacyLink": "Política de Privacidade",
+  "storefront.faqLink": "FAQ",
 };

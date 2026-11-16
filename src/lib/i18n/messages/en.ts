@@ -668,6 +668,41 @@ export const en = {
   "delivery.markPreparing": "Mark as preparing",
   "delivery.markOnTheWay": "Mark as on the way",
   "delivery.markDelivered": "Mark as delivered",
+
+  // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
+  "legal.terms": "Terms of Use",
+  "legal.privacy": "Privacy Policy",
+  "legal.faq": "FAQ",
+  "legal.faqFull": "Frequently Asked Questions",
+  "settings.sectionPolicies": "Policies & FAQ",
+  "settings.policiesHelp":
+    "Publish the terms and privacy policy of your store, and answer the questions customers ask most often. You are responsible for the content you publish.",
+  "settings.termsLabel": "Store terms of use",
+  "settings.termsPlaceholder":
+    "Add the terms that govern the use of your store.",
+  "settings.privacyLabel": "Store privacy policy",
+  "settings.privacyPlaceholder":
+    "Add the privacy policy that applies to your store.",
+  "settings.policyTooLong": "This content is too long.",
+  "faq.sectionHelp":
+    "Add the questions customers ask most often about your store.",
+  "faq.question": "Question",
+  "faq.answer": "Answer",
+  "faq.questionPlaceholder": "How can I place an order?",
+  "faq.answerPlaceholder": "Contact us through WhatsApp…",
+  "faq.addQuestion": "Add question",
+  "faq.empty": "No questions yet.",
+  "faq.save": "Save",
+  "faq.moveUp": "Move up",
+  "faq.moveDown": "Move down",
+  "faq.delete": "Delete",
+  "faq.deleteConfirm": "Delete the question \"{name}\"?",
+  "faq.questionRequired": "Enter a question.",
+  "faq.answerRequired": "Enter an answer.",
+  "faq.saved": "Question saved.",
+  "storefront.termsLink": "Terms of Use",
+  "storefront.privacyLink": "Privacy Policy",
+  "storefront.faqLink": "FAQ",
 } as const;
 
 export type Messages = Record<keyof typeof en, string>;
