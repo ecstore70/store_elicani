@@ -20,6 +20,8 @@
  *  2. Redirecionar www → domínio principal;
  *  2b. Manter páginas de auth (/login, /signup, …) no host canônico —
  *      evita o split dos cookies PKCE entre alias e host do app;
+ *  2c. Manter /terms, /privacy, /faq no host de MARKETING (conteúdo
+ *      institucional; alinhado à metadataBase, à canônica e ao sitemap);
  *  3. Renovar a sessão Supabase (refresh dos cookies);
  *  4. Proteger rotas /app e redirecionar usuário logado fora de /login.
  *
@@ -29,7 +31,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/database.types";
-import { getSiteUrl, getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
+import { getMarketingUrl, getSiteUrl, getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 import { isSafeInternalPath } from "@/lib/safe-redirect";
 import { extractStoreSlug, getStoreDomain } from "@/lib/stores/resolve";
 
@@ -202,7 +204,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // ── 0. páginas de auth e documentos da plataforma no host canônico ─────
+  // ── 0. páginas de auth no host canônico (getSiteUrl) ───────────────────
   //
   // Os cookies PKCE do login Google são HOST-ONLY: a ação de login grava o
   // code verifier no host onde a página foi servida, mas o /auth/callback
@@ -212,24 +214,37 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   // saved code verifier" e o login Google falha. Redirecionar /login,
   // /signup, /forgot-password e /reset-password para o host canônico
   // garante ação → Google → callback no MESMO host.
-  //
-  // /terms, /privacy e /faq são documentos da PLATAFORMA: servidos sob um
-  // subdomínio de loja misturariam identidades (conteúdo institucional
-  // com cara de loja) — saem sempre do host canônico, pela mesma regra.
-  // As demais rotas (landing, /app, vitrine) não são afetadas.
   const canonicalHost = new URL(getSiteUrl()).hostname;
   const isAuthOnlyPath =
     pathname === "/login" ||
     pathname === "/signup" ||
     pathname === "/forgot-password" ||
     pathname === "/reset-password";
+  if (isAuthOnlyPath && hostname !== canonicalHost) {
+    const url = request.nextUrl.clone();
+    url.hostname = canonicalHost;
+    return NextResponse.redirect(url);
+  }
+
+  // ── 0b. documentos da plataforma só no host de MARKETING ───────────────
+  //
+  // /terms, /privacy e /faq são conteúdo institucional da Elicani: o
+  // rodapé da landing liga /terms (host de marketing) e a metadataBase,
+  // as canônicas e o sitemap usam getMarketingUrl — o redirect tem de
+  // apontar para ESSE host, senão a canônica (marketing) redireciona
+  // para si própria via host do app (cadeia circular) e cada clique do
+  // rodapé pula de domínio. Servidos sob um subdomínio de LOJA
+  // misturariam identidades (conteúdo institucional com cara de loja) —
+  // qualquer host ≠ marketing recebe 307 para o host de marketing.
+  // As demais rotas (landing, /app, vitrine) não são afetadas.
+  const marketingHost = new URL(getMarketingUrl()).hostname;
   const isPlatformDocPath =
     pathname === "/terms" ||
     pathname === "/privacy" ||
     pathname === "/faq";
-  if ((isAuthOnlyPath || isPlatformDocPath) && hostname !== canonicalHost) {
+  if (isPlatformDocPath && hostname !== marketingHost) {
     const url = request.nextUrl.clone();
-    url.hostname = canonicalHost;
+    url.hostname = marketingHost;
     return NextResponse.redirect(url);
   }
 
