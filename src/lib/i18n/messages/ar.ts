@@ -128,7 +128,6 @@ export const ar: Messages = {
   "store.error.primaryColorInvalid": "استخدم لونًا بصيغة hex مثل ‎#0f172a.",
   "store.sectionOptional": "تفاصيل اختيارية",
   "store.error.createFailed": "تعذّر إنشاء المتجر. حاول مجددًا.",
-  "store.error.alreadyExists": "لديك متجر بالفعل.",
   "store.error.saveFailed": "تعذّر حفظ التغييرات. حاول مجددًا.",
   "store.error.sessionInvalid": "انتهت جلستك. سجّل الدخول مرة أخرى.",
   "store.error.lookupFailed": "تعذّر التحقق من العنوان. حاول مجددًا.",
@@ -576,6 +575,15 @@ export const ar: Messages = {
   "catalog.deleteConfirmButton": "حذف نهائي",
   "catalog.deleted": "تم حذف الكتالوج.",
   "catalog.deleteFailed": "تعذّر حذف الكتالوج. حاول مرة أخرى.",
+  "catalogs.title": "كتالوجاتي",
+  "catalogs.subtitle": "جميع الكتالوجات في هذا الحساب — الحالي مميّز.",
+  "catalogs.current": "الحالي",
+  "catalogs.switch": "تبديل",
+  "catalogs.switchTo": "التبديل إلى {name}",
+  "catalogs.create": "إنشاء كتالوج",
+  "catalogs.createSubtitle":
+    "الكتالوج الجديد متجر مستقل — بمنتجات وإعدادات وسياسات خاصة به.",
+  "catalogs.back": "العودة إلى كتالوجاتي",
   "catalog.identity": "هوية المتجر",
   "catalog.identityHelp":
     "يشهد الشعار والأيقونة المصغرة وصورة الغلاف على واجهتك العامة في ألسنة المتصفح وروابط المشاركة ونتائج البحث. عند غياب الأيقونة المصغرة يُستخدم شعارك، ثم أيقونة Elicani.",

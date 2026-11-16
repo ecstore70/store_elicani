@@ -55,7 +55,7 @@ const SECTIONS: readonly LegalSection[] = [
     heading: "Accounts",
     paragraphs: [
       "You need an account to create and manage a store. You can sign up with your email address or with Google.",
-      "Each account can operate one store. You are responsible for keeping your login credentials confidential and for any activity performed through your account.",
+      "You can create and operate multiple stores under one account. Each store is independent — with its own products, settings, policies and storefront. You are responsible for keeping your login credentials confidential and for any activity performed through your account.",
     ],
   },
   {

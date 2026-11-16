@@ -129,7 +129,6 @@ export const ja: Messages = {
   "store.error.primaryColorInvalid": "#0f172a のような 16 進カラーを使用してください。",
   "store.sectionOptional": "任意の詳細",
   "store.error.createFailed": "ストアを作成できませんでした。もう一度お試しください。",
-  "store.error.alreadyExists": "既にストアをお持ちです。",
   "store.error.saveFailed": "変更を保存できませんでした。もう一度お試しください。",
   "store.error.sessionInvalid": "セッションが切れました。再度ログインしてください。",
   "store.error.lookupFailed": "アドレスを確認できませんでした。もう一度お試しください。",
@@ -574,6 +573,15 @@ export const ja: Messages = {
   "catalog.deleteConfirmButton": "完全に削除",
   "catalog.deleted": "カタログを削除しました。",
   "catalog.deleteFailed": "カタログを削除できませんでした。もう一度お試しください。",
+  "catalogs.title": "マイカタログ",
+  "catalogs.subtitle": "このアカウントのすべてのカタログ — 現在のカタログが強調表示されます。",
+  "catalogs.current": "現在",
+  "catalogs.switch": "切り替え",
+  "catalogs.switchTo": "{name} に切り替え",
+  "catalogs.create": "カタログを作成",
+  "catalogs.createSubtitle":
+    "新しいカタログは独立したストア — 商品・設定・ポリシーはすべて個別のものです。",
+  "catalogs.back": "マイカタログに戻る",
   "catalog.identity": "ストアのアイデンティティ",
   "catalog.identityHelp":
     "ロゴ・ファビコン・カバーは、ブラウザのタブ、共有リンク、検索結果で公開ストアを表します。ファビコン未設定の場合はロゴが使われ、それもなければ Elicani アイコンが使われます。",

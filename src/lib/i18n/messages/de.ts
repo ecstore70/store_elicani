@@ -127,7 +127,6 @@ export const de: Messages = {
   "store.error.primaryColorInvalid": "Verwenden Sie eine Hex-Farbe wie #0f172a.",
   "store.sectionOptional": "Optionale Details",
   "store.error.createFailed": "Der Shop konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
-  "store.error.alreadyExists": "Sie haben bereits einen Shop.",
   "store.error.saveFailed": "Die Änderungen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.",
   "store.error.sessionInvalid": "Ihre Sitzung ist abgelaufen. Melden Sie sich erneut an.",
   "store.error.lookupFailed": "Die Adresse konnte nicht überprüft werden. Bitte versuchen Sie es erneut.",
@@ -575,6 +574,15 @@ export const de: Messages = {
   "catalog.deleteConfirmButton": "Endgültig löschen",
   "catalog.deleted": "Katalog gelöscht.",
   "catalog.deleteFailed": "Der Katalog konnte nicht gelöscht werden. Versuchen Sie es erneut.",
+  "catalogs.title": "Meine Kataloge",
+  "catalogs.subtitle": "Alle Kataloge dieses Kontos — der aktuelle ist hervorgehoben.",
+  "catalogs.current": "Aktuell",
+  "catalogs.switch": "Wechseln",
+  "catalogs.switchTo": "Wechseln zu {name}",
+  "catalogs.create": "Katalog erstellen",
+  "catalogs.createSubtitle":
+    "Ein neuer Katalog ist ein unabhängiger Shop — mit eigenen Produkten, Einstellungen und Richtlinien.",
+  "catalogs.back": "Zurück zu meinen Katalogen",
   "catalog.identity": "Identität des Katalogs",
   "catalog.identityHelp":
     "Logo, Favicon und Titelbild identifizieren deinen öffentlichen Shop in Browser-Tabs, geteilten Links und Suchergebnissen. Ohne Favicon wird dein Logo verwendet — danach das Elicani-Symbol.",

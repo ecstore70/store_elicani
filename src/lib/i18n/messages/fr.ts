@@ -127,7 +127,6 @@ export const fr: Messages = {
   "store.error.primaryColorInvalid": "Utilisez une couleur hexadécimale comme #0f172a.",
   "store.sectionOptional": "Détails facultatifs",
   "store.error.createFailed": "Impossible de créer la boutique. Veuillez réessayer.",
-  "store.error.alreadyExists": "Vous avez déjà une boutique.",
   "store.error.saveFailed": "Impossible d'enregistrer les modifications. Veuillez réessayer.",
   "store.error.sessionInvalid": "Votre session a expiré. Reconnectez-vous.",
   "store.error.lookupFailed": "Impossible de vérifier l'adresse. Veuillez réessayer.",
@@ -575,6 +574,15 @@ export const fr: Messages = {
   "catalog.deleteConfirmButton": "Supprimer définitivement",
   "catalog.deleted": "Catalogue supprimé.",
   "catalog.deleteFailed": "Impossible de supprimer le catalogue. Réessayez.",
+  "catalogs.title": "Mes catalogues",
+  "catalogs.subtitle": "Tous les catalogues de ce compte — l'actuel est mis en évidence.",
+  "catalogs.current": "Actuel",
+  "catalogs.switch": "Basculer",
+  "catalogs.switchTo": "Basculer vers {name}",
+  "catalogs.create": "Créer un catalogue",
+  "catalogs.createSubtitle":
+    "Un nouveau catalogue est une boutique indépendante — avec ses propres produits, réglages et politiques.",
+  "catalogs.back": "Retour à mes catalogues",
   "catalog.identity": "Identité de la boutique",
   "catalog.identityHelp":
     "Le logo, le favicon et la couverture identifient votre vitrine publique dans les onglets du navigateur, les liens partagés et les résultats de recherche. Sans favicon, votre logo est utilisé — puis l'icône Elicani.",

@@ -19,6 +19,12 @@ export type CatalogActionResult = {
   ok: boolean;
   /** Mensagem de erro traduzida; `null` em sucesso. */
   error: string | null;
+  /**
+   * Lojas que restam na conta após uma exclusão bem-sucedida — o cliente
+   * escolhe o destino (sem lojas → onboarding com banner; com outras →
+   * lista de catálogos). Só a ação de apagar preenche este campo.
+   */
+  remainingStores?: number;
 };
 
 /**

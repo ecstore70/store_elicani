@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { resolveSafeNext } from "@/lib/safe-redirect";
 import { createClient } from "@/lib/supabase/server";
-import { getStoreForOwner } from "@/lib/stores/queries";
+import { getStoresForOwner } from "@/lib/stores/queries";
 
 /**
  * Callback do OAuth (Google).
@@ -46,8 +46,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  const store = await getStoreForOwner(user.id);
-  if (!store) {
+  // Multi-catalog: qualquer loja existente → painel (a loja ATIVA é
+  // resolvida a cada requisição). Sem nenhuma → criação da primeira.
+  const stores = await getStoresForOwner(user.id);
+  if (stores.length === 0) {
     return NextResponse.redirect(new URL("/app/onboarding", url));
   }
 

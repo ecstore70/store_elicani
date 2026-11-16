@@ -131,7 +131,6 @@ export const en = {
   "store.error.primaryColorInvalid": "Use a hex color like #0f172a.",
   "store.sectionOptional": "Optional details",
   "store.error.createFailed": "Could not create the store. Please try again.",
-  "store.error.alreadyExists": "You already have a store.",
   "store.error.saveFailed": "Could not save the changes. Please try again.",
   "store.error.sessionInvalid": "Your session expired. Sign in again.",
   "store.error.lookupFailed": "Could not verify the address. Please try again.",
@@ -578,6 +577,15 @@ export const en = {
   "catalog.deleteConfirmButton": "Delete permanently",
   "catalog.deleted": "Catalog deleted.",
   "catalog.deleteFailed": "Could not delete the catalog. Try again.",
+  "catalogs.title": "My catalogs",
+  "catalogs.subtitle": "All catalogs on this account — the current one is highlighted.",
+  "catalogs.current": "Current",
+  "catalogs.switch": "Switch",
+  "catalogs.switchTo": "Switch to {name}",
+  "catalogs.create": "Create catalog",
+  "catalogs.createSubtitle":
+    "A new catalog is an independent store — its own products, settings and policies.",
+  "catalogs.back": "Back to my catalogs",
   "catalog.identity": "Store identity",
   "catalog.identityHelp":
     "Logo, favicon and cover identify your public storefront in browser tabs, shared links and search results. Without a favicon, your logo is used — then the Elicani icon.",

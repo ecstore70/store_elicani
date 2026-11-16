@@ -9,7 +9,7 @@ import { DEFAULT_CURRENCY } from "@/lib/currency";
 import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/config";
 import { getLocale } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
-import { getStoreForOwner } from "@/lib/stores/queries";
+import { getStoresForOwner } from "@/lib/stores/queries";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = createTranslator(await getLocale());
@@ -32,8 +32,11 @@ export default async function OnboardingPage({
   const { deleted } = await searchParams;
   const user = await requireUser();
 
-  const existingStore = await getStoreForOwner(user.id);
-  if (existingStore) {
+  // Multi-catalog: já tem loja(s) → painel (sem banner ?deleted=1, que
+  // só faz sentido quando a exclusão removeu a ÚLTIMA loja). Sem nenhuma
+  // → cria a PRIMEIRA aqui: a experiência de onboarding existente intacta.
+  const stores = await getStoresForOwner(user.id);
+  if (stores.length > 0) {
     redirect("/app");
   }
 

@@ -185,10 +185,12 @@ export function CatalogManager({
 /**
  * Exclusão destrutiva: sem toque único. O botão final só habilita quando
  * o lojista digita exatamente DELETE (`isCatalogDeleteConfirmation`, o
- * mesmo portão que a server action revalida no servidor). Em sucesso,
- * encaminha para /app/onboarding?deleted=1 — a página de onboarding mostra
- * o aviso "catálogo excluído" e é o destino correto sem loja (o layout do
- * dashboard redirecionaria para lá de qualquer forma).
+ * mesmo portão que a server action revalida no servidor). Em sucesso, o
+ * destino depende das lojas restantes (`remainingStores`): sem nenhuma,
+ * /app/onboarding?deleted=1 — a página mostra o aviso "catálogo excluído"
+ * (o layout do dashboard redirecionaria para lá de qualquer forma); com
+ * outras, /app/catalogs — a lista atualizada, sem trocar de contexto para
+ * loja de outra conta.
  */
 function DeleteCatalogDialog({
   open,
@@ -223,8 +225,13 @@ function DeleteCatalogDialog({
           setError(result.error ?? t("catalog.deleteFailed"));
           return;
         }
-        // Sucesso → feedback na página de destino (banner ?deleted=1).
-        router.push("/app/onboarding?deleted=1");
+        // Sucesso → destino conforme as lojas restantes (multi-catalog):
+        // nenhuma → banner do onboarding; outras → lista de catálogos.
+        if (result.remainingStores === 0) {
+          router.push("/app/onboarding?deleted=1");
+        } else {
+          router.push("/app/catalogs");
+        }
       } catch (err) {
         if (isRedirectError(err)) return;
         setError(t("catalog.deleteFailed"));

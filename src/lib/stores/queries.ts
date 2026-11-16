@@ -1,26 +1,30 @@
 import "server-only";
 
 import { cacheLife, cacheTag } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
+import { ACTIVE_STORE_COOKIE, pickActiveStore } from "./active";
 import type { Profile, PublicFaqItem, PublicStore, Store } from "./types";
 
 /**
- * Store do lojista autenticado.
+ * TODAS as lojas do lojista (multi-catalog), em ordem de criação — a mais
+ * antiga primeiro; a última posição é a mais recente (ver pickActiveStore).
  *
- * O RLS já garante que só a própria store é retornada — aqui não há
- * filtro por owner_id porque a política faz isso no banco.
+ * O RLS já garante que só as próprias stores são retornadas — o filtro por
+ * owner_id aqui é redundante de propósito (defesa em profundidade, nunca
+ * filtro só de UI).
  *
  * `'use cache: private'` mantém a leitura fora do shell estático e
  * deduplica as chamadas (layout + página) dentro da mesma requisição.
  *
  * `cacheTag("store")` permite invalidar esta entrada sob demanda com
- * `updateTag("store")` após uma mutação do catálogo (ativar/desativar/
- * excluir) — sem isso o painel serviria a loja fantasma do cache por
- * até o janela de `stale`.
+ * `updateTag("store")` após uma mutação do catálogo (criar/ativar/
+ * excluir) — sem isso o painel serviria lojas fantasma do cache por
+ * até a janela de `stale`.
  */
-export async function getStoreForOwner(ownerId: string): Promise<Store | null> {
+export async function getStoresForOwner(ownerId: string): Promise<Store[]> {
   "use cache: private";
   cacheLife({ stale: 30 });
   cacheTag("store");
@@ -31,21 +35,43 @@ export async function getStoreForOwner(ownerId: string): Promise<Store | null> {
     .from("stores")
     .select("*")
     .eq("owner_id", ownerId)
-    .maybeSingle();
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true });
 
   if (error) {
-    throw new Error(`Failed to load store: ${error.message}`);
+    throw new Error(`Failed to load stores: ${error.message}`);
   }
 
-  return data;
+  return data ?? [];
+}
+
+/**
+ * Loja ATIVA do lojista — o contexto explícito do painel (multi-catalog).
+ *
+ * O cookie só aponta para uma loja da lista do PRÓPRIO dono: um id
+ * forjado, expirado ou de outra conta cai na fallback determinística
+ * (loja mais recente). Conta com UMA loja não lê cookie nenhum — o
+ * fluxo existente (onboarding → dashboard) continua idêntico.
+ */
+export async function resolveActiveStore(
+  ownerId: string,
+): Promise<Store | null> {
+  const stores = await getStoresForOwner(ownerId);
+  if (stores.length === 0) return null;
+  if (stores.length === 1) return stores[0];
+
+  const cookieStore = await cookies();
+  const activeId = cookieStore.get(ACTIVE_STORE_COOKIE)?.value ?? null;
+  return pickActiveStore(stores, activeId);
 }
 
 /**
  * Store do usuário autenticado, obrigatória nas rotas /app com store.
- * Sem store → onboarding.
+ * Sem store → onboarding. Com várias → a loja ATIVA (cookie validado
+ * contra a lista de lojas do próprio dono).
  */
 export async function requireStore(ownerId: string): Promise<Store> {
-  const store = await getStoreForOwner(ownerId);
+  const store = await resolveActiveStore(ownerId);
   if (!store) {
     redirect("/app/onboarding");
   }

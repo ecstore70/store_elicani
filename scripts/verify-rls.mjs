@@ -8,7 +8,9 @@
  *   • lojista A cria/lê/atualiza a loja A e o lojista B o equivalente;
  *   • B NÃO lê nem atualiza a loja A (nem por UUID direto);
  *   • ninguém cria loja em nome de outro lojista (RLS with check);
- *   • ninguém tem duas lojas (UNIQUE owner_id);
+ *   • multi-catalog: uma conta cria N lojas; o dono lê/edita as SUAS e os
+ *     outros lojistas não leem nenhuma (RLS por linha);
+ *   • produtos e FAQ ficam associados à loja certa dentro da conta;
  *   • slug é único entre lojistas (UNIQUE slug);
  *   • perfis são privados;
  *   • anônimo lê apenas lojas ATIVAS e nunca escreve;
@@ -113,8 +115,8 @@ console.log(`\x1b[1;32m[rls]\x1b[0m verificação de isolamento multi-tenant\n`)
 
 try {
   // ── 1. Três lojistas de teste (e-mail já confirmado) ─────────────────────
-  // A e B criam loja; C fica sem loja de propósito, para testar o
-  // `with check` da RLS sem o UNIQUE de owner_id a atrapalhar.
+  // A e B criam loja; C fica sem loja de propósito — para testar o
+  // `with check` da RLS em si (sem nenhuma linha de C no caminho).
   const email = (letter) => `rls-${letter}-${RUN_ID}@elicani.test`;
   const password = "TestOnly!12345";
 
@@ -224,8 +226,8 @@ try {
   const stillThere = await A.from("stores").select("id").eq("id", idA).maybeSingle();
   assert("a loja A continua existente", !!stillThere.data);
 
-  // C ainda não tem loja, então o UNIQUE de owner_id não dispara antes:
-  // isto mede o `with check (auth.uid() = owner_id)` da RLS em si.
+  // C ainda não tem loja: isto mede o `with check (auth.uid() = owner_id)`
+  // da RLS em si — nenhuma restrição de esquema fica no caminho.
   const stealOwner = await C.from("stores").insert({
     ...storeA,
     owner_id: createdUsers[0],
@@ -244,11 +246,125 @@ try {
     `linhas devolvidas: ${JSON.stringify(cReadsA.data)}`,
   );
 
-  const secondStore = await A.from("stores").insert({ ...storeA, slug: `${SLUG_A}-2` });
+  // ── 4b. Multi-catalog: uma conta → N lojas ──────────────────────────────
+  // A Fase 1 tinha UNIQUE em owner_id; a migração multi-catalog removeu-o.
+  // O dono cria uma SEGUNDA loja e o isolamento continua por linha: os
+  // outros lojistas não leem nenhuma das duas; produtos e FAQ ficam
+  // associados à loja certa dentro da mesma conta.
+  const secondStore = await A.from("stores")
+    .insert({ ...storeA, name: "Lojista A 2", slug: `${SLUG_A}-2` })
+    .select("id")
+    .single();
   assert(
-    "A NÃO cria uma segunda loja (UNIQUE owner_id)",
-    !!secondStore.error && secondStore.error.code === "23505",
+    "A cria uma segunda loja (multi-catalog)",
+    !secondStore.error && !!secondStore.data,
     errorDetail(secondStore),
+  );
+  const idA2 = secondStore.data?.id;
+
+  const ownStoresA = await A.from("stores").select("id").eq("owner_id", createdUsers[0]);
+  assert(
+    "A lê as SUAS duas lojas",
+    !ownStoresA.error && ownStoresA.data?.length === 2,
+    `linhas: ${JSON.stringify(ownStoresA.data)} ${errorDetail(ownStoresA) ?? ""}`,
+  );
+
+  const crossReadA2 = await B.from("stores").select("id").eq("id", idA2);
+  assert(
+    "B NÃO lê a segunda loja de A (por UUID direto)",
+    !crossReadA2.error && crossReadA2.data?.length === 0,
+    `linhas devolvidas: ${JSON.stringify(crossReadA2.data)} ${errorDetail(crossReadA2) ?? ""}`,
+  );
+
+  const crossUpdateA2 = await B.from("stores").update({ name: "INVADIDA" }).eq("id", idA2).select("id");
+  assert(
+    "B NÃO atualiza a segunda loja de A",
+    !crossUpdateA2.error && crossUpdateA2.data?.length === 0,
+    `linhas afetadas: ${JSON.stringify(crossUpdateA2.data)}`,
+  );
+
+  const renameA2 = await A.from("stores").update({ name: "Lojista A 2 editada" }).eq("id", idA2).select("id");
+  assert(
+    "A atualiza a segunda loja",
+    !renameA2.error && renameA2.data?.length === 1,
+    errorDetail(renameA2),
+  );
+  const firstNameA = await A.from("stores").select("name").eq("id", idA).maybeSingle();
+  assert(
+    "a primeira loja de A fica intacta ao editar a segunda",
+    firstNameA.data?.name === "Lojista A editada",
+    `nome: ${firstNameA.data?.name} ${errorDetail(firstNameA) ?? ""}`,
+  );
+
+  const productA2 = await A.from("products")
+    .insert({
+      store_id: idA2,
+      category_id: null,
+      name: `Produto A2 ${RUN_ID}`,
+      price: 50,
+      is_featured: false,
+    })
+    .select("id, store_id")
+    .single();
+  assert(
+    "A cria produto na segunda loja",
+    !productA2.error && !!productA2.data && productA2.data.store_id === idA2,
+    errorDetail(productA2),
+  );
+
+  const a2Products = await A.from("products").select("id").eq("store_id", idA2);
+  assert(
+    "a segunda loja tem o SEU produto",
+    !a2Products.error && a2Products.data?.length === 1,
+    errorDetail(a2Products),
+  );
+
+  const crossProductsA2 = await B.from("products").select("id").eq("store_id", idA2);
+  assert(
+    "B NÃO vê os produtos da segunda loja de A",
+    !crossProductsA2.error && crossProductsA2.data?.length === 0,
+    errorDetail(crossProductsA2),
+  );
+
+  const faqA2 = await A.from("store_faq_items")
+    .insert({
+      store_id: idA2,
+      question: `Pergunta A2 ${RUN_ID}?`,
+      answer: "Resposta de teste.",
+      sort_order: 0,
+    })
+    .select("id")
+    .single();
+  assert(
+    "A cria FAQ na segunda loja",
+    !faqA2.error && !!faqA2.data,
+    errorDetail(faqA2),
+  );
+
+  const faqInA1 = await A.from("store_faq_items").select("id").eq("store_id", idA);
+  const faqInA2 = await A.from("store_faq_items").select("id").eq("store_id", idA2);
+  assert(
+    "FAQ fica na loja certa (A2 tem a sua; A1 fica sem)",
+    !faqInA1.error && !faqInA2.error &&
+      faqInA1.data?.length === 0 && faqInA2.data?.length === 1,
+    `A1=${JSON.stringify(faqInA1.data)} A2=${JSON.stringify(faqInA2.data)}`,
+  );
+
+  const crossFaqA2 = await B.from("store_faq_items").select("id").eq("store_id", idA2);
+  assert(
+    "B NÃO lê o FAQ da segunda loja de A",
+    !crossFaqA2.error && crossFaqA2.data?.length === 0,
+    errorDetail(crossFaqA2),
+  );
+
+  // Limpeza: a segunda loja sai daqui (o cascata remove produto e FAQ
+  // dela) — o resto da suíte continua a medir o caso de UMA loja por
+  // conta, como na Fase 1.
+  const cleanupA2 = await A.from("stores").delete().eq("id", idA2).select("id");
+  assert(
+    "A apaga a segunda loja (limpeza multi-catalog)",
+    !cleanupA2.error && cleanupA2.data?.length === 1,
+    errorDetail(cleanupA2),
   );
 
   const duplicateSlug = await B.from("stores").insert({ ...storeB, slug: SLUG_A });
@@ -1032,7 +1148,8 @@ try {
     errorDetail(profileSurvives),
   );
 
-  // owner_id UNIQUE liberta-se com o delete: dá para recomeçar do zero.
+  // Recomeçar do zero depois de apagar: nenhuma restrição de conta fica
+  // no caminho (o UNIQUE de owner_id saiu na migração multi-catalog).
   const recreate = await A.from("stores")
     .insert({
       owner_id: createdUsers[0],

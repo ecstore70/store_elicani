@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath, updateTag } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { isPlatformOwner } from "@/lib/auth/platform";
@@ -12,6 +13,7 @@ import { isSupportedLocale, normalizeLocale } from "@/lib/i18n/config";
 import { getTranslator } from "@/lib/i18n/locale";
 import type { Translator } from "@/lib/i18n/translate";
 import { createClient } from "@/lib/supabase/server";
+import { ACTIVE_STORE_COOKIE } from "./active";
 import {
   BUTTON_STYLES,
   CARD_STYLES,
@@ -28,7 +30,7 @@ import {
   SLUG_MIN_LENGTH,
   validateSlugForCreation,
 } from "./slug";
-import { requireStore } from "./queries";
+import { getStoresForOwner, requireStore } from "./queries";
 import {
   emptyStoreFormValues,
   type FaqItemFormState,
@@ -215,11 +217,9 @@ function mapStoreError(
   t: Translator,
   mode: "create" | "update",
 ): string {
-  const message = error.message ?? "";
-
   if (error.code === "23505") {
-    if (message.includes("stores_slug_key")) return t("store.error.slugTaken");
-    if (message.includes("stores_owner_id_key")) return t("store.error.alreadyExists");
+    // Única 23505 possível em stores: slug duplicado. O UNIQUE de owner_id
+    // saiu na migração multi-catalog — uma conta pode ter N lojas.
     return t("store.error.slugTaken");
   }
 
@@ -231,6 +231,24 @@ function mapStoreError(
   return mode === "create"
     ? t("store.error.createFailed")
     : t("store.error.saveFailed");
+}
+
+/**
+ * Grava o cookie da loja ATIVA — o contexto explícito do painel.
+ *
+ * Escrito só no servidor (httpOnly); o valor é validado a cada leitura
+ * contra a lista de lojas do próprio dono (ver pickActiveStore) — um id
+ * forjado/expirado nunca muda o contexto para loja alheia.
+ */
+async function writeActiveStoreCookie(storeId: string): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set(ACTIVE_STORE_COOKIE, storeId, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+  });
 }
 
 function withValues(
@@ -247,14 +265,17 @@ function withValues(
 }
 
 /**
- * Cria a store do lojista autenticado.
+ * Cria uma store do lojista autenticado — a PRIMEIRA ou mais uma do
+ * multi-catalog (o onboarding cria a primeira; /app/catalogs/new cria as
+ * seguintes, sem conta nova).
  *
  * Segurança em três camadas:
  *  1. RLS — `with check (auth.uid() = owner_id)` impede criar loja alheia;
- *  2. UNIQUE em owner_id — impede duas lojas para o mesmo lojista;
- *  3. Slug reservado — bloqueado para todos, EXETO a exceção explícita do
- *     dono da plataforma (claim platform_owner em app_metadata, lida do
- *     token validado aqui no servidor — o formulário não envia essa flag).
+ *  2. Slug único global — bloqueado para todos, EXETO a exceção explícita
+ *     do dono da plataforma (claim platform_owner em app_metadata, lida do
+ *     token validado aqui no servidor — o formulário não envia essa flag);
+ *  3. Loja recém-criada vira a ATIVA (cookie gravado aqui) — o painel
+ *     entra direto no catálogo novo.
  */
 export async function createStoreAction(
   _prevState: StoreFormState,
@@ -290,23 +311,32 @@ export async function createStoreAction(
     return withValues(values, { fieldErrors: { slug: t("store.error.slugTaken") } });
   }
 
-  const { error: insertError } = await supabase
+  const { data: inserted, error: insertError } = await supabase
     .from("stores")
-    .insert(toStorePayload(values, user.id));
+    .insert(toStorePayload(values, user.id))
+    .select("id")
+    .single();
 
   if (insertError) {
     return withValues(values, { error: mapStoreError(insertError, t, "create") });
   }
 
+  // Multi-catalog: a loja nova passa a ser a ATIVA (contexto explícito do
+  // painel) e a lista cacheada é invalidada antes do redirect — senão o
+  // dashboard serviria a lista fantasma até a janela de stale.
+  await writeActiveStoreCookie(inserted.id);
+  updateTag("store");
   revalidatePath("/app", "layout");
   redirect("/app");
 }
 
 /**
- * Atualiza a store do lojista autenticado (ecrã de definições).
+ * Atualiza a store ATIVA do lojista autenticado (ecrã de definições).
  *
- * O RLS já limita o UPDATE às lojas próprias; o `.eq("owner_id", ...)` é
- * redundante de propósito — defesa em profundidade, nunca filtro só de UI.
+ * Escopo explícito: `.eq("id", store.id)` da loja em contexto (multi-
+ * catalog) — NUNCA "todas as lojas do dono". O RLS já limita o UPDATE às
+ * lojas próprias; o `.eq("owner_id", ...)` repete o filtro (defesa em
+ * profundidade, nunca só de UI).
  */
 export async function updateStoreAction(
   _prevState: StoreFormState,
@@ -321,11 +351,13 @@ export async function updateStoreAction(
     return withValues(values, { fieldErrors });
   }
 
+  const store = await requireStore(user.id);
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("stores")
     .update(toStoreUpdatePayload(values))
+    .eq("id", store.id)
     .eq("owner_id", user.id)
     .select("id, slug")
     .maybeSingle();
@@ -404,6 +436,7 @@ export async function updateAppearanceAction(
     return { error: t("appearance.error.colorInvalid"), notice: null };
   }
 
+  const store = await requireStore(user.id);
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -419,6 +452,7 @@ export async function updateAppearanceAction(
       accent_color,
       background_color,
     })
+    .eq("id", store.id)
     .eq("owner_id", user.id)
     .select("id, slug")
     .maybeSingle();
@@ -444,8 +478,8 @@ export async function updateAppearanceAction(
 // de `catalogs`): ativar/desativar altera `stores.is_active` e apagar apaga a
 // própria linha da loja — o cascata remove APENAS products, categories e
 // product_media desta loja (FKs `on delete cascade`). profiles e auth NÃO são
-// tocados: as FKs apontam de stores → profiles, nunca ao contrário, e o
-// `owner_id UNIQUE` liberta-se para o lojista recriar outra loja depois.
+// tocados: as FKs apontam de stores → profiles, nunca ao contrário — apagar
+// um catálogo não apaga a conta nem afeta as outras lojas do dono.
 //
 // O tipo de resultado (`CatalogActionResult`) vive em ./lifecycle — módulo
 // puro compartilhado com a UI e com os testes.
@@ -552,8 +586,10 @@ async function cleanupStoreFiles(
  * linha (cascata no banco) → invalidação do cache. Sem `revalidatePath` da
  * rota atual nem dos layouts: a resposta da action NÃO deve re-renderizar
  * /app/catalog (o layout exigiria a loja que já não existe e redirecionaria
- * antes do cliente mostrar o feedback de sucesso). O cliente encaminha para
- * /app/onboarding?deleted=1 com a loja do cache já expirada (updateTag).
+ * antes do cliente mostrar o feedback de sucesso). O cliente usa o
+ * `remainingStores` devolvido: sem lojas → /app/onboarding?deleted=1
+ * (banner de sucesso); com outras lojas → /app/catalogs (lista atualizada —
+ * o contexto ativa cai na fallback determinística, sempre loja do dono).
  */
 export async function deleteCatalogAction(
   confirmation: string,
@@ -588,7 +624,44 @@ export async function deleteCatalogAction(
   revalidatePath("/app/products");
   revalidatePath("/app/categories");
   revalidatePath(`/store/${store.slug}`);
-  return { ok: true, error: null };
+
+  // Multi-catalog: quantas lojas restam na conta? Lido DEPOIS do
+  // updateTag — a lista volta do banco, não do cache.
+  const remaining = await getStoresForOwner(user.id);
+  return { ok: true, error: null, remainingStores: remaining.length };
+}
+
+/**
+ * Troca a loja ATIVA do painel (multi-catalog) — o contexto explícito de
+ * todas as operações do dashboard (produtos, encomendas, definições,
+ * políticas…).
+ *
+ * A posse é validada AQUI: o cookie só grava se a loja pertencer ao
+ * utilizador autenticado (filtro por id + owner_id; RLS repete no banco).
+ * Id alheio ou inexistente → volta ao dashboard sem trocar de contexto.
+ *
+ * `revalidatePath("/app", "layout")` + redirect: a navegação seguinte já
+ * renderiza com o novo cookie — o nome da loja ativa muda na barra lateral
+ * e todas as páginas passam a servir a loja escolhida.
+ */
+export async function setActiveStoreAction(storeId: string): Promise<void> {
+  const user = await requireUser();
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("stores")
+    .select("id")
+    .eq("id", storeId)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+
+  if (!data) {
+    redirect("/app");
+  }
+
+  await writeActiveStoreCookie(storeId);
+  revalidatePath("/app", "layout");
+  redirect("/app");
 }
 
 // ── políticas da loja (terms / privacy) ────────────────────────────────────
@@ -600,14 +673,16 @@ const FAQ_QUESTION_MAX_LENGTH = 300;
 const FAQ_ANSWER_MAX_LENGTH = 5000;
 
 /**
- * Grava os textos de políticas da loja (terms / privacy_policy) —
+ * Grava os textos de políticas da loja ATIVA (terms / privacy_policy) —
  * conteúdo do COMERCIANTE em texto puro (sem HTML: a vitrine renderiza
  * com `whitespace-pre-wrap`).
  *
- * Segurança: RLS do dono + `.eq("owner_id", user.id)` (a outra loja
- * nunca é alcançável), limites validados aqui. `updateTag("store")`
- * expira o cache use-cache da loja (o editor e o rodapé da vitrine
- * mostram o novo conteúdo já na navegação seguinte).
+ * Segurança (multi-catalog): o escopo é a loja em contexto —
+ * `.eq("id", store.id)` da loja ativa + RLS do dono. Alternar de catálogo
+ * no painel é o que decide QUEM texto é gravado; as lojas nunca partilham
+ * nem sobrescrevem conteúdo umas das outras. Limites validados aqui.
+ * `updateTag("store")` expira o cache use-cache da loja (o editor e o
+ * rodapé da vitrine mostram o novo conteúdo já na navegação seguinte).
  */
 export async function updateStorePoliciesAction(
   _prevState: PoliciesFormState,
@@ -631,11 +706,13 @@ export async function updateStorePoliciesAction(
     return { error: null, notice: null, fieldErrors, values };
   }
 
+  const store = await requireStore(user.id);
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("stores")
     .update({ terms, privacy_policy: privacyPolicy })
+    .eq("id", store.id)
     .eq("owner_id", user.id)
     .select("id, slug")
     .maybeSingle();

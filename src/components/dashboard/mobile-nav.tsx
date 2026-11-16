@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Menu } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ export function MobileNav({
   items,
   storeName,
   storeSlug,
+  catalogsLabel,
   openLabel,
   signOutLabel,
   currentLocale,
@@ -37,6 +39,8 @@ export function MobileNav({
   items: NavItemView[];
   storeName?: string | null;
   storeSlug?: string | null;
+  /** Rótulo do acesso à lista de catálogos (multi-catalog). */
+  catalogsLabel: string;
   openLabel: string;
   signOutLabel: string;
   currentLocale: Locale;
@@ -82,6 +86,14 @@ export function MobileNav({
                 {storeSlug}
               </p>
             )}
+            {/* Multi-catalog: lista/troca de catálogos — o nome acima já
+                diz QUAL catálogo está ativo agora. */}
+            <Link
+              href="/app/catalogs"
+              className="mt-1.5 inline-block text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              {catalogsLabel}
+            </Link>
           </div>
         )}
 

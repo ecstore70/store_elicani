@@ -132,7 +132,6 @@ export const ptBR: Messages = {
   "store.error.primaryColorInvalid": "Use uma cor hex como #0f172a.",
   "store.sectionOptional": "Detalhes opcionais",
   "store.error.createFailed": "Não foi possível criar a loja. Tente novamente.",
-  "store.error.alreadyExists": "Você já tem uma loja.",
   "store.error.saveFailed": "Não foi possível guardar as alterações. Tente novamente.",
   "store.error.sessionInvalid": "A sua sessão expirou. Entre novamente.",
   "store.error.lookupFailed": "Não foi possível verificar o endereço. Tente novamente.",
@@ -580,6 +579,15 @@ export const ptBR: Messages = {
   "catalog.deleteConfirmButton": "Excluir permanentemente",
   "catalog.deleted": "Catálogo excluído.",
   "catalog.deleteFailed": "Não foi possível excluir o catálogo. Tente novamente.",
+  "catalogs.title": "Meus catálogos",
+  "catalogs.subtitle": "Todos os catálogos desta conta — o atual está destacado.",
+  "catalogs.current": "Atual",
+  "catalogs.switch": "Trocar",
+  "catalogs.switchTo": "Trocar para {name}",
+  "catalogs.create": "Criar catálogo",
+  "catalogs.createSubtitle":
+    "Um novo catálogo é uma loja independente — com produtos, configurações e políticas próprios.",
+  "catalogs.back": "Voltar aos meus catálogos",
   "catalog.identity": "Identidade da loja",
   "catalog.identityHelp":
     "Logo, favicon e capa identificam sua vitrine pública em abas do navegador, links compartilhados e resultados de busca. Sem favicon, seu logo é usado — depois o ícone da Elicani.",

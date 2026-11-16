@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 import { LocaleSelector } from "@/components/shared/locale-selector";
 import { getLocaleDirection } from "@/lib/i18n/config";
@@ -51,6 +52,14 @@ export async function AppShell({
                   {storeSlug}
                 </p>
               )}
+              {/* Multi-catalog: acesso à lista/troca de catálogos — o nome
+                  acima já diz QUAL catálogo está ativo agora. */}
+              <Link
+                href="/app/catalogs"
+                className="mt-1.5 inline-block text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              >
+                {t("catalogs.title")}
+              </Link>
             </div>
           )}
 
@@ -74,6 +83,7 @@ export async function AppShell({
             items={items}
             storeName={storeName}
             storeSlug={storeSlug}
+            catalogsLabel={t("catalogs.title")}
             openLabel={t("shell.openMenu")}
             signOutLabel={t("shell.signOut")}
             currentLocale={locale}
