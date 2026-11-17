@@ -141,7 +141,6 @@ export const ptPT: Messages = {
   "dashboard.products": "Produtos",
   "dashboard.orders": "Encomendas",
   "dashboard.customers": "Clientes",
-  "dashboard.summaryPlaceholder": "Disponível numa fase posterior",
   "dashboard.status": "Estado",
   "dashboard.statusActive": "Ativa",
   "dashboard.statusInactive": "Inativa",

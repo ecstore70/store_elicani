@@ -139,7 +139,6 @@ export const es: Messages = {
   "dashboard.products": "Productos",
   "dashboard.orders": "Pedidos",
   "dashboard.customers": "Clientes",
-  "dashboard.summaryPlaceholder": "Disponible en una fase posterior",
   "dashboard.status": "Estado",
   "dashboard.statusActive": "Activa",
   "dashboard.statusInactive": "Inactiva",

@@ -132,7 +132,6 @@ export const zhHans: Messages = {
   "dashboard.products": "商品",
   "dashboard.orders": "订单",
   "dashboard.customers": "客户",
-  "dashboard.summaryPlaceholder": "将在后续阶段提供",
   "dashboard.status": "状态",
   "dashboard.statusActive": "已启用",
   "dashboard.statusInactive": "未启用",

@@ -113,6 +113,29 @@ export async function listOrders(
 }
 
 /**
+ * Contagem TOTAL de encomendas da loja ativa (cartão do dashboard).
+ *
+ * Mesma tabela, mesmo módulo, mesma RLS e mesmo `eq("store_id", …)` de
+ * `listOrders` — só que `head: true` com `count: "exact"`: não transfere
+ * linhas (a lista tem teto de 500 e o dashboard só precisa do número) e
+ * não cria uma segunda fonte de dados. Para lojas até 500 encomendas o
+ * valor é idêntico ao comprimento da lista sem filtros.
+ */
+export async function countOrders(storeId: string): Promise<number> {
+  const supabase = await createClient();
+
+  const { count, error } = await supabase
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq("store_id", storeId);
+
+  if (error) {
+    throw new Error(`Falha ao contar encomendas: ${error.message}`);
+  }
+  return count ?? 0;
+}
+
+/**
  * Uma encomenda + itens, restrita à loja ativa.
  * `orderId` inválido (não-uuid) devolve null sem tocar na rede.
  */

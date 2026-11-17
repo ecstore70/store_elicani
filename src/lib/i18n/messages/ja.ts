@@ -141,7 +141,6 @@ export const ja: Messages = {
   "dashboard.products": "商品",
   "dashboard.orders": "注文",
   "dashboard.customers": "顧客",
-  "dashboard.summaryPlaceholder": "後のフェーズで利用可能",
   "dashboard.status": "ステータス",
   "dashboard.statusActive": "有効",
   "dashboard.statusInactive": "無効",

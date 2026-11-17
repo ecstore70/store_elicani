@@ -3,12 +3,15 @@ import { ArrowUpRight, Package, ShoppingCart, Users } from "lucide-react";
 import { PageHeader, PageSection } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { listProductsForOwner } from "@/lib/catalog/queries";
 import { requireUser } from "@/lib/auth/session";
 import { getCountryName } from "@/lib/countries";
 import { formatNumber, getCurrencyLabel } from "@/lib/currency";
+import { getCustomers } from "@/lib/customers/queries";
 import { LOCALE_LABELS, normalizeLocale } from "@/lib/i18n/config";
 import { getLocale } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
+import { countOrders } from "@/lib/orders/queries";
 import { requireStore } from "@/lib/stores/queries";
 import { storePublicUrl } from "@/lib/stores/resolve";
 
@@ -18,9 +21,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Cartões de resumo são EXPLICITAMENTE placeholders das tabelas das próximas
- * fases: mostram o valor real de "zero registos" com a indicação de que a
- * secção ainda não existe. Nenhum dado é inventado nem fingido ler da base.
+ * Cartões de resumo mostram a contagem REAL da loja ativa, lida das mesmas
+ * fontes de verdade das páginas correspondentes: produtos via
+ * `listProductsForOwner` (tal como a página de produtos), encomendas via
+ * `countOrders` (mesma tabela/RLS da lista de encomendas) e clientes via
+ * `getCustomers` (tal como a página de clientes). Zero é dado real — nunca
+ * "funcionalidade indisponível".
  */
 const SUMMARY = [
   { labelKey: "dashboard.products", icon: Package },
@@ -72,6 +78,20 @@ export default async function DashboardPage() {
   const user = await requireUser();
   const store = await requireStore(user.id);
 
+  // As três contagens da loja ATIVA, em paralelo, a partir das mesmas
+  // consultas das páginas correspondentes (fontes de verdade partilhadas).
+  const [products, orderCount, customers] = await Promise.all([
+    listProductsForOwner(store.id),
+    countOrders(store.id),
+    getCustomers(store.id),
+  ]);
+
+  const summaryCounts = {
+    "dashboard.products": products.length,
+    "dashboard.orders": orderCount,
+    "dashboard.customers": customers.length,
+  };
+
   const locale = await getLocale();
   const t = createTranslator(locale);
 
@@ -99,10 +119,7 @@ export default async function DashboardPage() {
                   />
                 </div>
                 <p className="text-2xl font-semibold tracking-tight">
-                  {formatNumber(0, locale)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t("dashboard.summaryPlaceholder")}
+                  {formatNumber(summaryCounts[item.labelKey], locale)}
                 </p>
               </CardContent>
             </Card>

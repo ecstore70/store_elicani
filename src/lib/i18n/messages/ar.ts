@@ -140,7 +140,6 @@ export const ar: Messages = {
   "dashboard.products": "المنتجات",
   "dashboard.orders": "الطلبات",
   "dashboard.customers": "العملاء",
-  "dashboard.summaryPlaceholder": "متاح في مرحلة لاحقة",
   "dashboard.status": "الحالة",
   "dashboard.statusActive": "نشط",
   "dashboard.statusInactive": "غير نشط",

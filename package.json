@@ -11,6 +11,7 @@
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/**/*.test.ts\"",
     "test:rls": "node scripts/verify-rls.mjs",
     "verify:render": "node scripts/verify-render.mjs",
+    "verify:dashboard": "node scripts/verify-dashboard.mjs",
     "db:push": "node scripts/db-push.mjs"
   },
   "dependencies": {

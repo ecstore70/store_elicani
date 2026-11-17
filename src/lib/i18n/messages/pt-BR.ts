@@ -144,7 +144,6 @@ export const ptBR: Messages = {
   "dashboard.products": "Produtos",
   "dashboard.orders": "Encomendas",
   "dashboard.customers": "Clientes",
-  "dashboard.summaryPlaceholder": "Disponível numa fase seguinte",
   "dashboard.status": "Estado",
   "dashboard.statusActive": "Ativa",
   "dashboard.statusInactive": "Inativa",

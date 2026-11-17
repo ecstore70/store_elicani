@@ -143,7 +143,6 @@ export const en = {
   "dashboard.products": "Products",
   "dashboard.orders": "Orders",
   "dashboard.customers": "Customers",
-  "dashboard.summaryPlaceholder": "Available in a later phase",
   "dashboard.status": "Status",
   "dashboard.statusActive": "Active",
   "dashboard.statusInactive": "Inactive",
