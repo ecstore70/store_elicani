@@ -345,13 +345,13 @@ try {
       seeds.every((seed) => ordersList.text.includes(seed.customer.name)),
     `${ordersList.status}`,
   );
+  // Cada encomenda semeada tem UMA linha de produto (qty 2/1/5) → o
+  // contador de itens da lista mostra "1 item" em todas as linhas.
+  const oneItemCount = (ordersList.text.match(/\b1 item\b/g) ?? []).length;
   assert(
-    "lista de encomendas: contagem de itens por encomenda (2/1/5)",
-    ordersList.status === 200 &&
-      ordersList.text.includes("2 items") &&
-      ordersList.text.includes("1 item") &&
-      ordersList.text.includes("5 items"),
-    `${ordersList.status}`,
+    "lista de encomendas: contagem de itens por encomenda (1 linha cada)",
+    ordersList.status === 200 && oneItemCount >= 3,
+    `${ordersList.status} ocorrências=${oneItemCount}`,
   );
 
   const orderDetail = await req(page(`/app/orders/${orderCompleted.id}`), { cookie });
