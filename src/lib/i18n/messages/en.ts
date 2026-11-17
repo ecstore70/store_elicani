@@ -586,6 +586,7 @@ export const en = {
   "catalogs.createSubtitle":
     "A new catalog is an independent store — its own products, settings and policies.",
   "catalogs.back": "Back to my catalogs",
+  "catalogs.viewAll": "See all catalogs",
   "catalog.identity": "Store identity",
   "catalog.identityHelp":
     "Logo, favicon and cover identify your public storefront in browser tabs, shared links and search results. Without a favicon, your logo is used — then the Elicani icon.",

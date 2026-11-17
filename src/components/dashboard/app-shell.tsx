@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
 import { LocaleSelector } from "@/components/shared/locale-selector";
 import { getLocaleDirection } from "@/lib/i18n/config";
@@ -52,13 +53,18 @@ export async function AppShell({
                   {storeSlug}
                 </p>
               )}
-              {/* Multi-catalog: acesso à lista/troca de catálogos — o nome
-                  acima já diz QUAL catálogo está ativo agora. */}
+              {/* Multi-catalog: o nome acima identifica o catálogo ATIVO;
+                  a linha abaixo é a AÇÃO de navegar para a lista completa
+                  (hover, pressed, focus visível e alvo de toque ≥44px). */}
               <Link
                 href="/app/catalogs"
-                className="mt-1.5 inline-block text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                className="-mx-2.5 mt-1.5 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground active:bg-accent active:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
               >
-                {t("catalogs.title")}
+                {t("catalogs.viewAll")}
+                <ChevronRight
+                  aria-hidden="true"
+                  className="size-3.5 shrink-0 rtl:rotate-180"
+                />
               </Link>
             </div>
           )}
@@ -83,7 +89,7 @@ export async function AppShell({
             items={items}
             storeName={storeName}
             storeSlug={storeSlug}
-            catalogsLabel={t("catalogs.title")}
+            catalogsLabel={t("catalogs.viewAll")}
             openLabel={t("shell.openMenu")}
             signOutLabel={t("shell.signOut")}
             currentLocale={locale}

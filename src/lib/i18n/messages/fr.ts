@@ -583,6 +583,7 @@ export const fr: Messages = {
   "catalogs.createSubtitle":
     "Un nouveau catalogue est une boutique indépendante — avec ses propres produits, réglages et politiques.",
   "catalogs.back": "Retour à mes catalogues",
+  "catalogs.viewAll": "Voir tous les catalogues",
   "catalog.identity": "Identité de la boutique",
   "catalog.identityHelp":
     "Le logo, le favicon et la couverture identifient votre vitrine publique dans les onglets du navigateur, les liens partagés et les résultats de recherche. Sans favicon, votre logo est utilisé — puis l'icône Elicani.",

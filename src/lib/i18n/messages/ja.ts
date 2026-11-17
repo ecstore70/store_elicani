@@ -582,6 +582,7 @@ export const ja: Messages = {
   "catalogs.createSubtitle":
     "新しいカタログは独立したストア — 商品・設定・ポリシーはすべて個別のものです。",
   "catalogs.back": "マイカタログに戻る",
+  "catalogs.viewAll": "すべてのカタログを見る",
   "catalog.identity": "ストアのアイデンティティ",
   "catalog.identityHelp":
     "ロゴ・ファビコン・カバーは、ブラウザのタブ、共有リンク、検索結果で公開ストアを表します。ファビコン未設定の場合はロゴが使われ、それもなければ Elicani アイコンが使われます。",

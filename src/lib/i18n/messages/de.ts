@@ -583,6 +583,7 @@ export const de: Messages = {
   "catalogs.createSubtitle":
     "Ein neuer Katalog ist ein unabhängiger Shop — mit eigenen Produkten, Einstellungen und Richtlinien.",
   "catalogs.back": "Zurück zu meinen Katalogen",
+  "catalogs.viewAll": "Alle Kataloge anzeigen",
   "catalog.identity": "Identität des Katalogs",
   "catalog.identityHelp":
     "Logo, Favicon und Titelbild identifizieren deinen öffentlichen Shop in Browser-Tabs, geteilten Links und Suchergebnissen. Ohne Favicon wird dein Logo verwendet — danach das Elicani-Symbol.",

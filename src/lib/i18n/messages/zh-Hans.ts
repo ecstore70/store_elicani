@@ -554,6 +554,7 @@ export const zhHans: Messages = {
   "catalogs.create": "创建目录",
   "catalogs.createSubtitle": "新目录是独立店铺 — 拥有自己的商品、设置和政策。",
   "catalogs.back": "返回我的目录",
+  "catalogs.viewAll": "查看所有目录",
   "catalog.identity": "店铺身份",
   "catalog.identityHelp":
     "徽标、网站图标和封面在浏览器标签页、分享链接和搜索结果中代表你的公开店铺。未设置网站图标时将使用你的徽标，其次为 Elicani 图标。",

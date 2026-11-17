@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { ChevronRight, Menu } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
 import { LocaleSelector } from "@/components/shared/locale-selector";
@@ -39,7 +39,7 @@ export function MobileNav({
   items: NavItemView[];
   storeName?: string | null;
   storeSlug?: string | null;
-  /** Rótulo do acesso à lista de catálogos (multi-catalog). */
+  /** Rótulo da ação "ver todos os catálogos" (multi-catalog). */
   catalogsLabel: string;
   openLabel: string;
   signOutLabel: string;
@@ -86,13 +86,18 @@ export function MobileNav({
                 {storeSlug}
               </p>
             )}
-            {/* Multi-catalog: lista/troca de catálogos — o nome acima já
-                diz QUAL catálogo está ativo agora. */}
+            {/* Multi-catalog: o nome acima identifica o catálogo ATIVO;
+                a linha abaixo é a AÇÃO de navegar para a lista completa —
+                mesma distinção do desktop (hover/pressed/focus/alvo ≥44px). */}
             <Link
               href="/app/catalogs"
-              className="mt-1.5 inline-block text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              className="-mx-2.5 mt-1.5 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground active:bg-accent active:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               {catalogsLabel}
+              <ChevronRight
+                aria-hidden="true"
+                className="size-3.5 shrink-0 rtl:rotate-180"
+              />
             </Link>
           </div>
         )}

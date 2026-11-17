@@ -585,6 +585,7 @@ export const ptPT: Messages = {
   "catalogs.createSubtitle":
     "Um novo catálogo é uma loja independente — com produtos, definições e políticas próprios.",
   "catalogs.back": "Voltar aos meus catálogos",
+  "catalogs.viewAll": "Ver todos os catálogos",
   "catalog.identity": "Identidade da loja",
   "catalog.identityHelp":
     "Logótipo, favicon e capa identificam a sua vitrine pública em separadores do navegador, links partilhados e resultados de pesquisa. Sem favicon, é usado o seu logótipo — depois o ícone da Elicani.",
