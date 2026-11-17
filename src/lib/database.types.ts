@@ -149,7 +149,7 @@ export type Database = {
           delivery_status: string
           id: string
           payment: string | null
-          reference: string
+          reference: string | null
           status: string
           store_id: string
           subtotal: number
@@ -170,6 +170,7 @@ export type Database = {
           delivery_status?: string
           id?: string
           payment?: string | null
+          reference?: string | null
           status?: string
           store_id: string
           subtotal: number
@@ -190,6 +191,7 @@ export type Database = {
           delivery_status?: string
           id?: string
           payment?: string | null
+          reference?: string | null
           status?: string
           store_id?: string
           subtotal?: number
@@ -206,30 +208,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      profiles: {
-        Row: {
-          created_at: string
-          email: string | null
-          full_name: string | null
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          email?: string | null
-          full_name?: string | null
-          id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          email?: string | null
-          full_name?: string | null
-          id?: string
-          updated_at?: string
-        }
-        Relationships: []
       }
       product_media: {
         Row: {
@@ -396,6 +374,80 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      store_domains: {
+        Row: {
+          created_at: string
+          hostname: string
+          id: string
+          is_primary: boolean
+          last_error: string | null
+          status: string
+          store_id: string
+          updated_at: string
+          vercel_status: string | null
+          verification_token: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          hostname: string
+          id?: string
+          is_primary?: boolean
+          last_error?: string | null
+          status?: string
+          store_id: string
+          updated_at?: string
+          vercel_status?: string | null
+          verification_token?: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          hostname?: string
+          id?: string
+          is_primary?: boolean
+          last_error?: string | null
+          status?: string
+          store_id?: string
+          updated_at?: string
+          vercel_status?: string | null
+          verification_token?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_domains_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_events: {
         Row: {
           created_at: string
@@ -498,8 +550,8 @@ export type Database = {
           owner_id: string
           phone: string | null
           phone_country_code: string | null
-          privacy_policy: string | null
           primary_color: string | null
+          privacy_policy: string | null
           product_layout: string
           slug: string
           template: string
@@ -532,8 +584,8 @@ export type Database = {
           owner_id: string
           phone?: string | null
           phone_country_code?: string | null
-          privacy_policy?: string | null
           primary_color?: string | null
+          privacy_policy?: string | null
           product_layout?: string
           slug: string
           template?: string
@@ -566,8 +618,8 @@ export type Database = {
           owner_id?: string
           phone?: string | null
           phone_country_code?: string | null
-          privacy_policy?: string | null
           primary_color?: string | null
+          privacy_policy?: string | null
           product_layout?: string
           slug?: string
           template?: string
@@ -580,7 +632,7 @@ export type Database = {
           {
             foreignKeyName: "stores_owner_id_fkey"
             columns: ["owner_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -593,20 +645,28 @@ export type Database = {
     Functions: {
       owns_store_folder: { Args: { object_path: string }; Returns: boolean }
       record_event: {
-        Args: { p_store_id: string; p_event: string; p_product_id?: string | null }
+        Args: { p_event: string; p_product_id?: string; p_store_id: string }
         Returns: undefined
       }
       record_order: {
         Args: {
-          p_store_id: string
+          p_client_token?: string
           p_customer: Json
           p_lines: Json
           p_payment?: string
-          p_client_token?: string
+          p_store_id: string
         }
         Returns: string
       }
-      store_public_status: { Args: { p_slug: string }; Returns: string | null }
+      store_by_hostname: {
+        Args: { p_hostname: string }
+        Returns: {
+          is_active: boolean
+          slug: string
+          store_id: string
+        }[]
+      }
+      store_public_status: { Args: { p_slug: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

@@ -35,7 +35,9 @@ export function trackStoreEvent(
       .rpc("record_event", {
         p_store_id: storeId,
         p_event: event,
-        p_product_id: productId ?? null,
+        // typegen regenerado: o argumento é opcional (DEFAULT NULL no
+        // banco) — omitir é equivalente a mandar null explicitamente.
+        p_product_id: productId ?? undefined,
       })
       .then(() => undefined, () => undefined);
   } catch {

@@ -19,7 +19,10 @@ const COLUMNS =
 
 function toRow(raw: {
   id: string;
-  reference: string;
+  // A coluna orders.reference é anulável no banco (typegen regenerado);
+  // no resumo de clientes usamos "" como "sem referência" — o consumidor
+  // (order-message) trata por truthy, igual trataria null.
+  reference: string | null;
   status: string;
   total: number;
   created_at: string;
@@ -29,7 +32,7 @@ function toRow(raw: {
 }): CustomerOrderRow {
   return {
     id: raw.id,
-    reference: raw.reference,
+    reference: raw.reference ?? "",
     status: raw.status,
     total: raw.total,
     createdAt: raw.created_at,

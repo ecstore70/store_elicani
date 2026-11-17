@@ -18,6 +18,11 @@
  *     congelados após a criação (trigger) e eventos anónimos são isolados
  *     por loja (escrita só via RPC, leitura só do dono);
  *   • o bucket de logos aceita escrita só na pasta do próprio lojista.
+ *   • domínios próprios (store_domains): hostname único global e um único
+ *     primário por loja (UNIQUE), status/hostnames da plataforma restringidos
+ *     por CHECK; CRUD só do dono; anon sem acesso direto à tabela; e a
+ *     resolução pública store_by_hostname é fail-closed (só `active` +
+ *     loja ativa) e jamais expõe verification_token.
  *
  * Credenciais (nesta ordem):
  *   1. variáveis de ambiente
@@ -1378,6 +1383,374 @@ try {
     "dono pode recriar loja após excluir",
     !recreate.error && !!recreate.data,
     errorDetail(recreate),
+  );
+
+  // ── 11. DOMÍNIOS PRÓPRIOS: constraints, RLS e resolução pública ──────────
+  // Fase 1 dos Custom Domains: camada de dados pura (sem Vercel/DNS/UI).
+  // Loja A = a recriada acima; loja B = a original de outro lojista.
+  const idStoreA = recreate.data?.id;
+  const HOST_A = `shop-${RUN_ID}.example.test`;
+  const HOST_B = `casa-${RUN_ID}.example.test`;
+
+  // Primeira linha de uma RPC com retorno tabular (0 linhas → null).
+  const firstRow = (data) =>
+    Array.isArray(data) ? (data[0] ?? null) : (data ?? null);
+
+  await A.from("stores").update({ is_active: true }).eq("id", idStoreA);
+  await B.from("stores").update({ is_active: true }).eq("id", idB);
+
+  // ── criação: defaults do banco (status, token CSPRNG, timestamps) ────────
+  const domA = await A.from("store_domains")
+    .insert({ store_id: idStoreA, hostname: HOST_A, is_primary: true })
+    .select("*")
+    .single();
+  assert(
+    "dono cria domínio com status pendente por omissão",
+    !domA.error && domA.data?.status === "pending",
+    errorDetail(domA),
+  );
+  assert(
+    "verification_token: 64 hex gerado pelo CSPRNG do banco",
+    /^[0-9a-f]{64}$/.test(domA.data?.verification_token ?? ""),
+    "token com formato inválido (esperado 64 hex)",
+  );
+  assert(
+    "criação deixa verified_at/vercel_status/last_error nulos",
+    domA.data?.verified_at == null &&
+      domA.data?.vercel_status == null &&
+      domA.data?.last_error == null,
+    JSON.stringify({
+      verified_at: domA.data?.verified_at,
+      vercel_status: domA.data?.vercel_status,
+      last_error: domA.data?.last_error,
+    }),
+  );
+
+  const domB = await B.from("store_domains")
+    .insert({ store_id: idB, hostname: HOST_B })
+    .select("*")
+    .single();
+  assert(
+    "B cria domínio na própria loja (is_primary=false por omissão)",
+    !domB.error && domB.data?.is_primary === false,
+    errorDetail(domB),
+  );
+  assert(
+    "tokens distintos por domínio",
+    !!domA.data && !!domB.data &&
+      domA.data.verification_token !== domB.data.verification_token,
+    "tokens iguais entre domínios diferentes",
+  );
+
+  // ── constraints do banco ─────────────────────────────────────────────────
+  const dupSame = await A.from("store_domains")
+    .insert({ store_id: idStoreA, hostname: HOST_A })
+    .select();
+  assert(
+    "hostname duplicado na MESMA loja → 23505",
+    dupSame.error?.code === "23505",
+    errorDetail(dupSame),
+  );
+
+  const dupOther = await B.from("store_domains")
+    .insert({ store_id: idB, hostname: HOST_A })
+    .select();
+  assert(
+    "hostname duplicado noutra loja → 23505 (único GLOBAL)",
+    dupOther.error?.code === "23505",
+    errorDetail(dupOther),
+  );
+
+  const secondPrimary = await A.from("store_domains")
+    .insert({
+      store_id: idStoreA,
+      hostname: `dois-${RUN_ID}.example.test`,
+      is_primary: true,
+    })
+    .select();
+  assert(
+    "segundo is_primary na mesma loja → 23505",
+    secondPrimary.error?.code === "23505",
+    errorDetail(secondPrimary),
+  );
+
+  const badStatus = await A.from("store_domains")
+    .insert({
+      store_id: idStoreA,
+      hostname: `estado-${RUN_ID}.example.test`,
+      status: "verified",
+    })
+    .select();
+  assert(
+    "status fora de pending|active|failed|disabled → 23514",
+    badStatus.error?.code === "23514",
+    errorDetail(badStatus),
+  );
+
+  const apexPlatform = await A.from("store_domains")
+    .insert({ store_id: idStoreA, hostname: "elicani.site" })
+    .select();
+  assert(
+    "apex elicani.site → 23514 (hostnames da plataforma)",
+    apexPlatform.error?.code === "23514",
+    errorDetail(apexPlatform),
+  );
+
+  const subPlatform = await A.from("store_domains")
+    .insert({
+      store_id: idStoreA,
+      hostname: `minha-${RUN_ID}.elicani.site`,
+    })
+    .select();
+  assert(
+    "subdomínio *.elicani.site (wildcard do proxy) → 23514",
+    subPlatform.error?.code === "23514",
+    errorDetail(subPlatform),
+  );
+
+  const upperRaw = await A.from("store_domains")
+    .insert({ store_id: idStoreA, hostname: `MAIUSC-${RUN_ID}.example.test` })
+    .select();
+  assert(
+    "hostname maiúsculo direto no banco → 23514 (só forma normalizada)",
+    upperRaw.error?.code === "23514",
+    errorDetail(upperRaw),
+  );
+
+  const underscoreRaw = await A.from("store_domains")
+    .insert({ store_id: idStoreA, hostname: `sob_${RUN_ID}.example.test` })
+    .select();
+  assert(
+    "label com underscore direto no banco → 23514",
+    underscoreRaw.error?.code === "23514",
+    errorDetail(underscoreRaw),
+  );
+
+  const singleLabel = await A.from("store_domains")
+    .insert({ store_id: idStoreA, hostname: "intranet" })
+    .select();
+  assert(
+    "label único sem ponto → 23514 (igual ao normalizador)",
+    singleLabel.error?.code === "23514",
+    errorDetail(singleLabel),
+  );
+
+  // ── RLS: CRUD só do dono da loja ─────────────────────────────────────────
+  const foreignByHost = await B.from("store_domains")
+    .select("id")
+    .eq("hostname", HOST_A);
+  assert(
+    "B não lê o domínio de A",
+    !foreignByHost.error && foreignByHost.data?.length === 0,
+    errorDetail(foreignByHost),
+  );
+
+  const foreignByStore = await B.from("store_domains")
+    .select("id")
+    .eq("store_id", idStoreA);
+  assert(
+    "B não lê domínios de A nem filtrando por store_id",
+    !foreignByStore.error && foreignByStore.data?.length === 0,
+    errorDetail(foreignByStore),
+  );
+
+  const foreignUpdate = await B.from("store_domains")
+    .update({ status: "active" })
+    .eq("hostname", HOST_A)
+    .select("id");
+  assert(
+    "B não atualiza o domínio de A (0 linhas)",
+    !foreignUpdate.error && foreignUpdate.data?.length === 0,
+    errorDetail(foreignUpdate),
+  );
+
+  const foreignDelete = await B.from("store_domains")
+    .delete()
+    .eq("hostname", HOST_A)
+    .select("id");
+  assert(
+    "B não apaga o domínio de A (0 linhas)",
+    !foreignDelete.error && foreignDelete.data?.length === 0,
+    errorDetail(foreignDelete),
+  );
+
+  const attachForeign = await B.from("store_domains")
+    .insert({ store_id: idStoreA, hostname: `ataca-${RUN_ID}.example.test` })
+    .select();
+  assert(
+    "B não anexa domínio à loja de A → 42501 (with check)",
+    attachForeign.error?.code === "42501",
+    errorDetail(attachForeign),
+  );
+
+  const ownUpdate = await A.from("store_domains")
+    .update({ status: "failed", last_error: "falha simulada no teste" })
+    .eq("hostname", HOST_A)
+    .select("*")
+    .single();
+  assert(
+    "dono atualiza o próprio domínio (status + last_error)",
+    !ownUpdate.error && ownUpdate.data?.status === "failed",
+    errorDetail(ownUpdate),
+  );
+
+  const scratch = await A.from("store_domains")
+    .insert({ store_id: idStoreA, hostname: `raspum-${RUN_ID}.example.test` })
+    .select("hostname")
+    .single();
+  const scratchDelete = await A.from("store_domains")
+    .delete()
+    .eq("hostname", scratch.data?.hostname ?? "-")
+    .select("id");
+  assert(
+    "dono apaga um domínio próprio",
+    !scratch.error && scratchDelete.data?.length === 1,
+    `${errorDetail(scratch) ?? ""} ${errorDetail(scratchDelete) ?? ""}`.trim(),
+  );
+
+  // ── anon: tabela invisível, leitura pública só via RPC ───────────────────
+  const anonTable = await asAnon.from("store_domains").select("*");
+  assert(
+    "anon não lê store_domains (sem política → 0 linhas)",
+    !anonTable.error && anonTable.data?.length === 0,
+    errorDetail(anonTable),
+  );
+
+  const anonDomainsInsert = await asAnon.from("store_domains")
+    .insert({ store_id: idStoreA, hostname: `anonimo-${RUN_ID}.example.test` })
+    .select();
+  assert(
+    "anon não escreve em store_domains → 42501",
+    anonDomainsInsert.error?.code === "42501",
+    errorDetail(anonDomainsInsert),
+  );
+
+  // ── RPC store_by_hostname: fail-closed e sem campos privados ─────────────
+  // O domínio de A está 'failed' desde o update do dono acima.
+  const resolveFailed = await asAnon.rpc("store_by_hostname", {
+    p_hostname: HOST_A,
+  });
+  assert(
+    "status failed não resolve",
+    !resolveFailed.error && firstRow(resolveFailed.data) === null,
+    errorDetail(resolveFailed),
+  );
+
+  await A.from("store_domains").update({ status: "disabled" }).eq("hostname", HOST_A);
+  const resolveDisabled = await asAnon.rpc("store_by_hostname", {
+    p_hostname: HOST_A,
+  });
+  assert(
+    "status disabled não resolve",
+    !resolveDisabled.error && firstRow(resolveDisabled.data) === null,
+    errorDetail(resolveDisabled),
+  );
+
+  const resolvePendingB = await asAnon.rpc("store_by_hostname", {
+    p_hostname: HOST_B,
+  });
+  assert(
+    "status pending não resolve (domínio de B)",
+    !resolvePendingB.error && firstRow(resolvePendingB.data) === null,
+    errorDetail(resolvePendingB),
+  );
+
+  await A.from("store_domains").update({ status: "pending" }).eq("hostname", HOST_A);
+  const resolvePendingA = await asAnon.rpc("store_by_hostname", {
+    p_hostname: HOST_A,
+  });
+  assert(
+    "status pending não resolve (domínio de A)",
+    !resolvePendingA.error && firstRow(resolvePendingA.data) === null,
+    errorDetail(resolvePendingA),
+  );
+
+  await A.from("store_domains").update({ status: "active" }).eq("hostname", HOST_A);
+  const resolveActive = await asAnon.rpc("store_by_hostname", {
+    p_hostname: HOST_A,
+  });
+  const activeRow = firstRow(resolveActive.data);
+  assert(
+    "status active + loja ativa → resolve para a loja certa",
+    !resolveActive.error && activeRow?.store_id === idStoreA,
+    errorDetail(resolveActive),
+  );
+  assert(
+    "RPC devolve só store_id + slug + is_active (loja ativa)",
+    !!activeRow &&
+      JSON.stringify(Object.keys(activeRow).sort()) ===
+        JSON.stringify(["is_active", "slug", "store_id"]) &&
+      activeRow.slug === `${SLUG_A}-2` &&
+      activeRow.is_active === true,
+    JSON.stringify(activeRow),
+  );
+  assert(
+    "RPC jamais expõe verification_token (nem nas chaves nem no corpo)",
+    !!activeRow &&
+      !("verification_token" in activeRow) &&
+      !JSON.stringify(resolveActive.data).includes(domA.data?.verification_token ?? ""),
+    "token vazou na resposta da RPC",
+  );
+
+  const resolveUnknown = await asAnon.rpc("store_by_hostname", {
+    p_hostname: `nenhum-${RUN_ID}.example.test`,
+  });
+  assert(
+    "hostname desconhecido → nada",
+    !resolveUnknown.error && firstRow(resolveUnknown.data) === null,
+    errorDetail(resolveUnknown),
+  );
+
+  const resolveWrongCase = await asAnon.rpc("store_by_hostname", {
+    p_hostname: HOST_A.toUpperCase(),
+  });
+  assert(
+    "comparação exata: caixa errada não resolve",
+    !resolveWrongCase.error && firstRow(resolveWrongCase.data) === null,
+    errorDetail(resolveWrongCase),
+  );
+
+  // Loja inativa: fail-closed mesmo com o domínio ativo.
+  await A.from("stores").update({ is_active: false }).eq("id", idStoreA);
+  const resolveInactiveStore = await asAnon.rpc("store_by_hostname", {
+    p_hostname: HOST_A,
+  });
+  assert(
+    "loja INATIVA não resolve (fail-closed)",
+    !resolveInactiveStore.error && firstRow(resolveInactiveStore.data) === null,
+    errorDetail(resolveInactiveStore),
+  );
+  await A.from("stores").update({ is_active: true }).eq("id", idStoreA);
+
+  // ── cascata: apagar a loja remove os domínios; os de B ficam ─────────────
+  const deleteStoreDomains = await A.from("stores")
+    .delete()
+    .eq("id", idStoreA)
+    .select("id");
+  assert(
+    "dono apaga a própria loja (último passo da secção)",
+    !deleteStoreDomains.error && deleteStoreDomains.data?.length === 1,
+    errorDetail(deleteStoreDomains),
+  );
+
+  const domainsGone = await asService
+    .from("store_domains")
+    .select("id")
+    .eq("store_id", idStoreA);
+  assert(
+    "cascata apaga os domínios da loja apagada",
+    !domainsGone.error && domainsGone.data?.length === 0,
+    errorDetail(domainsGone),
+  );
+
+  const domainBStays = await asService
+    .from("store_domains")
+    .select("id")
+    .eq("hostname", HOST_B);
+  assert(
+    "o domínio da OUTRA loja (B) sobrevive ao cascata",
+    !domainBStays.error && domainBStays.data?.length === 1,
+    errorDetail(domainBStays),
   );
 } catch (error) {
   failed += 1;
