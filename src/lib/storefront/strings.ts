@@ -67,6 +67,8 @@ export type StorefrontStrings = {
   checkoutRequired: string;
   checkoutNote: string;
   orderSent: string;
+  /** Falha ao gravar o pedido — o formulário fica intacto p/ nova tentativa. */
+  orderSaveFailed: string;
   // ── carrinho e checkout (apresentação) ───────────────────────────────
   orderSummary: string;
   total: string;
@@ -157,6 +159,7 @@ export function buildStorefrontStrings(t: Translator): StorefrontStrings {
     checkoutRequired: t("storefront.checkoutRequired"),
     checkoutNote: t("storefront.checkoutNote"),
     orderSent: t("storefront.orderSent"),
+    orderSaveFailed: t("storefront.orderSaveFailed"),
     orderSummary: t("storefront.orderSummary"),
     total: t("storefront.total"),
     addedToCart: t("storefront.addedToCart"),

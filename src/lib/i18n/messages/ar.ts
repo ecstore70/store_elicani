@@ -321,14 +321,15 @@ export const ar: Messages = {
   "storefront.neighborhoodRequired": "أدخل حيّك / منطقتك",
   "storefront.checkoutRequired": "املأ الحقول المطلوبة لإرسال طلبك",
   "storefront.checkoutNote":
-    "يتم إرسال طلبك إلى المتجر عبر WhatsApp. دون الحاجة لحساب.",
+    "تابع على واتساب: راجع الرسالة وأرسلها إلى المتجر. دون الحاجة لحساب.",
   "storefront.msgNewOrder": "طلب جديد",
   "storefront.msgCustomer": "العميل",
   "storefront.msgPhone": "WhatsApp",
   "storefront.msgProducts": "المنتجات",
   "storefront.msgTotal": "الإجمالي",
   "storefront.msgAddress": "العنوان",
-  "storefront.orderSent": "تم إرسال الطلب",
+  "storefront.orderSent": "تم فتح واتساب",
+  "storefront.orderSaveFailed": "تعذّر حفظ طلبك. تحقّق من الاتصال وحاول مرة أخرى.",
 
   // ── السلة وإتمام الطلب (العرض) ────────────────────────────────────────
   "storefront.orderSummary": "ملخص الطلب",
@@ -614,6 +615,8 @@ export const ar: Messages = {
   "reports.kpiOrders": "الطلبات",
   "reports.kpiAvgOrder": "متوسط قيمة الطلب",
   "reports.kpiItemsSold": "المنتجات المباعة",
+  "reports.kpiCustomers": "العملاء",
+  "reports.kpiRepeatCustomers": "عملاء متكررون",
   "reports.chartSales": "المبيعات عبر الزمن",
   "reports.chartOrders": "الطلبات عبر الزمن",
   "reports.topProducts": "المنتجات الأكثر مبيعًا",
@@ -653,6 +656,8 @@ export const ar: Messages = {
   "customers.subtitle": "العملاء الذين طلبوا من متجرك.",
   "customers.totalSpent": "إجمالي الإنفاق",
   "customers.lastOrder": "آخر طلب",
+  "customers.location": "الموقع",
+  "customers.firstOrder": "أول طلب",
   "customers.emptyTitle": "لا يوجد عملاء بعد.",
   "customers.emptyBody": "سيُضاف العملاء عند وصول الطلبات.",
   "customers.history": "السجل",
@@ -665,6 +670,7 @@ export const ar: Messages = {
   "delivery.statusPreparing": "قيد التجهيز",
   "delivery.statusOnTheWay": "في الطريق",
   "delivery.statusDelivered": "تم التسليم",
+  "delivery.statusFailed": "فشل",
   "delivery.empty": "لا توجد توصيلات في هذه الفترة.",
   "delivery.emptyBody": "ستظهر التوصيلات هنا عند الحاجة إلى تسليم الطلبات.",
   "delivery.labelDelivery": "التوصيل",
@@ -675,6 +681,7 @@ export const ar: Messages = {
   "delivery.markPreparing": "وضع كقيد التجهيز",
   "delivery.markOnTheWay": "وضع كفي الطريق",
   "delivery.markDelivered": "وضع كتم التسليم",
+  "delivery.markFailed": "وضع كفشل",
 
   // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
   "legal.terms": "شروط الاستخدام",

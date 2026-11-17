@@ -16,7 +16,9 @@ function order(overrides: Partial<ReportOrderRow> = {}): ReportOrderRow {
     total: 100,
     createdAt: "2026-01-01T10:00:00.000Z",
     customerName: "Cliente",
+    customerPhone: "+258 84 111 2222",
     payment: null,
+    deliveryStatus: "pending",
     ...overrides,
   };
 }
@@ -196,6 +198,116 @@ describe("aggregate: estados", () => {
       completed: 1,
       cancelled: 1,
     });
+  });
+});
+
+describe("aggregate: clientes e repeat customers", () => {
+  it("conta compradores distintos pela chave do telefone (só válidas)", () => {
+    const data = aggregateReport({
+      orders: [
+        order({ id: "a", customerPhone: "+258 84 111 2222" }),
+        order({
+          id: "b",
+          customerPhone: "841112222", // mesmo cliente, sem prefixo — outra chave
+        }),
+        order({
+          id: "c",
+          customerPhone: "841112222",
+          status: "cancelled", // cancelada não conta nem como cliente
+        }),
+        order({
+          id: "d",
+          customerPhone: "+258 84 333 4444",
+          status: "completed",
+        }),
+      ],
+      items: [],
+      fromKey: "2026-01-01",
+      days: 1,
+      timeZone: UTC,
+    });
+    // chaves válidas: a=258841112222, b=841112222, d=258843334444 → 3
+    // distintas; c (cancelada) fica de fora; nenhuma chave repete.
+    assert.equal(data.kpis.customers, 3);
+    assert.equal(data.kpis.repeatCustomers, 0); // nenhuma chave com 2+
+  });
+
+  it("repeat = mesma chave com 2+ encomendas válidas (formatação igual)", () => {
+    const data = aggregateReport({
+      orders: [
+        order({ id: "a", customerPhone: "+258 84 111 2222" }),
+        order({
+          id: "b",
+          customerPhone: "+258841112222", // mesma pessoa, outra formatação
+          createdAt: "2026-01-01T12:00:00.000Z",
+        }),
+        order({ id: "c", customerPhone: "+258 84 333 4444" }),
+      ],
+      items: [],
+      fromKey: "2026-01-01",
+      days: 1,
+      timeZone: UTC,
+    });
+    assert.equal(data.kpis.customers, 2);
+    assert.equal(data.kpis.repeatCustomers, 1);
+  });
+
+  it("sem vendas válidas → clientes e repeat a 0", () => {
+    const data = aggregateReport({
+      orders: [order({ status: "cancelled" })],
+      items: [],
+      fromKey: "2026-01-01",
+      days: 1,
+      timeZone: UTC,
+    });
+    assert.equal(data.kpis.customers, 0);
+    assert.equal(data.kpis.repeatCustomers, 0);
+  });
+});
+
+describe("aggregate: desfechos de entrega", () => {
+  it("conta por estado de entrega apenas encomendas válidas", () => {
+    const data = aggregateReport({
+      orders: [
+        order({ id: "a", deliveryStatus: "pending" }),
+        order({ id: "b", deliveryStatus: "on_the_way" }),
+        order({ id: "c", deliveryStatus: "delivered" }),
+        order({ id: "d", deliveryStatus: "delivered" }),
+        order({ id: "e", deliveryStatus: "failed" }),
+        order({
+          id: "f",
+          deliveryStatus: "delivered",
+          status: "cancelled", // cancelada não entrega
+        }),
+      ],
+      items: [],
+      fromKey: "2026-01-01",
+      days: 1,
+      timeZone: UTC,
+    });
+    assert.deepEqual(data.delivery, {
+      pending: 1,
+      preparing: 0,
+      on_the_way: 1,
+      delivered: 2,
+      failed: 1,
+    });
+  });
+
+  it("estado de entrega desconhecido não corrompe a contagem", () => {
+    const data = aggregateReport({
+      orders: [order({ deliveryStatus: "teleportado" })],
+      items: [],
+      fromKey: "2026-01-01",
+      days: 1,
+      timeZone: UTC,
+    });
+    // desconhecido cai fora (não vira "pending" nem infla total nenhum)
+    assert.equal(data.delivery.pending, 0);
+    assert.equal(
+      Object.values(data.delivery).reduce((sum, n) => sum + n, 0),
+      0,
+    );
   });
 });
 

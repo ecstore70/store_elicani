@@ -10,7 +10,7 @@ import {
   type DeliveryStatus,
 } from "@/lib/delivery/status";
 import { StatusBadge } from "@/components/dashboard/reports/status-badge";
-import { Badge } from "@/components/ui/badge";
+import { DELIVERY_LABELS, DeliveryBadge } from "./delivery-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency, formatNumber } from "@/lib/currency";
@@ -26,45 +26,14 @@ import type { Translator } from "@/lib/i18n/translate";
  * rotas — só a fundação útil.
  */
 
-const DELIVERY_LABELS: Record<DeliveryStatus, MessageKey> = {
-  pending: "delivery.statusPending",
-  preparing: "delivery.statusPreparing",
-  on_the_way: "delivery.statusOnTheWay",
-  delivered: "delivery.statusDelivered",
-};
-
-/** Variantes do design system — distintas das de estado de encomenda. */
-const DELIVERY_VARIANTS: Record<
-  DeliveryStatus,
-  "secondary" | "outline" | "default" | "ghost"
-> = {
-  pending: "secondary",
-  preparing: "outline",
-  on_the_way: "default",
-  delivered: "ghost",
-};
-
 /** Rótulo do botão para ESTADO DE DESTINO (≠ estado atual da linha). */
 const DELIVERY_ACTIONS: Record<DeliveryStatus, MessageKey> = {
   pending: "orders.markPending",
   preparing: "delivery.markPreparing",
   on_the_way: "delivery.markOnTheWay",
   delivered: "delivery.markDelivered",
+  failed: "delivery.markFailed",
 };
-
-function DeliveryBadge({
-  status,
-  t,
-}: {
-  status: DeliveryStatus;
-  t: Translator;
-}) {
-  return (
-    <Badge variant={DELIVERY_VARIANTS[status]}>
-      {t(DELIVERY_LABELS[status])}
-    </Badge>
-  );
-}
 
 export function DeliveryView({
   t,
@@ -106,7 +75,7 @@ export function DeliveryView({
 
       {showError ? <ActionError message={t("common.saveError")} /> : null}
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         {DELIVERY_STATUSES.map((key) => (
           <Card key={key}>
             <CardContent className="p-4">

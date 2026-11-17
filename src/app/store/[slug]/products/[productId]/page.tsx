@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ShoppingBag } from "lucide-react";
 import { CatalogUnavailable } from "@/components/storefront/catalog-unavailable";
+import { StoreEvent } from "@/components/storefront/store-event";
 import { StoreShell } from "@/components/storefront/store-shell";
 import { ProductGallery } from "@/components/storefront/product-gallery";
 import { ProductPurchase } from "@/components/storefront/product-purchase";
@@ -310,6 +311,13 @@ export default async function ProductPage({ params }: Props) {
               </span>
             )}
           </div>
+
+          {/* Evento anónimo de visita ao produto (sem PII, fire-and-forget). */}
+          <StoreEvent
+            storeId={store.id}
+            event="product_view"
+            productId={product.id}
+          />
 
           <ProductPurchase
             product={product}

@@ -11,6 +11,8 @@ import type { MessageKey } from "@/lib/i18n/messages/en";
 import type { Translator } from "@/lib/i18n/translate";
 import type { OrderListRow } from "@/lib/orders/queries";
 import { ORDER_STATUSES, type OrderStatus } from "@/lib/orders/search";
+import { isDeliveryStatus } from "@/lib/delivery/status";
+import { DeliveryBadge } from "@/components/dashboard/delivery/delivery-badge";
 import { STATUS_LABELS, StatusBadge } from "../reports/status-badge";
 
 /**
@@ -160,8 +162,26 @@ export function OrdersView({
                     #{order.reference}
                   </span>
                   <StatusBadge status={order.status} t={t} />
+                  {/* entrega onde existe (canceladas não entregam) */}
+                  {order.status !== "cancelled" ? (
+                    <DeliveryBadge
+                      status={
+                        isDeliveryStatus(order.delivery_status)
+                          ? order.delivery_status
+                          : "pending"
+                      }
+                      t={t}
+                    />
+                  ) : null}
                   <span className="min-w-0 flex-1 truncate text-sm">
                     {order.customer_name}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {order.item_count === 1
+                      ? t("storefront.cartItemsOne")
+                      : t("storefront.cartItemsMany", {
+                          count: order.item_count,
+                        })}
                   </span>
                   <time
                     dateTime={order.created_at}

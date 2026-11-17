@@ -11,8 +11,8 @@ import { isDeliveryStatus } from "./status";
  * Atualiza o ESTADO DE ENTREGA de uma encomenda (módulo Entrega).
  * Assinatura `FormData` → `Promise<void>` (contrato de `action` de
  * formulário, sem JS), loja vinda da SESSÃO, update `id` + `store_id`,
- * RLS de UPDATE como autoridade. Só os quatro estados de entrega são
- * aceites; falha → `?error=1` (redirect fora do try).
+ * RLS de UPDATE como autoridade. Só os cinco estados de entrega são
+ * aceites (inclui `failed`); falha → `?error=1` (redirect fora do try).
  */
 export async function updateDeliveryStatusAction(
   formData: FormData,

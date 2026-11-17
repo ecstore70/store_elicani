@@ -127,4 +127,27 @@ describe("buildOrderMessage", () => {
     assert.ok(message.includes(`${strings.msgCustomer}: Zé d'Ávila`));
     assert.ok(message.includes(`${strings.subtotal}: ${money(298.5)}`));
   });
+
+  it("inclui a referência da encomenda no cabeçalho (ligação WhatsApp ↔ painel)", () => {
+    const base = {
+      storeName: "Loja Boa",
+      lines: [{ name: "Cap", qty: 1, unitPrice: 300 }],
+      subtotal: 300,
+      customer: { name: "Ana", phone: "841234567" },
+      currency: "MZN",
+      locale: "en" as const,
+      strings,
+    };
+
+    // Sem referência (chamada antiga) → cabeçalho como dantes.
+    const withoutRef = buildOrderMessage(base);
+    assert.equal(withoutRef.split("\n")[1], `🛒 ${strings.msgNewOrder}`);
+
+    // Com referência gravada → `#XXXXXX` no cabeçalho, uma única vez.
+    const withRef = buildOrderMessage({ ...base, orderRef: "A3F9C2" });
+    const lines = withRef.split("\n");
+    assert.equal(lines[0], "*Loja Boa*");
+    assert.equal(lines[1], `🛒 ${strings.msgNewOrder} #A3F9C2`);
+    assert.equal(withRef.split("#A3F9C2").length - 1, 1);
+  });
 });

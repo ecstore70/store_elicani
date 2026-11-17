@@ -137,6 +137,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          client_token: string | null
           created_at: string
           customer_address: string | null
           customer_name: string
@@ -154,8 +155,10 @@ export type Database = {
           subtotal: number
           total: number
           updated_at: string
+          whatsapp_opened_at: string | null
         }
         Insert: {
+          client_token?: string | null
           created_at?: string
           customer_address?: string | null
           customer_name: string
@@ -172,8 +175,10 @@ export type Database = {
           subtotal: number
           total: number
           updated_at?: string
+          whatsapp_opened_at?: string | null
         }
         Update: {
+          client_token?: string | null
           created_at?: string
           customer_address?: string | null
           customer_name?: string
@@ -190,6 +195,7 @@ export type Database = {
           subtotal?: number
           total?: number
           updated_at?: string
+          whatsapp_opened_at?: string | null
         }
         Relationships: [
           {
@@ -390,6 +396,45 @@ export type Database = {
           },
         ]
       }
+      store_events: {
+        Row: {
+          created_at: string
+          event: string
+          id: string
+          product_id: string | null
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          id?: string
+          product_id?: string | null
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          id?: string
+          product_id?: string | null
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_events_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_faq_items: {
         Row: {
           answer: string
@@ -547,8 +592,18 @@ export type Database = {
     }
     Functions: {
       owns_store_folder: { Args: { object_path: string }; Returns: boolean }
+      record_event: {
+        Args: { p_store_id: string; p_event: string; p_product_id?: string | null }
+        Returns: undefined
+      }
       record_order: {
-        Args: { p_store_id: string; p_customer: Json; p_lines: Json; p_payment?: string }
+        Args: {
+          p_store_id: string
+          p_customer: Json
+          p_lines: Json
+          p_payment?: string
+          p_client_token?: string
+        }
         Returns: string
       }
       store_public_status: { Args: { p_slug: string }; Returns: string | null }

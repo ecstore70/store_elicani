@@ -319,14 +319,15 @@ export const ja: Messages = {
   "storefront.neighborhoodRequired": "地区・住所を入力してください",
   "storefront.checkoutRequired": "必須項目を入力して注文を送信してください",
   "storefront.checkoutNote":
-    "ご注文はWhatsAppでストアに送信されます。アカウント登録は不要です。",
+    "WhatsAppで続行：メッセージを確認して店舗へ送信してください。アカウント登録は不要です。",
   "storefront.msgNewOrder": "新規注文",
   "storefront.msgCustomer": "顧客名",
   "storefront.msgPhone": "WhatsApp",
   "storefront.msgProducts": "商品",
   "storefront.msgTotal": "合計",
   "storefront.msgAddress": "住所",
-  "storefront.orderSent": "注文を送信しました",
+  "storefront.orderSent": "WhatsAppを開きました",
+  "storefront.orderSaveFailed": "注文を保存できませんでした。接続を確認してもう一度お試しください。",
 
   // ── カートとチェックアウト（表示） ────────────────────────────────────
   "storefront.orderSummary": "注文内容",
@@ -612,6 +613,8 @@ export const ja: Messages = {
   "reports.kpiOrders": "注文件数",
   "reports.kpiAvgOrder": "平均注文金額",
   "reports.kpiItemsSold": "販売点数",
+  "reports.kpiCustomers": "顧客",
+  "reports.kpiRepeatCustomers": "リピーター",
   "reports.chartSales": "売上の推移",
   "reports.chartOrders": "注文数の推移",
   "reports.topProducts": "売れ筋商品",
@@ -651,6 +654,8 @@ export const ja: Messages = {
   "customers.subtitle": "ストアで注文した顧客。",
   "customers.totalSpent": "合計購入額",
   "customers.lastOrder": "最後の注文",
+  "customers.location": "エリア",
+  "customers.firstOrder": "初めての注文",
   "customers.emptyTitle": "顧客はまだいません。",
   "customers.emptyBody": "注文が届くと顧客が追加されます。",
   "customers.history": "履歴",
@@ -663,6 +668,7 @@ export const ja: Messages = {
   "delivery.statusPreparing": "準備中",
   "delivery.statusOnTheWay": "配送中",
   "delivery.statusDelivered": "配達済み",
+  "delivery.statusFailed": "配送失敗",
   "delivery.empty": "この期間の配達はありません。",
   "delivery.emptyBody": "配達が必要な注文があるとここに表示されます。",
   "delivery.labelDelivery": "配送",
@@ -673,6 +679,7 @@ export const ja: Messages = {
   "delivery.markPreparing": "準備中にする",
   "delivery.markOnTheWay": "配送中にする",
   "delivery.markDelivered": "配達済みにする",
+  "delivery.markFailed": "失敗としてマーク",
 
   // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
   "legal.terms": "利用規約",

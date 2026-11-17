@@ -345,6 +345,14 @@ try {
       seeds.every((seed) => ordersList.text.includes(seed.customer.name)),
     `${ordersList.status}`,
   );
+  assert(
+    "lista de encomendas: contagem de itens por encomenda (2/1/5)",
+    ordersList.status === 200 &&
+      ordersList.text.includes("2 items") &&
+      ordersList.text.includes("1 item") &&
+      ordersList.text.includes("5 items"),
+    `${ordersList.status}`,
+  );
 
   const orderDetail = await req(page(`/app/orders/${orderCompleted.id}`), { cookie });
   assert(
@@ -378,6 +386,13 @@ try {
       customerDetail.text.includes(expectedReference),
     `${customerDetail.status} ref=${expectedReference}`,
   );
+  assert(
+    "detalhe do cliente: primeira encomenda + localização (bairro real)",
+    customerDetail.status === 200 &&
+      customerDetail.text.includes("First order") &&
+      customerDetail.text.includes("Baixa"),
+    `${customerDetail.status}`,
+  );
 
   const delivery = await req(page("/app/delivery"), { cookie });
   assert(
@@ -397,6 +412,18 @@ try {
   assert(
     "relatórios: 200 + encomendas recentes reais",
     reports.status === 200 && reports.text.includes("Render Cliente"),
+    `${reports.status}`,
+  );
+  assert(
+    "relatórios: KPI de clientes recorrentes (métrica nova)",
+    reports.status === 200 && reports.text.includes("Repeat customers"),
+    `${reports.status}`,
+  );
+  assert(
+    "relatórios: secção de desfechos de entrega (5 estados)",
+    reports.status === 200 &&
+      reports.text.includes("Getting ready") &&
+      reports.text.includes("Failed"),
     `${reports.status}`,
   );
 
@@ -590,6 +617,15 @@ try {
         `delivery_status=${target} gravado na base`,
         after.data?.delivery_status === target,
         `delivery_status=${after.data?.delivery_status}`,
+      );
+
+      // A lista de encomendas reflete o estado de entrega REAL (badge novo).
+      const ordersAfterDelivery = await req(page("/app/orders"), { cookie });
+      assert(
+        "lista de encomendas: badge de entrega reflete o estado real",
+        ordersAfterDelivery.status === 200 &&
+          ordersAfterDelivery.text.includes("On the way"),
+        `${ordersAfterDelivery.status}`,
       );
     }
   }

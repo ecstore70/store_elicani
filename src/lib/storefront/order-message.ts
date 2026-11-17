@@ -16,6 +16,10 @@ import type { SelectedOption } from "./product-options";
  *
  * `deliveryFee` fica preparado para o futuro cálculo de entrega (zonas/
  * taxas): quando não existe, as linhas "Delivery" e "TOTAL" são omitidas.
+ *
+ * `orderRef` — referência estável da encomenda gravada (ex.: `A3F9C2`) —
+ * entra NO CABEÇALHO (`🛒 NEW ORDER #A3F9C2`) para o comerciante
+ * associar a conversa do WhatsApp à encomenda no painel.
  */
 
 export type OrderCustomer = {
@@ -61,6 +65,8 @@ export function buildOrderMessage(input: {
   currency: string;
   locale: Locale;
   strings: MessageStrings;
+  /** Referência da encomenda gravada (6 hex) — aparece no cabeçalho. */
+  orderRef?: string;
 }): string {
   const { storeName, lines, subtotal, customer, strings, currency, locale } =
     input;
@@ -68,8 +74,11 @@ export function buildOrderMessage(input: {
 
   const blocks: string[] = [];
 
-  // Cabeçalho: loja + tipo de documento.
-  blocks.push(`*${storeName}*\n🛒 ${strings.msgNewOrder}`);
+  // Cabeçalho: loja + tipo de documento (+ referência do pedido, se gravado).
+  const heading = input.orderRef
+    ? `${strings.msgNewOrder} #${input.orderRef}`
+    : strings.msgNewOrder;
+  blocks.push(`*${storeName}*\n🛒 ${heading}`);
 
   // Cliente.
   const customerLines = [

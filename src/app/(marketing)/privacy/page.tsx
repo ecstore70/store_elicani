@@ -48,6 +48,7 @@ const SECTIONS: readonly LegalSection[] = [
       "Store data: the information you enter for your store — name, contact details, descriptions, policies, product catalog, opening hours and appearance settings.",
       "Order data: when a customer places an order — name, phone, delivery address, order contents and any note added at checkout.",
       "Technical data: the session identifiers used to keep you signed in, and your language preference (stored in a cookie).",
+      "Anonymous usage events: basic activity records of a store's storefront — such as catalog and product views, cart additions and checkout starts — tied to the store and containing no names, phone numbers or addresses.",
     ],
   },
   {

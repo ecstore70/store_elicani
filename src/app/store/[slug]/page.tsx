@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CatalogUnavailable } from "@/components/storefront/catalog-unavailable";
+import { StoreEvent } from "@/components/storefront/store-event";
 import { StoreShell } from "@/components/storefront/store-shell";
 import { StorefrontCatalog } from "@/components/storefront/storefront-catalog";
 import { JsonLd } from "@/components/shared/json-ld";
@@ -117,6 +118,8 @@ export default async function StorefrontPage({ params }: Props) {
           ...(store.currency ? { currenciesAccepted: store.currency } : {}),
         }}
       />
+      {/* Evento anónimo de visita ao catálogo (sem PII, fire-and-forget). */}
+      <StoreEvent storeId={store.id} event="catalog_view" />
       <StorefrontCatalog
         products={catalog.products}
         categories={catalog.categories}

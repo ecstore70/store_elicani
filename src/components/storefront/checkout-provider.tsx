@@ -3,7 +3,9 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type FormEvent,
@@ -21,7 +23,8 @@ import {
   type CheckoutForm,
   type RequiredCheckoutField,
 } from "@/lib/storefront/checkout-validation";
-import { recordOrderAction } from "@/lib/orders/actions";
+import { trackStoreEvent } from "@/lib/storefront/events";
+import { recordOrderAction, type RecordOrderResult } from "@/lib/orders/actions";
 import { createClient as createBrowserClient } from "@/lib/supabase/client";
 import { useCart } from "./cart-provider";
 
@@ -40,8 +43,13 @@ import { useCart } from "./cart-provider";
  *  • validação pura em `checkout-validation.ts` (nome, telefone e bairro
  *    obrigatórios; morada/referência/notas/pagamento opcionais);
  *  • guarda server-side do catálogo inativo ANTES de montar a mensagem;
- *  • a mensagem é a ESTRUTURADA de `buildOrderMessage` (testada) e o envio
- *    abre o WhatsApp com `wa.me` — nenhuma tabela nova (Fase 1).
+ *  • a gravação (`recordOrderAction`, idempotente por token) é AGUARDADA
+ *    antes do WhatsApp: sem encomenda gravada não há envio — falha mostra
+ *    erro e o rascunho/carrinho ficam intactos para nova tentativa;
+ *  • a mensagem é a ESTRUTURADA de `buildOrderMessage` com a REFERÊNCIA
+ *    da encomenda gravada (ex.: `#A3F9C2`) e o envio abre o WhatsApp com
+ *    `wa.me` — o WhatsApp continua a ser o canal; a plataforma regista
+ *    apenas que o contacto foi INICIADO (nunca "entregue/lido").
  */
 
 const EMPTY_FORM: CheckoutForm = {
@@ -68,6 +76,48 @@ const PAYMENT_METHODS = ["cash", "transfer", "other"] as const;
 
 function draftKey(storeId: string): string {
   return `elicani:checkout:${storeId}`;
+}
+
+function tokenKey(storeId: string): string {
+  return `elicani:checkout:${storeId}:token`;
+}
+
+/**
+ * Token IDEMPOTENTE do envio (uuid) — vive no sessionStorage para
+ * sobreviver a recarregamentos a meio da submissão e só limpa depois de
+ * um sucesso. Repetir o MESMO token (duplo toque, retry após falha de
+ * rede) devolve a MESMA encomenda: `record_order` nunca duplica.
+ * Sem storage (modo privado): memória por loja — o guarda síncrono do
+ * `submit` já cobre o duplo toque; o token cobre o retry.
+ */
+const tokenMemories = new Map<string, string>();
+
+function getOrCreateToken(storeId: string): string {
+  const memory = tokenMemories.get(storeId);
+  if (memory) return memory;
+  let fresh: string;
+  try {
+    const stored = globalThis.sessionStorage?.getItem(tokenKey(storeId));
+    if (stored) {
+      tokenMemories.set(storeId, stored);
+      return stored;
+    }
+    fresh = crypto.randomUUID();
+    globalThis.sessionStorage?.setItem(tokenKey(storeId), fresh);
+  } catch {
+    fresh = crypto.randomUUID();
+  }
+  tokenMemories.set(storeId, fresh);
+  return fresh;
+}
+
+function clearOrderToken(storeId: string): void {
+  tokenMemories.delete(storeId);
+  try {
+    globalThis.sessionStorage?.removeItem(tokenKey(storeId));
+  } catch {
+    // storage indisponível — a memória já foi limpa
+  }
 }
 
 function sanitizeDraft(raw: unknown): CheckoutForm {
@@ -161,10 +211,12 @@ function getDraftStore(storeId: string): CheckoutDraftStore {
 export type CheckoutContextValue = {
   form: CheckoutForm;
   errors: CheckoutErrors;
-  /** Aviso quando o envio foi bloqueado — catálogo inativo (ver `submit`). */
+  /** Aviso quando o envio foi bloqueado — catálogo inativo ou falha de gravação. */
   orderError: string | null;
   /** Pedido enviado — a rota mostra a confirmação. */
   sent: boolean;
+  /** Envio em curso (gravação aguardada) — CTA desativado. */
+  submitting: boolean;
   /** CTA habilitado só com nome + telefone + localização prontos. */
   canSubmit: boolean;
   money: (value: number) => string;
@@ -202,11 +254,20 @@ export function CheckoutProvider({
   strings: StorefrontStrings;
   children: ReactNode;
 }) {
-  const { items, subtotal } = useCart();
+  const { items, subtotal, clear } = useCart();
   const [errors, setErrors] = useState<CheckoutErrors>({});
   const [orderError, setOrderError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Guarda SÍNCRONA do duplo toque: o estado React só muda no render
+  // seguinte — dois toques rápidos passariam por `isSubmitting` puro.
+  const submittingRef = useRef(false);
   const draftStore = useMemo(() => getDraftStore(storeId), [storeId]);
+
+  // Evento anónimo: o checkout abriu (sem PII, fire-and-forget).
+  useEffect(() => {
+    trackStoreEvent(storeId, "checkout_started");
+  }, [storeId]);
 
   // Snapshot do rascunho: servidor vazio, cliente lê o sessionStorage —
   // mesma hidratação segura do carrinho (`useSyncExternalStore`).
@@ -249,6 +310,8 @@ export function CheckoutProvider({
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!hasChannel) return;
+    // Duplo toque: guarda síncrona ANTES de qualquer await.
+    if (submittingRef.current) return;
 
     // Fonte da verdade do formulário: o store do rascunho (o snapshot do
     // React pode estar um render atrás durante digitação rápida).
@@ -261,7 +324,10 @@ export function CheckoutProvider({
     // A consulta roda no Supabase sob o RLS público (`is_active` no próprio
     // WHERE): um cliente inativo é confirmado pelo SERVIDOR, não por um
     // toggle de UI. Bloqueia só quando o estado é confirmado como inativo;
-    // erro de rede/DB falha em aberto para não perder um pedido válido.
+    // erro de rede/DB falha em aberto para não perder um pedido válido
+    // (a função `record_order` repete esta validação — a gravação decide).
+    submittingRef.current = true;
+    setIsSubmitting(true);
     try {
       const supabase = createBrowserClient();
       const { data, error } = await supabase
@@ -271,49 +337,65 @@ export function CheckoutProvider({
         .eq("is_active", true)
         .maybeSingle();
       if (!error && !data) {
+        submittingRef.current = false;
+        setIsSubmitting(false);
         setOrderError(strings.catalogUnavailable);
         return;
       }
     } catch {
-      // falha em aberto: segue para o WhatsApp (mesma convenção do proxy).
+      // falha em aberto: segue para a gravação (mesma convenção do proxy).
     }
 
-    // ── gravação do pedido (adicional, best-effort) ──────────────────────
-    // O WhatsApp continua a ser o envio da Fase 1 e NUNCA é bloqueado por
-    // esta gravação: promessa lançada em paralelo, falha só logada. O que
-    // sai daqui é IDENTIDADE das linhas (produto/quantidade/opções) —
-    // nome, preço e totais são recalculados no servidor pela função
-    // `record_order`; valores do navegador nunca viram número.
-    void recordOrderAction({
-      storeId,
-      customer: {
-        name: current.name,
-        phone: current.phone,
-        address: current.address.trim() || undefined,
-        neighborhood: current.neighborhood.trim() || undefined,
-        reference: current.reference.trim() || undefined,
-        notes: current.notes || undefined,
-        payment:
-          current.payment === "cash" ||
-          current.payment === "transfer" ||
-          current.payment === "other"
-            ? current.payment
-            : null,
-      },
-      lines: items.map((item) => ({
-        productId: item.id,
-        qty: item.qty,
-        options: item.options,
-      })),
-    })
-      .then((result) => {
-        if (!result.ok) {
-          console.warn("[checkout] pedido não gravado:", result.code);
-        }
-      })
-      .catch((error) => {
-        console.error("[checkout] falha ao gravar pedido:", error);
+    // ── gravação ATÔMICA, ANTERIOR ao WhatsApp ───────────────────────────
+    // Idempotência por token: repetir o MESMO envio (duplo toque, retry
+    // após falha de rede) devolve a MESMA encomenda — nunca duplica. Nome,
+    // preço e totais são recalculados no servidor pela função
+    // `record_order`; valores do navegador nunca viram número. Só existe
+    // envio para o WhatsApp se a encomenda existir na base — falha →
+    // erro honesto, rascunho + carrinho intactos, retry com o MESMO token.
+    let result: RecordOrderResult;
+    try {
+      result = await recordOrderAction({
+        storeId,
+        customer: {
+          name: current.name,
+          phone: current.phone,
+          address: current.address.trim() || undefined,
+          neighborhood: current.neighborhood.trim() || undefined,
+          reference: current.reference.trim() || undefined,
+          notes: current.notes || undefined,
+          payment:
+            current.payment === "cash" ||
+            current.payment === "transfer" ||
+            current.payment === "other"
+              ? current.payment
+              : null,
+        },
+        lines: items.map((item) => ({
+          productId: item.id,
+          qty: item.qty,
+          options: item.options,
+        })),
+        clientToken: getOrCreateToken(storeId),
       });
+    } catch {
+      result = { ok: false, code: "network_error" };
+    }
+    if (!result.ok) {
+      submittingRef.current = false;
+      setIsSubmitting(false);
+      setOrderError(
+        result.code === "store_unavailable"
+          ? strings.catalogUnavailable
+          : strings.orderSaveFailed,
+      );
+      return;
+    }
+
+    // Referência estável da encomenda gravada (6 hex do id — a MESMA
+    // fórmula da coluna gerada `reference`) — entra no cabeçalho da
+    // mensagem para o comerciante associar a conversa ao pedido no painel.
+    const orderRef = result.orderId.slice(0, 6).toUpperCase();
 
     const paymentLabel =
       current.payment === "cash"
@@ -347,6 +429,7 @@ export function CheckoutProvider({
       currency,
       locale,
       strings,
+      orderRef,
     });
 
     window.open(
@@ -354,8 +437,11 @@ export function CheckoutProvider({
       "_blank",
       "noopener,noreferrer",
     );
-    // Pedido enviado → rascunho limpo para a próxima compra.
+    // Encomenda gravada + WhatsApp acionado → rascunho, token e carrinho
+    // limpos: não há como "reenviar sem querer" a mesma compra.
     draftStore.clear();
+    clearOrderToken(storeId);
+    clear();
     setErrors({});
     setOrderError(null);
     setSent(true);
@@ -369,6 +455,7 @@ export function CheckoutProvider({
     errors,
     orderError,
     sent,
+    submitting: isSubmitting,
     canSubmit: isCheckoutComplete(form),
     money: (amount) => formatCurrency(amount, currency, locale),
     update,

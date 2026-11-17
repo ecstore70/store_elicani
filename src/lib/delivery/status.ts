@@ -1,7 +1,8 @@
 /**
  * Estado de ENTREGA — PURO e separado do estado da encomenda
  * (`status`): não corrompe o modelo existente, só acrescenta a coluna
- * `delivery_status` (pendente → em preparação → a caminho → entregue).
+ * `delivery_status` (pendente → em preparação → a caminho → entregue,
+ * com `failed` para entregas que falharam — nunca presas em "a caminho").
  * Nomenclatura do módulo Entrega do painel.
  */
 export const DELIVERY_STATUSES = [
@@ -9,6 +10,7 @@ export const DELIVERY_STATUSES = [
   "preparing",
   "on_the_way",
   "delivered",
+  "failed",
 ] as const;
 
 export type DeliveryStatus = (typeof DELIVERY_STATUSES)[number];
@@ -31,6 +33,7 @@ export function countByDeliveryStatus(
     preparing: 0,
     on_the_way: 0,
     delivered: 0,
+    failed: 0,
   };
   for (const row of rows) {
     if (isDeliveryStatus(row.delivery_status)) {

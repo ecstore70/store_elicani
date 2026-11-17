@@ -21,6 +21,7 @@ import {
   selectedOptionsPrice,
   type SelectedOption,
 } from "@/lib/storefront/product-options";
+import { trackStoreEvent } from "@/lib/storefront/events";
 import { CartDialog } from "./cart-dialog";
 
 /**
@@ -213,6 +214,11 @@ class CartStore {
   remove(key: string) {
     this.set(this.getSnapshot().filter((item) => item.key !== key));
   }
+
+  /** Esvazia o carrinho — usado DEPOIS de um pedido gravado com sucesso. */
+  clear() {
+    this.set([]);
+  }
 }
 
 const cartStores = new Map<string, CartStore>();
@@ -240,6 +246,8 @@ type CartContextValue = {
   increment: (key: string) => void;
   decrement: (key: string) => void;
   remove: (key: string) => void;
+  /** Esvazia o carrinho (pedido gravado com sucesso). */
+  clear: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -299,13 +307,15 @@ export function CartProvider({
   const add = useCallback(
     (product: PublicProduct, options?: readonly SelectedOption[], qty?: number) => {
       cartStore.add(product, options, qty);
+      // Evento anónimo (sem PII) — fire-and-forget, nunca afeta o fluxo.
+      trackStoreEvent(storeId, "add_to_cart", product.id);
       // Confirmação discreta — o visitante continua na loja (não abrimos o
       // carrinho por ele).
       setJustAdded(true);
       if (addToastTimer.current) clearTimeout(addToastTimer.current);
       addToastTimer.current = setTimeout(() => setJustAdded(false), 2400);
     },
-    [cartStore],
+    [cartStore, storeId],
   );
   const increment = useCallback(
     (key: string) => cartStore.increment(key),
@@ -319,6 +329,7 @@ export function CartProvider({
     (key: string) => cartStore.remove(key),
     [cartStore],
   );
+  const clear = useCallback(() => cartStore.clear(), [cartStore]);
 
   const value = useMemo<CartContextValue>(() => {
     const count = items.reduce((total, item) => total + item.qty, 0);
@@ -336,8 +347,9 @@ export function CartProvider({
       increment,
       decrement,
       remove,
+      clear,
     };
-  }, [items, open, add, increment, decrement, remove]);
+  }, [items, open, add, increment, decrement, remove, clear]);
 
   const money = (amount: number) => formatCurrency(amount, currency, locale);
 

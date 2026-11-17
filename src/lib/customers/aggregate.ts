@@ -15,6 +15,9 @@
  * Sem fake CRM: tudo sai de linhas reais de `orders`.
  */
 import { isValidSale } from "../reports/aggregate.ts";
+import { customerKey } from "./phone-key.ts";
+
+export { customerKey } from "./phone-key.ts";
 
 export type CustomerOrderRow = {
   id: string;
@@ -24,6 +27,8 @@ export type CustomerOrderRow = {
   createdAt: string;
   customerName: string;
   customerPhone: string;
+  /** Bairro escrito pelo cliente (obrigatório no checkout real). */
+  customerNeighborhood?: string | null;
 };
 
 export type CustomerHistoryOrder = {
@@ -47,22 +52,13 @@ export type CustomerSummary = {
   totalSpent: number;
   /** Data da última encomenda de qualquer estado. */
   lastOrderAt: string | null;
+  /** Data da PRIMEIRA encomenda (histórico comercial do cliente). */
+  firstOrderAt: string | null;
+  /** Localização (bairro) da encomenda mais recente que trouxe uma. */
+  neighborhood: string | null;
   /** Todas as encomendas, mais recente primeiro. */
   history: CustomerHistoryOrder[];
 };
-
-/** Telefone → chave estável: só dígitos (formatação não divide clientes). */
-export function customerKey(phone: string): string {
-  const digits = String(phone).replace(/\D+/g, "");
-  if (digits.length > 0) return digits;
-  // Fallback raro (telefone sem dígitos): trecho URL-seguro, nunca vazio.
-  const fallback = String(phone)
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return fallback.length > 0 ? fallback : "sem-telefone";
-}
 
 /** Linhas leves → resumos ordenados (última encomenda primeiro). */
 export function summarizeCustomers(
@@ -83,6 +79,8 @@ export function summarizeCustomers(
         orderCount: 0,
         totalSpent: 0,
         lastOrderAt: null,
+        firstOrderAt: null,
+        neighborhood: row.customerNeighborhood || null,
         history: [],
       };
       byKey.set(key, summary);
@@ -93,6 +91,11 @@ export function summarizeCustomers(
       summary.totalSpent += Number(row.total) || 0;
     }
 
+    // Primeira encomenda (qualquer estado) — data mais antiga vista.
+    if (summary.firstOrderAt === null || row.createdAt < summary.firstOrderAt) {
+      summary.firstOrderAt = row.createdAt;
+    }
+
     // "Mais recente" = maior timestamp; decide também o nome exibido.
     if (
       summary.lastOrderAt === null ||
@@ -101,6 +104,13 @@ export function summarizeCustomers(
       summary.lastOrderAt = row.createdAt;
       summary.displayName = row.customerName;
       summary.displayPhone = row.customerPhone;
+      // Localização: a mais recente que trouxe bairro (não limpa se vier null).
+      if (row.customerNeighborhood) {
+        summary.neighborhood = row.customerNeighborhood;
+      }
+    } else if (!summary.neighborhood && row.customerNeighborhood) {
+      // Encomendas mais antigas só preenchem se ainda não há bairro nenhum.
+      summary.neighborhood = row.customerNeighborhood;
     }
 
     summary.history.push({

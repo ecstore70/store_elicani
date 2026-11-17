@@ -320,14 +320,15 @@ export const es: Messages = {
   "storefront.neighborhoodRequired": "Escribe tu barrio / zona",
   "storefront.checkoutRequired": "Completa los campos obligatorios para enviar tu pedido",
   "storefront.checkoutNote":
-    "Tu pedido se envía a la tienda por WhatsApp. Sin necesidad de cuenta.",
+    "Continúa en WhatsApp: revisa el mensaje y envíalo a la tienda. Sin necesidad de cuenta.",
   "storefront.msgNewOrder": "NUEVO PEDIDO",
   "storefront.msgCustomer": "Cliente",
   "storefront.msgPhone": "WhatsApp",
   "storefront.msgProducts": "Productos",
   "storefront.msgTotal": "TOTAL",
   "storefront.msgAddress": "Dirección",
-  "storefront.orderSent": "Pedido enviado",
+  "storefront.orderSent": "WhatsApp abierto",
+  "storefront.orderSaveFailed": "No pudimos guardar tu pedido. Comprueba la conexión e inténtalo de nuevo.",
 
   // ── carrito y checkout (presentación) ──────────────────────────────────
   "storefront.orderSummary": "Resumen del pedido",
@@ -613,6 +614,8 @@ export const es: Messages = {
   "reports.kpiOrders": "Pedidos",
   "reports.kpiAvgOrder": "Ticket medio",
   "reports.kpiItemsSold": "Productos vendidos",
+  "reports.kpiCustomers": "Clientes",
+  "reports.kpiRepeatCustomers": "Clientes recurrentes",
   "reports.chartSales": "Ventas a lo largo del tiempo",
   "reports.chartOrders": "Pedidos a lo largo del tiempo",
   "reports.topProducts": "Productos más vendidos",
@@ -652,6 +655,8 @@ export const es: Messages = {
   "customers.subtitle": "Clientes que han hecho pedidos en tu tienda.",
   "customers.totalSpent": "Total gastado",
   "customers.lastOrder": "Último pedido",
+  "customers.location": "Ubicación",
+  "customers.firstOrder": "Primer pedido",
   "customers.emptyTitle": "Aún no hay clientes.",
   "customers.emptyBody": "Los clientes se agregarán cuando recibas pedidos.",
   "customers.history": "Historial",
@@ -664,6 +669,7 @@ export const es: Messages = {
   "delivery.statusPreparing": "En preparación",
   "delivery.statusOnTheWay": "En camino",
   "delivery.statusDelivered": "Entregados",
+  "delivery.statusFailed": "Fallida",
   "delivery.empty": "No hay entregas en este período.",
   "delivery.emptyBody": "Las entregas aparecerán aquí cuando haya pedidos por entregar.",
   "delivery.labelDelivery": "Entrega",
@@ -674,6 +680,7 @@ export const es: Messages = {
   "delivery.markPreparing": "Marcar como en preparación",
   "delivery.markOnTheWay": "Marcar como en camino",
   "delivery.markDelivered": "Marcar como entregado",
+  "delivery.markFailed": "Marcar como fallida",
 
   // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
   "legal.terms": "Términos de Uso",

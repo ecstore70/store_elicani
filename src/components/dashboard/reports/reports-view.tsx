@@ -6,6 +6,8 @@ import type { Locale } from "@/lib/i18n/config";
 import type { Translator } from "@/lib/i18n/translate";
 import { STATUS_KEYS, type ReportData } from "@/lib/reports/aggregate";
 import type { ReportRange } from "@/lib/reports/date-range";
+import { DELIVERY_STATUSES } from "@/lib/delivery/status";
+import { DeliveryBadge } from "@/components/dashboard/delivery/delivery-badge";
 import { OrdersChart, SalesChart } from "./charts";
 import { RangeSelector } from "./range-selector";
 import { RecentOrders } from "./recent-orders";
@@ -14,8 +16,9 @@ import { TopProducts } from "./top-products";
 
 /**
  * Dashboard de RELATÓRIOS — composição de dados reais (KPIs, gráficos,
- * top produtos, estados, recentes). Tudo server-rendered: os gráficos são
- * SVG estáticos e o seletor de período são links/formulário GET.
+ * top produtos, estados, desfechos de entrega, recentes). Tudo
+ * server-rendered: os gráficos são SVG estáticos e o seletor de período
+ * são links/formulário GET.
  *
  * Sem pedidos no período → estado vazio dedicado (nunca "0, 0, 0" sem
  * explicação). Layout mobile-first: KPIs em 2 colunas, listas como linhas
@@ -55,6 +58,14 @@ export function ReportsView({
       label: t("reports.kpiItemsSold"),
       value: formatNumber(data.kpis.itemsSold, locale),
     },
+    {
+      label: t("reports.kpiCustomers"),
+      value: formatNumber(data.kpis.customers, locale),
+    },
+    {
+      label: t("reports.kpiRepeatCustomers"),
+      value: formatNumber(data.kpis.repeatCustomers, locale),
+    },
   ];
 
   return (
@@ -79,7 +90,7 @@ export function ReportsView({
         </Card>
       ) : (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
             {kpis.map((kpi) => (
               <Card key={kpi.label}>
                 <CardContent className="p-4">
@@ -137,6 +148,22 @@ export function ReportsView({
               </div>
             </PageSection>
           </div>
+
+          {/* Desfechos de entrega — contagens reais do período (válidas). */}
+          <PageSection title={t("delivery.labelDelivery")}>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              {DELIVERY_STATUSES.map((key) => (
+                <Card key={key}>
+                  <CardContent className="space-y-2 p-4">
+                    <DeliveryBadge status={key} t={t} />
+                    <p className="text-xl font-semibold tabular-nums">
+                      {formatNumber(data.delivery[key], locale)}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </PageSection>
 
           <PageSection title={t("reports.recentOrders")}>
             <RecentOrders

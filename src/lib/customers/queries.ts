@@ -15,7 +15,7 @@ import {
 const MAX_ORDERS = 5000;
 
 const COLUMNS =
-  "id, reference, status, total, created_at, customer_name, customer_phone";
+  "id, reference, status, total, created_at, customer_name, customer_phone, customer_neighborhood";
 
 function toRow(raw: {
   id: string;
@@ -25,6 +25,7 @@ function toRow(raw: {
   created_at: string;
   customer_name: string;
   customer_phone: string;
+  customer_neighborhood: string | null;
 }): CustomerOrderRow {
   return {
     id: raw.id,
@@ -34,6 +35,7 @@ function toRow(raw: {
     createdAt: raw.created_at,
     customerName: raw.customer_name,
     customerPhone: raw.customer_phone,
+    customerNeighborhood: raw.customer_neighborhood,
   };
 }
 

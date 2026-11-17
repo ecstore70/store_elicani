@@ -16,6 +16,11 @@
  * regra com que `date-range.ts` constrói os limites).
  */
 import { addDays, dateKeyOf } from "./date-range.ts";
+import { customerKey } from "../customers/phone-key.ts";
+import {
+  countByDeliveryStatus,
+  type DeliveryStatus,
+} from "../delivery/status.ts";
 
 export type StatusKey = "pending" | "confirmed" | "completed" | "cancelled";
 export const STATUS_KEYS = [
@@ -43,7 +48,9 @@ export type ReportOrderRow = {
   total: number;
   createdAt: string;
   customerName: string;
+  customerPhone: string;
   payment: string | null;
+  deliveryStatus: string;
 };
 
 export type ReportItemRow = {
@@ -78,9 +85,15 @@ export type ReportData = {
     orderCount: number;
     avgOrder: number;
     itemsSold: number;
+    /** Compradores DISTINTOS no período (mesma chave do módulo Clientes). */
+    customers: number;
+    /** Compradores com 2+ encomendas válidas no período. */
+    repeatCustomers: number;
   };
   series: SalesPoint[];
   statuses: StatusCounts;
+  /** Desfechos de entrega no período (válidas; canceladas não entregam). */
+  delivery: Record<DeliveryStatus, number>;
   topProducts: TopProduct[];
   recent: ReportOrderRow[];
 };
@@ -131,6 +144,23 @@ export function aggregateReport(input: AggregateInput): ReportData {
   const itemsSold = items
     .filter((item) => isValidSale(item.orderStatus))
     .reduce((total, item) => total + item.qty, 0);
+
+  // ── clientes distintos (válidas; a MESMA chave do módulo Clientes) ────────
+  const ordersByCustomer = new Map<string, number>();
+  for (const order of validOrders) {
+    const key = customerKey(order.customerPhone);
+    ordersByCustomer.set(key, (ordersByCustomer.get(key) ?? 0) + 1);
+  }
+  const customers = ordersByCustomer.size;
+  let repeatCustomers = 0;
+  for (const count of ordersByCustomer.values()) {
+    if (count > 1) repeatCustomers += 1;
+  }
+
+  // ── desfechos de entrega (válidas; canceladas ficam de fora) ─────────────
+  const delivery = countByDeliveryStatus(
+    validOrders.map((order) => ({ delivery_status: order.deliveryStatus })),
+  );
 
   // ── estados (todos os pedidos do período, válidos ou não) ───────────────
   const statuses: StatusCounts = {
@@ -209,9 +239,17 @@ export function aggregateReport(input: AggregateInput): ReportData {
 
   return {
     empty: orders.length === 0,
-    kpis: { sales: round2(sales), orderCount, avgOrder, itemsSold },
+    kpis: {
+      sales: round2(sales),
+      orderCount,
+      avgOrder,
+      itemsSold,
+      customers,
+      repeatCustomers,
+    },
     series,
     statuses,
+    delivery,
     topProducts,
     recent,
   };

@@ -324,14 +324,15 @@ export const en = {
   "storefront.neighborhoodRequired": "Enter your neighborhood / location",
   "storefront.checkoutRequired": "Fill in the required fields to send your order",
   "storefront.checkoutNote":
-    "Your order is sent to the store on WhatsApp. No account needed.",
+    "Continue in WhatsApp: review the message and send it to the store. No account needed.",
   "storefront.msgNewOrder": "NEW ORDER",
   "storefront.msgCustomer": "Customer",
   "storefront.msgPhone": "WhatsApp",
   "storefront.msgProducts": "Products",
   "storefront.msgTotal": "TOTAL",
   "storefront.msgAddress": "Address",
-  "storefront.orderSent": "Order sent",
+  "storefront.orderSent": "WhatsApp opened",
+  "storefront.orderSaveFailed": "We couldn't save your order. Check your connection and try again.",
 
   // ── carrinho e checkout (apresentação) ─────────────────────────────────
   "storefront.orderSummary": "Order summary",
@@ -616,6 +617,8 @@ export const en = {
   "reports.kpiOrders": "Orders",
   "reports.kpiAvgOrder": "Average order",
   "reports.kpiItemsSold": "Items sold",
+  "reports.kpiCustomers": "Customers",
+  "reports.kpiRepeatCustomers": "Repeat customers",
   "reports.chartSales": "Sales over time",
   "reports.chartOrders": "Orders over time",
   "reports.topProducts": "Top products",
@@ -655,6 +658,8 @@ export const en = {
   "customers.subtitle": "Customers who have ordered from your store.",
   "customers.totalSpent": "Total spent",
   "customers.lastOrder": "Last order",
+  "customers.location": "Location",
+  "customers.firstOrder": "First order",
   "customers.emptyTitle": "No customers yet.",
   "customers.emptyBody": "Customers are added when you receive orders.",
   "customers.history": "History",
@@ -667,6 +672,7 @@ export const en = {
   "delivery.statusPreparing": "Getting ready",
   "delivery.statusOnTheWay": "On the way",
   "delivery.statusDelivered": "Delivered",
+  "delivery.statusFailed": "Failed",
   "delivery.empty": "There are no deliveries in this period.",
   "delivery.emptyBody": "Deliveries will appear here as orders need delivering.",
   "delivery.labelDelivery": "Delivery",
@@ -677,6 +683,7 @@ export const en = {
   "delivery.markPreparing": "Mark as preparing",
   "delivery.markOnTheWay": "Mark as on the way",
   "delivery.markDelivered": "Mark as delivered",
+  "delivery.markFailed": "Mark as failed",
 
   // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
   "legal.terms": "Terms of Use",

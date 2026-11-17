@@ -320,14 +320,15 @@ export const de: Messages = {
   "storefront.neighborhoodRequired": "Gib deinen Stadtteil / Bereich ein",
   "storefront.checkoutRequired": "Fülle die Pflichtfelder aus, um deine Bestellung zu senden",
   "storefront.checkoutNote":
-    "Deine Bestellung wird per WhatsApp an den Shop gesendet. Kein Konto nötig.",
+    "Weiter in WhatsApp: Prüfe die Nachricht und sende sie an den Shop. Kein Konto nötig.",
   "storefront.msgNewOrder": "NEUE BESTELLUNG",
   "storefront.msgCustomer": "Kunde",
   "storefront.msgPhone": "WhatsApp",
   "storefront.msgProducts": "Produkte",
   "storefront.msgTotal": "GESAMT",
   "storefront.msgAddress": "Adresse",
-  "storefront.orderSent": "Bestellung gesendet",
+  "storefront.orderSent": "WhatsApp geöffnet",
+  "storefront.orderSaveFailed": "Wir konnten deine Bestellung nicht speichern. Prüfe die Verbindung und versuche es erneut.",
 
   // ── Warenkorb und Checkout (Darstellung) ───────────────────────────────
   "storefront.orderSummary": "Bestellübersicht",
@@ -613,6 +614,8 @@ export const de: Messages = {
   "reports.kpiOrders": "Bestellungen",
   "reports.kpiAvgOrder": "Bestellwert (Ø)",
   "reports.kpiItemsSold": "Verkaufte Artikel",
+  "reports.kpiCustomers": "Kunden",
+  "reports.kpiRepeatCustomers": "Wiederkehrende Kunden",
   "reports.chartSales": "Umsatz im Zeitverlauf",
   "reports.chartOrders": "Bestellungen im Zeitverlauf",
   "reports.topProducts": "Bestseller",
@@ -652,6 +655,8 @@ export const de: Messages = {
   "customers.subtitle": "Kunden, die in deinem Shop bestellt haben.",
   "customers.totalSpent": "Gesamtausgaben",
   "customers.lastOrder": "Letzte Bestellung",
+  "customers.location": "Standort",
+  "customers.firstOrder": "Erste Bestellung",
   "customers.emptyTitle": "Noch keine Kunden.",
   "customers.emptyBody": "Kunden werden hinzugefügt, wenn Bestellungen eintreffen.",
   "customers.history": "Verlauf",
@@ -664,6 +669,7 @@ export const de: Messages = {
   "delivery.statusPreparing": "In Vorbereitung",
   "delivery.statusOnTheWay": "Unterwegs",
   "delivery.statusDelivered": "Zugestellt",
+  "delivery.statusFailed": "Fehlgeschlagen",
   "delivery.empty": "Keine Lieferungen in diesem Zeitraum.",
   "delivery.emptyBody": "Lieferungen erscheinen hier, sobald Bestellungen zugestellt werden müssen.",
   "delivery.labelDelivery": "Lieferung",
@@ -674,6 +680,7 @@ export const de: Messages = {
   "delivery.markPreparing": "Als in Vorbereitung markieren",
   "delivery.markOnTheWay": "Als unterwegs markieren",
   "delivery.markDelivered": "Als zugestellt markieren",
+  "delivery.markFailed": "Als fehlgeschlagen markieren",
 
   // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
   "legal.terms": "Nutzungsbedingungen",

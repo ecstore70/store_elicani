@@ -7,10 +7,11 @@ import {
 } from "./status.ts";
 
 describe("delivery: estados válidos", () => {
-  it("aceita os quatro estados e rejeita o resto", () => {
+  it("aceita os cinco estados e rejeita o resto", () => {
     for (const status of DELIVERY_STATUSES) {
       assert.ok(isDeliveryStatus(status));
     }
+    assert.ok(isDeliveryStatus("failed"));
     assert.ok(!isDeliveryStatus("pending ")); // espaços contam
     assert.ok(!isDeliveryStatus("shipped"));
     assert.ok(!isDeliveryStatus(42));
@@ -27,6 +28,7 @@ describe("delivery: contagens", () => {
       { delivery_status: "delivered" },
       { delivery_status: "delivered" },
       { delivery_status: "delivered" },
+      { delivery_status: "failed" },
       { delivery_status: "estranho" }, // não corrompe
     ]);
     assert.deepEqual(counts, {
@@ -34,6 +36,7 @@ describe("delivery: contagens", () => {
       preparing: 1,
       on_the_way: 1,
       delivered: 3,
+      failed: 1,
     });
   });
 
@@ -43,6 +46,7 @@ describe("delivery: contagens", () => {
       preparing: 0,
       on_the_way: 0,
       delivered: 0,
+      failed: 0,
     });
   });
 });

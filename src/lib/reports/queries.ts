@@ -26,7 +26,9 @@ type OrderRowSelect = {
   total: number;
   created_at: string;
   customer_name: string;
+  customer_phone: string;
   payment: string | null;
+  delivery_status: string;
 };
 
 type ItemRowSelect = {
@@ -47,7 +49,9 @@ export async function getReportData(
   const [ordersResult, itemsResult] = await Promise.all([
     supabase
       .from("orders")
-      .select("id, status, total, created_at, customer_name, payment")
+      .select(
+        "id, status, total, created_at, customer_name, customer_phone, payment, delivery_status",
+      )
       .eq("store_id", storeId)
       .gte("created_at", range.from)
       .lt("created_at", range.to)
@@ -85,7 +89,9 @@ export async function getReportData(
       total: Number(row.total),
       createdAt: row.created_at,
       customerName: row.customer_name,
+      customerPhone: row.customer_phone,
       payment: row.payment,
+      deliveryStatus: row.delivery_status,
     }),
   );
 

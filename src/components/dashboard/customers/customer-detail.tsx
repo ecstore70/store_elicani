@@ -32,6 +32,10 @@ export function CustomerDetail({
     timeStyle: "short",
     timeZone,
   });
+  const dayFormat = new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeZone,
+  });
 
   const summary = [
     {
@@ -43,13 +47,20 @@ export function CustomerDetail({
       value: formatCurrency(customer.totalSpent, currency, locale),
     },
     {
+      label: t("customers.firstOrder"),
+      value: customer.firstOrderAt
+        ? dayFormat.format(new Date(customer.firstOrderAt))
+        : "—",
+    },
+    {
       label: t("customers.lastOrder"),
       value: customer.lastOrderAt
-        ? new Intl.DateTimeFormat(locale, {
-            dateStyle: "medium",
-            timeZone,
-          }).format(new Date(customer.lastOrderAt))
+        ? dayFormat.format(new Date(customer.lastOrderAt))
         : "—",
+    },
+    {
+      label: t("customers.location"),
+      value: customer.neighborhood ?? "—",
     },
   ];
 
@@ -61,7 +72,7 @@ export function CustomerDetail({
       />
 
       <PageSection title={t("customers.summary")}>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {summary.map((item) => (
             <Card key={item.label}>
               <CardContent className="p-4">

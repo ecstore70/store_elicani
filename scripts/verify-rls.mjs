@@ -14,6 +14,9 @@
  *   • slug é único entre lojistas (UNIQUE slug);
  *   • perfis são privados;
  *   • anônimo lê apenas lojas ATIVAS e nunca escreve;
+ *   • encomendas são idempotentes por token, os campos comerciais ficam
+ *     congelados após a criação (trigger) e eventos anónimos são isolados
+ *     por loja (escrita só via RPC, leitura só do dono);
  *   • o bucket de logos aceita escrita só na pasta do próprio lojista.
  *
  * Credenciais (nesta ordem):
@@ -926,6 +929,208 @@ try {
     errorDetail(ownOrderRead),
   );
 
+  // ── 9c. CHECKOUT PERSISTENTE: idempotência, marca de WhatsApp, guard ─────
+  // Token de idempotência (uuid por envio): repetir o MESMO envio devolve a
+  // MESMA encomenda — duplo toque/rede instável nunca duplicam linhas.
+
+  const clientToken = globalThis.crypto.randomUUID();
+  const idemFirst = await asAnon.rpc("record_order", {
+    p_store_id: idA,
+    p_customer: orderCustomer,
+    p_lines: orderLines,
+    p_payment: "cash",
+    p_client_token: clientToken,
+  });
+  const idemSecond = await asAnon.rpc("record_order", {
+    p_store_id: idA,
+    p_customer: orderCustomer,
+    p_lines: orderLines,
+    p_payment: "cash",
+    p_client_token: clientToken,
+  });
+  assert(
+    "idempotência: 2.ª chamada devolve a MESMA encomenda",
+    typeof idemFirst.data === "string" && idemFirst.data === idemSecond.data,
+    `${errorDetail(idemFirst) ?? idemFirst.data} / ${errorDetail(idemSecond) ?? idemSecond.data}`,
+  );
+  const idemId = typeof idemFirst.data === "string" ? idemFirst.data : null;
+
+  const tokenRows = await asService
+    .from("orders")
+    .select("id, client_token, whatsapp_opened_at, total")
+    .eq("client_token", clientToken);
+  assert(
+    "idempotência: UMA única linha com o token",
+    tokenRows.data?.length === 1,
+    errorDetail(tokenRows) ?? JSON.stringify(tokenRows.data),
+  );
+
+  const idemItems = await asService
+    .from("order_items")
+    .select("qty")
+    .eq("order_id", idemId ?? "00000000-0000-4000-8000-000000000000");
+  assert(
+    "idempotência: itens NÃO duplicados na repetição",
+    !idemItems.error && idemItems.data?.length === 1 && idemItems.data[0].qty === 2,
+    errorDetail(idemItems) ?? JSON.stringify(idemItems.data),
+  );
+
+  assert(
+    "whatsapp_opened_at registado na criação (início do handoff)",
+    !!tokenRows.data?.[0]?.whatsapp_opened_at,
+    JSON.stringify(tokenRows.data),
+  );
+
+  // Compatibilidade: o código em produção chama com 4 args nomeados (sem
+  // token). A assinatura nova mantém default no 5.º → a chamada resolve.
+  const legacyCall = await asAnon.rpc("record_order", {
+    p_store_id: idA,
+    p_customer: orderCustomer,
+    p_lines: orderLines,
+    p_payment: "cash",
+  });
+  assert(
+    "chamada antiga de 4 args continua a criar encomenda",
+    typeof legacyCall.data === "string",
+    errorDetail(legacyCall) ?? `criou: ${legacyCall.data}`,
+  );
+  const legacyRow = await asService
+    .from("orders")
+    .select("client_token, whatsapp_opened_at")
+    .eq("id", legacyCall.data ?? "00000000-0000-4000-8000-000000000000")
+    .maybeSingle();
+  assert(
+    "4 args → token null e whatsapp_opened_at preenchido",
+    legacyRow.data?.client_token === null && !!legacyRow.data?.whatsapp_opened_at,
+    errorDetail(legacyRow) ?? JSON.stringify(legacyRow.data),
+  );
+
+  // ── guard de integridade comercial (trigger antes de UPDATE) ─────────────
+  const guardTotal = await A.from("orders")
+    .update({ total: 1 })
+    .eq("id", orderAId)
+    .select("id");
+  assert(
+    "guard: dono NÃO altera o total (trigger comercial)",
+    !!guardTotal.error &&
+      guardTotal.error.message?.includes("orders_commercial_fields_frozen"),
+    errorDetail(guardTotal) ?? `afetadas: ${JSON.stringify(guardTotal.data)}`,
+  );
+
+  const guardCustomer = await A.from("orders")
+    .update({ customer_phone: "+258849999999", payment: "transfer" })
+    .eq("id", orderAId)
+    .select("id");
+  assert(
+    "guard: dono NÃO altera dados do cliente/pagamento",
+    !!guardCustomer.error &&
+      guardCustomer.error.message?.includes("orders_commercial_fields_frozen"),
+    errorDetail(guardCustomer) ?? `afetadas: ${JSON.stringify(guardCustomer.data)}`,
+  );
+
+  // ── estados de entrega: 'failed' é destino legítimo ──────────────────────
+  const failedDelivery = await A.from("orders")
+    .update({ delivery_status: "failed" })
+    .eq("id", orderAId)
+    .select("delivery_status");
+  assert(
+    "estado de entrega 'failed' aceite (novo estado)",
+    !failedDelivery.error && failedDelivery.data?.[0]?.delivery_status === "failed",
+    errorDetail(failedDelivery) ?? JSON.stringify(failedDelivery.data),
+  );
+
+  const badDelivery = await A.from("orders")
+    .update({ delivery_status: "teleportado" })
+    .eq("id", orderAId)
+    .select("id");
+  assert(
+    "estado de entrega inválido REJEITADO (check constraint)",
+    !!badDelivery.error && badDelivery.error.code === "23514",
+    errorDetail(badDelivery),
+  );
+
+  // ── eventos anónimos: whitelist, isolamento e sem escrita direta ─────────
+  const evOk = await asAnon.rpc("record_event", {
+    p_store_id: idA,
+    p_event: "catalog_view",
+    p_product_id: null,
+  });
+  assert("record_event aceita evento da whitelist (anon)", !evOk.error, errorDetail(evOk));
+
+  const evWithProduct = await asAnon.rpc("record_event", {
+    p_store_id: idA,
+    p_event: "product_view",
+    p_product_id: productA.data.id,
+  });
+  assert(
+    "record_event aceita produto da própria loja",
+    !evWithProduct.error,
+    errorDetail(evWithProduct),
+  );
+
+  const evBadEvent = await asAnon.rpc("record_event", {
+    p_store_id: idA,
+    p_event: "pii_dump",
+    p_product_id: null,
+  });
+  assert(
+    "record_event REJEITA evento fora da whitelist",
+    !!evBadEvent.error,
+    errorDetail(evBadEvent) ?? `criou: ${evBadEvent.data}`,
+  );
+
+  const evForeignProduct = await asAnon.rpc("record_event", {
+    p_store_id: idA,
+    p_event: "product_view",
+    p_product_id: foreignProduct.data?.id ?? "00000000-0000-4000-8000-000000000000",
+  });
+  assert(
+    "record_event REJEITA produto de outra loja",
+    !!evForeignProduct.error,
+    errorDetail(evForeignProduct) ?? `criou: ${evForeignProduct.data}`,
+  );
+
+  const evReadAnon = await asAnon.from("store_events").select("id").eq("store_id", idA);
+  assert(
+    "anônimo NÃO lê store_events",
+    !evReadAnon.error && evReadAnon.data?.length === 0,
+    `linhas devolvidas: ${JSON.stringify(evReadAnon.data)}`,
+  );
+
+  const evReadA = await A.from("store_events").select("id, event").eq("store_id", idA);
+  assert(
+    "dono lê os eventos da própria loja",
+    !evReadA.error && (evReadA.data?.length ?? 0) >= 2,
+    errorDetail(evReadA) ?? JSON.stringify(evReadA.data),
+  );
+
+  const evReadB = await B.from("store_events").select("id").eq("store_id", idA);
+  assert(
+    "B NÃO lê eventos da loja A",
+    !evReadB.error && evReadB.data?.length === 0,
+    `linhas devolvidas: ${JSON.stringify(evReadB.data)}`,
+  );
+
+  const evInsertAnon = await asAnon.from("store_events").insert({
+    store_id: idA,
+    event: "catalog_view",
+  });
+  assert(
+    "anônimo NÃO insere store_events direto (REST)",
+    !!evInsertAnon.error && evInsertAnon.error.code === "42501",
+    errorDetail(evInsertAnon),
+  );
+
+  const evInsertB = await B.from("store_events").insert({
+    store_id: idA,
+    event: "catalog_view",
+  });
+  assert(
+    "B NÃO insere eventos na loja A",
+    !!evInsertB.error && evInsertB.error.code === "42501",
+    errorDetail(evInsertB),
+  );
+
   // ── 10. Ciclo de vida do catálogo: RPC de status + exclusão segura ──────
   // O RLS esconde lojas inativas do anon, mas o proxy e as páginas precisam
   // DISTINGUIR "inativa" (estado indisponível, 200) de "inexistente" (404).
@@ -1129,6 +1334,13 @@ try {
     "cascata apaga as encomendas do catálogo",
     !ordersGone.error && ordersGone.data?.length === 0,
     errorDetail(ordersGone),
+  );
+
+  const eventsGone = await asService.from("store_events").select("id").eq("store_id", idA);
+  assert(
+    "cascata apaga os eventos anónimos da loja",
+    !eventsGone.error && eventsGone.data?.length === 0,
+    errorDetail(eventsGone),
   );
 
   const faqGone = await asService.from("store_faq_items").select("id").eq("store_id", idA);

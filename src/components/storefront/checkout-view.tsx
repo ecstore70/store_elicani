@@ -221,7 +221,7 @@ function WhatsAppCta({
       <button
         type="submit"
         form="sf-checkout-form"
-        disabled={!checkout.canSubmit}
+        disabled={!checkout.canSubmit || checkout.submitting}
         aria-describedby={checkout.canSubmit ? undefined : hintId}
         className={`${BUTTON_CLASSES} min-h-12 w-full`}
       >

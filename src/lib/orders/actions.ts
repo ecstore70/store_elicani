@@ -8,16 +8,20 @@ import { createClient } from "@/lib/supabase/server";
 import type { SelectedOption } from "@/lib/storefront/product-options";
 
 /**
- * Gravação de PEDIDOS a partir do checkout — Server Action chamada pelo
- * `CheckoutProvider` como passo ADICIONAL ao envio do WhatsApp.
+ * Gravação de PEDIDOS a partir do checkout — Server Action chamada e
+ * AGUARDADA pelo `CheckoutProvider` ANTES de abrir o WhatsApp (o pedido
+ * só existe se a gravação existir; ver fase de idempotência abaixo).
  *
  * Contrato de segurança:
- *   • o cliente manda APENAS identidade (produto, quantidade, opções);
+ *   • o cliente manda APENAS identidade (produto, quantidade, opções) e
+ *     um `clientToken` idempotente (uuid por envio);
  *   • nome, preço unitário e totais são recalculados pela função
  *     `record_order` (SECURITY DEFINER) a partir do banco — valores do
  *     navegador nunca entram nos números;
+ *   • o MESMO token repetido (duplo toque/rede instável) devolve a MESMA
+ *     encomenda — nunca duplica;
  *   • qualquer falha vira `{ ok: false, code }` — NUNCA lança para cima:
- *     o chamador (checkout) continua para o WhatsApp sempre.
+ *     o checkout mostra o erro e o cliente pode tentar de novo.
  */
 export type RecordOrderCustomer = {
   name: string;
@@ -39,6 +43,10 @@ export type RecordOrderResult =
   | { ok: true; orderId: string }
   | { ok: false; code: string };
 
+/** uuid v4–style aceite como token de idempotência. */
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /** Corta textos longos antes de sair do servidor (a função valida de novo). */
 function clip(value: string | undefined, max: number): string | undefined {
   if (typeof value !== "string") return undefined;
@@ -51,6 +59,8 @@ export async function recordOrderAction(input: {
   storeId: string;
   customer: RecordOrderCustomer;
   lines: readonly RecordOrderLine[];
+  /** Token idempotente do envio (uuid) — repetir NÃO duplica a encomenda. */
+  clientToken?: string;
 }): Promise<RecordOrderResult> {
   // Guarda de forma antes de qualquer I/O — a autoridade (loja ativa,
   // produtos da loja, preços) continua sendo a função `record_order`.
@@ -60,6 +70,12 @@ export async function recordOrderAction(input: {
     !Array.isArray(input.lines) ||
     input.lines.length < 1 ||
     input.lines.length > 30
+  ) {
+    return { ok: false, code: "invalid_payload" };
+  }
+  if (
+    input.clientToken !== undefined &&
+    (typeof input.clientToken !== "string" || !UUID_RE.test(input.clientToken))
   ) {
     return { ok: false, code: "invalid_payload" };
   }
@@ -98,6 +114,7 @@ export async function recordOrderAction(input: {
       })),
       // `null` → omitido no PostgREST → default SQL `null` (idêntico).
       p_payment: payment ?? undefined,
+      p_client_token: input.clientToken,
     });
 
     if (error) return { ok: false, code: error.message };

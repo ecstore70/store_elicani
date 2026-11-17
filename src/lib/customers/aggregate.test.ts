@@ -120,3 +120,44 @@ describe("customers: agregação", () => {
     assert.deepEqual(summarizeCustomers([]), []);
   });
 });
+
+describe("customers: primeira encomenda e localização", () => {
+  it("firstOrderAt é a mais antiga (mesmo com ordem de entrada invertida)", () => {
+    const customers = summarizeCustomers([
+      row({ id: "nova", createdAt: "2026-05-01T10:00:00.000Z" }),
+      row({ id: "antiga", createdAt: "2026-01-01T10:00:00.000Z" }),
+      row({ id: "meio", createdAt: "2026-03-01T10:00:00.000Z" }),
+    ]);
+    assert.equal(customers[0].firstOrderAt, "2026-01-01T10:00:00.000Z");
+    assert.equal(customers[0].lastOrderAt, "2026-05-01T10:00:00.000Z");
+  });
+
+  it("localização vem da encomenda mais recente que trouxe bairro", () => {
+    const customers = summarizeCustomers([
+      row({
+        id: "nova",
+        createdAt: "2026-05-01T10:00:00.000Z",
+        customerNeighborhood: null, // não limpa o bairro conhecido
+      }),
+      row({
+        id: "meio",
+        createdAt: "2026-03-01T10:00:00.000Z",
+        customerNeighborhood: "Malhangalene",
+      }),
+      row({
+        id: "antiga",
+        createdAt: "2026-01-01T10:00:00.000Z",
+        customerNeighborhood: "Sommerschield",
+      }),
+    ]);
+    assert.equal(customers[0].neighborhood, "Malhangalene");
+  });
+
+  it("sem bairro nenhum → localização nula", () => {
+    const customers = summarizeCustomers([
+      row({ customerNeighborhood: null }),
+    ]);
+    assert.equal(customers[0].neighborhood, null);
+    assert.equal(customers[0].firstOrderAt, "2026-01-01T10:00:00.000Z");
+  });
+});

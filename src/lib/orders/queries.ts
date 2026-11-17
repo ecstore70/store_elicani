@@ -23,6 +23,8 @@ export type OrderListRow = {
   payment: string | null;
   total: number;
   delivery_fee: number | null;
+  /** N.º de itens da encomenda (contagem embutida, nunca linha crua). */
+  item_count: number;
 };
 
 /** Encomenda completa do DETALHE (campos reais da tabela + itens). */
@@ -47,7 +49,24 @@ export type OrderItemRow = {
 
 const LIST_COLUMNS =
   "id, reference, status, delivery_status, created_at, customer_name, " +
-  "customer_phone, payment, total, delivery_fee";
+  "customer_phone, payment, total, delivery_fee, " +
+  // contagem de itens embutida — a lista nunca recebe linhas de order_items
+  "item_count:order_items(count)";
+
+/**
+ * Contagem embutida do PostgREST chega como `[{ count }]` (agregado de uma
+ * para-muitos); parser defensivo para também aceitar objeto direto.
+ */
+function parseEmbeddedCount(raw: unknown): number {
+  const countOf = (value: unknown): number =>
+    value !== null &&
+    typeof value === "object" &&
+    typeof (value as { count?: unknown }).count === "number"
+      ? (value as { count: number }).count
+      : 0;
+  if (Array.isArray(raw)) return countOf(raw[0]);
+  return countOf(raw);
+}
 
 /**
  * Lista de encomendas da loja, mais recentes primeiro.
@@ -82,8 +101,15 @@ export async function listOrders(
     throw new Error(`Falha ao listar encomendas: ${error.message}`);
   }
   // Cast via unknown: o parser de string do PostgREST não conhece
-  // `reference` (coluna gerada); o formato vem do schema.
-  return (data ?? []) as unknown as OrderListRow[];
+  // `reference` (coluna gerada); o formato vem do schema. `item_count`
+  // (agregado embutido) é normalizado para número aqui.
+  const rows = (data ?? []) as unknown as Array<
+    OrderListRow & { item_count: unknown }
+  >;
+  return rows.map((row) => ({
+    ...row,
+    item_count: parseEmbeddedCount(row.item_count),
+  }));
 }
 
 /**

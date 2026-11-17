@@ -74,13 +74,26 @@ export function CustomersView({
                     <span className="tabular-nums">
                       {formatCurrency(customer.totalSpent, currency, locale)}
                     </span>
+                    {customer.neighborhood ? (
+                      <>
+                        {" · "}
+                        {t("customers.location")}: {customer.neighborhood}
+                      </>
+                    ) : null}
                   </span>
-                  {customer.lastOrderAt ? (
-                    <span className="mt-0.5 block text-xs text-muted-foreground">
-                      {t("customers.lastOrder")}:{" "}
-                      {dateFormat.format(new Date(customer.lastOrderAt))}
-                    </span>
-                  ) : null}
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    {t("customers.firstOrder")}:{" "}
+                    {customer.firstOrderAt
+                      ? dateFormat.format(new Date(customer.firstOrderAt))
+                      : "—"}
+                    {customer.lastOrderAt ? (
+                      <>
+                        {" · "}
+                        {t("customers.lastOrder")}:{" "}
+                        {dateFormat.format(new Date(customer.lastOrderAt))}
+                      </>
+                    ) : null}
+                  </span>
                 </span>
                 <ChevronRight
                   aria-hidden="true"
