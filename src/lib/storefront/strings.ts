@@ -33,6 +33,11 @@ export type StorefrontStrings = {
   openingHours: string;
   followUs: string;
   poweredBy: string;
+  // ── rodapé: selos de capacidade (SVG, texto curto p/ círculo) ────────
+  sealCatalog: string;
+  sealMenu: string;
+  sealOrders: string;
+  sealSupport: string;
   openCartAria: string;
   cartCountAria: string;
   productImageAlt: string;
@@ -128,6 +133,10 @@ export function buildStorefrontStrings(t: Translator): StorefrontStrings {
     openingHours: t("storefront.openingHours"),
     followUs: t("storefront.followUs"),
     poweredBy: t("storefront.poweredBy"),
+    sealCatalog: t("storefront.sealCatalog"),
+    sealMenu: t("storefront.sealMenu"),
+    sealOrders: t("storefront.sealOrders"),
+    sealSupport: t("storefront.sealSupport"),
     footerNav: t("landing.footerNav"),
     termsLink: t("storefront.termsLink"),
     privacyLink: t("storefront.privacyLink"),

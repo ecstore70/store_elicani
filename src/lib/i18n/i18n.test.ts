@@ -81,6 +81,7 @@ describe("tradutor", () => {
       "storefront.addToCart",
       "storefront.catalogUnavailable",
       "storefront.checkoutRequired",
+      "storefront.sealCatalog",
       "products.sectionPageContent",
       "reports.empty",
       "reports.kpiAvgOrder",

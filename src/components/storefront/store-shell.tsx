@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Clock, Phone } from "lucide-react";
 import { CartProvider } from "./cart-provider";
 import { CartButton } from "./cart-button";
+import { FooterSeals } from "./footer-seals";
 import { ThemeVars } from "./theme-vars";
 import { Logo } from "@/components/shared/logo";
 import { LocaleSelector } from "@/components/shared/locale-selector";
@@ -264,35 +265,29 @@ export async function StoreShell({
         )}
 
         {!isCheckout && (
+          /* Hierarquia do rodapé: identidade da loja → selos de
+             capacidade → links de políticas → moeda + crédito da
+             plataforma. Tudo centrado e compacto; a folga inferior
+             reserva o espaço do botão flutuante de WhatsApp (cantos
+             seguros) para nada ficar coberto no mobile. */
           <footer className="border-t border-[var(--sf-border)]">
-            <div className="mx-auto flex w-full max-w-[var(--sf-container)] flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-5 sm:px-6">
-              {/* Crédito da PLATAFORMA — subordinado visualmente (texto
-                  pequeno, muted) mas explícito e rastreável: o link é a
-                  ÚNICA relação loja→plataforma visível e maquinável da
-                  vitrine ("esta loja opera no Elicani"). Nome acessível =
-                  texto visível (Label in Name). */}
-              <Link
-                href="https://elicani.site"
-                target="_blank"
-                rel="noreferrer"
-                className="order-1 flex items-center gap-1.5 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)]"
-              >
-                <Logo
-                  variant="mono"
-                  className="h-4 shrink-0 text-[var(--sf-muted)]"
-                />
-                <span className="text-xs text-[var(--sf-muted)]">
-                  {strings.poweredBy}
-                </span>
-              </Link>
+            <div className="mx-auto flex w-full max-w-[var(--sf-container)] flex-col items-center gap-4 px-4 pb-[calc(4.5rem_+_env(safe-area-inset-bottom))] pt-6 sm:gap-5 sm:px-6 sm:pb-8">
+              {/* identidade do comerciante — âncora do rodapé (presente,
+                  porém subordinada ao cabeçalho: texto pequeno) */}
+              <p className="max-w-full truncate text-sm font-semibold text-[var(--sf-fg)]">
+                {store.name}
+              </p>
+
+              {/* selos de capacidade — acabamento vetorial (SVG puro,
+                  cores do tema, informativos e não clicáveis) */}
+              <FooterSeals strings={strings} template={theme.template} />
 
               {/* Políticas da loja — apenas links com conteúdo publicado
-                  (calculados acima). Desktop: crédito | links | moeda;
-                  mobile: links quebram para a segunda linha. */}
+                  (calculados acima); centrados, texto pequeno. */}
               {policyLinks.length > 0 && (
                 <nav
                   aria-label={strings.footerNav}
-                  className="order-3 flex flex-wrap gap-x-5 gap-y-2 text-xs sm:order-2"
+                  className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs"
                 >
                   {policyLinks.map((link) => (
                     <Link
@@ -306,23 +301,43 @@ export async function StoreShell({
                 </nav>
               )}
 
-              <span className="order-2 font-mono text-xs text-[var(--sf-muted)] sm:order-3">
-                {store.currency}
-              </span>
+              {/* moeda + atribuição da plataforma — chip discreto que
+                  assina o rodapé; SEMPRE menor que a identidade da loja */}
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+                <span className="font-mono text-xs text-[var(--sf-muted)]">
+                  {store.currency}
+                </span>
+                <Link
+                  href="https://elicani.site"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[var(--sf-border)] bg-[var(--sf-surface)] px-2.5 py-1 opacity-80 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)]"
+                >
+                  <Logo
+                    variant="mono"
+                    className="h-3.5 shrink-0 text-[var(--sf-muted)]"
+                  />
+                  <span className="text-xs font-medium text-[var(--sf-muted)]">
+                    {strings.poweredBy}
+                  </span>
+                </Link>
+              </div>
             </div>
           </footer>
         )}
 
         {/* ação de WhatsApp sempre à mão — canto oposto ao carrinho.
             Nunca no checkout: a barra fixa do CTA ocupa o rodapé e nada
-            da vitrine pode aparecer por cima dos campos. */}
+            da vitrine pode aparecer por cima dos campos. `bottom`
+            respeita a safe-area (botão + folga do rodapé cobrem o
+            intervalo — nenhum selo/link/crédito fica embaixo dele). */}
         {!isCheckout && whatsappHref && (
           <a
             href={whatsappHref}
             target="_blank"
             rel="noreferrer"
             aria-label={strings.whatsappContact}
-            className="fixed bottom-4 start-4 z-40 flex size-12 items-center justify-center rounded-full border border-[var(--sf-border)] bg-[var(--sf-bg)] shadow-lg transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)] sm:bottom-6 sm:start-6"
+            className="fixed bottom-[calc(1rem_+_env(safe-area-inset-bottom))] start-4 z-40 flex size-12 items-center justify-center rounded-full border border-[var(--sf-border)] bg-[var(--sf-bg)] shadow-lg transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)] sm:bottom-[calc(1.5rem_+_env(safe-area-inset-bottom))] sm:start-6"
           >
             <WhatsAppIcon className="size-7" />
           </a>
