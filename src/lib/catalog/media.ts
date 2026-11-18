@@ -86,6 +86,23 @@ export function extractYouTubeId(rawUrl: string): string | null {
   return match ? match[1] : null;
 }
 
+/**
+ * É um URL de YouTube SHORT (vídeo vertical)? A forma `/shorts/<id>` é a
+ * dica de apresentação usada pela vitrine para montar a moldura 9:16 —
+ * sem API externa e sem inventar dimensões para as demais formas de URL.
+ */
+export function isYouTubeShortsUrl(rawUrl: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl.trim());
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return false;
+  if (!YOUTUBE_HOSTS.has(parsed.hostname.toLowerCase())) return false;
+  return /^\/shorts\/([A-Za-z0-9_-]{11})(?:\/|$)/.test(parsed.pathname);
+}
+
 /** É uma URL do YouTube (com ID válido ou não)? */
 export function isYouTubeUrl(rawUrl: string): boolean {
   try {

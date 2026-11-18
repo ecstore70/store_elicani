@@ -3,6 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Film, Volume2, VolumeX } from "lucide-react";
 import { resolveVideoAspect } from "@/lib/catalog/video-aspect";
+import {
+  FALLBACK_VIDEO_ASPECT,
+  videoFrameStyle,
+} from "@/lib/catalog/video-presentation";
 import type { StorefrontStrings } from "@/lib/storefront/strings";
 
 /**
@@ -95,11 +99,9 @@ export function ContentVideo({
     setAspect(resolveVideoAspect(video.videoWidth, video.videoHeight));
   };
 
-  const { w: arW, h: arH } = aspect ?? { w: 16, h: 9 };
-  const frameStyle = {
-    width: `min(100%, calc(min(70vh, 640px) * ${arW} / ${arH}))`,
-    aspectRatio: `${arW} / ${arH}`,
-  } as const;
+  // Moldura compartilhada com o player de YouTube (video-presentation):
+  // proporção intrínseca do arquivo; sem metadata → fallback 16:9.
+  const frameStyle = videoFrameStyle(aspect ?? FALLBACK_VIDEO_ASPECT);
 
   return (
     <div className="flex w-full justify-center">

@@ -6,6 +6,10 @@ import {
   youtubeEmbedUrl,
 } from "@/lib/catalog/media";
 import {
+  resolveYoutubeAspect,
+  videoFrameStyle,
+} from "@/lib/catalog/video-presentation";
+import {
   parseRichText,
   type RichBlock,
   type RichInline,
@@ -167,7 +171,14 @@ function Block({
     return (
       <figure className="m-0">
         {youtubeId ? (
-          <div className={`relative aspect-video w-full overflow-hidden bg-black ${RADIUS}`}>
+          // Moldura ORIENTADA PELA FONTE (não fixa): Short (/shorts/) →
+          // 9:16; forma sem dica de orientação → fallback 16:9. Usa a
+          // MESMA fórmula do vídeo nativo (videoFrameStyle) — um só
+          // conceito de proporção para todo vídeo da vitrine.
+          <div
+            className={`relative mx-auto overflow-hidden bg-black ${RADIUS}`}
+            style={videoFrameStyle(resolveYoutubeAspect(block.media_url ?? ""))}
+          >
             <iframe
               src={youtubeEmbedUrl(youtubeId, false)}
               title={block.caption ?? "YouTube"}

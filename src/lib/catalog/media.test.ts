@@ -6,6 +6,7 @@ import {
   extractYouTubeId,
   findMediaErrorKey,
   isAllowedMediaUrl,
+  isYouTubeShortsUrl,
   isYouTubeUrl,
   mediaErrorMessage,
   MEDIA_MAX_ITEMS,
@@ -82,6 +83,34 @@ describe("extração de ID do YouTube", () => {
     assert.ok(embed.includes("playsinline=1"));
     const quiet = youtubeEmbedUrl("dQw4w9WgXcQ", false);
     assert.ok(!quiet.includes("autoplay=1"));
+  });
+});
+
+describe("isYouTubeShortsUrl — dica de apresentação vertical", () => {
+  it("reconhece /shorts/ em hosts do YouTube com ID válido", () => {
+    // Registro real do catálogo production (legado, não apagado).
+    assert.equal(isYouTubeShortsUrl("https://youtube.com/shorts/JKoL8v7bfB0"), true);
+    assert.equal(
+      isYouTubeShortsUrl("https://www.youtube.com/shorts/GfRWFZrM9ec?si=4g1zcr2YvAaxtTiG"),
+      true,
+    );
+    assert.equal(isYouTubeShortsUrl("https://m.youtube.com/shorts/abcDEF12345/"), true);
+    assert.equal(isYouTubeShortsUrl("  https://www.youtube.com/shorts/abcDEF12345  "), true);
+  });
+
+  it("watch, youtu.be, embed, live e hosts alheios não são Short", () => {
+    assert.equal(isYouTubeShortsUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ"), false);
+    assert.equal(isYouTubeShortsUrl("https://youtu.be/dQw4w9WgXcQ"), false);
+    assert.equal(isYouTubeShortsUrl("https://www.youtube.com/embed/dQw4w9WgXcQ"), false);
+    assert.equal(isYouTubeShortsUrl("https://www.youtube.com/live/dQw4w9WgXcQ"), false);
+    assert.equal(isYouTubeShortsUrl("https://example.com/shorts/JKoL8v7bfB0"), false);
+    assert.equal(isYouTubeShortsUrl("não é um url"), false);
+    assert.equal(isYouTubeShortsUrl(""), false);
+  });
+
+  it("caminho /shorts/ com ID curto/inválido não vale como dica", () => {
+    assert.equal(isYouTubeShortsUrl("https://www.youtube.com/shorts/abc"), false);
+    assert.equal(isYouTubeShortsUrl("https://www.youtube.com/shorts/"), false);
   });
 });
 
