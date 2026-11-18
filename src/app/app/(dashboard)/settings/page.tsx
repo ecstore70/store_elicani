@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { StoreForm } from "@/components/store/store-form";
 import { PoliciesForm } from "@/components/store/policies-form";
 import { FaqManager } from "@/components/store/faq-manager";
+import { DomainsCard } from "@/components/store/domains-card";
 import { LocaleSelector } from "@/components/shared/locale-selector";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -13,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { requireUser } from "@/lib/auth/session";
+import { getDomainsForStore } from "@/lib/domains/queries";
 import { getLocale } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 import { getFaqItemsForStore, requireStore } from "@/lib/stores/queries";
@@ -26,6 +28,7 @@ export default async function SettingsPage() {
   const user = await requireUser();
   const store = await requireStore(user.id);
   const faqItems = await getFaqItemsForStore(store.id);
+  const domains = await getDomainsForStore(store.id);
 
   const locale = await getLocale();
   const t = createTranslator(locale);
@@ -86,6 +89,11 @@ export default async function SettingsPage() {
           <FaqManager items={faqItems} locale={locale} />
         </CardContent>
       </Card>
+
+      {/* Domínios próprios — verificação de posse por DNS TXT (Fase 2).
+          O token exibido vem da linha do LOJISTA (loja ativa) via RLS;
+          o lookup de verificação roda só no servidor. */}
+      <DomainsCard locale={locale} domains={domains} />
 
       <Card>
         <CardHeader>

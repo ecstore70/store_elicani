@@ -1625,6 +1625,42 @@ try {
     errorDetail(anonDomainsInsert),
   );
 
+  // Fase 2: anon não dispara ações de gestão (update = "verificação" de
+  // posse sem TXT; delete = destruição de claim) — RLS devolve 0 linhas.
+  const anonDomainsUpdate = await asAnon.from("store_domains")
+    .update({ status: "active", last_error: "spoof" })
+    .eq("hostname", HOST_B)
+    .select("id");
+  assert(
+    "anon não atualiza store_domains (0 linhas)",
+    !anonDomainsUpdate.error && anonDomainsUpdate.data?.length === 0,
+    errorDetail(anonDomainsUpdate),
+  );
+
+  const anonDomainsDelete = await asAnon.from("store_domains")
+    .delete()
+    .eq("hostname", HOST_B)
+    .select("id");
+  assert(
+    "anon não apaga store_domains (0 linhas)",
+    !anonDomainsDelete.error && anonDomainsDelete.data?.length === 0,
+    errorDetail(anonDomainsDelete),
+  );
+
+  // O dono vê o PRÓPRIO token (é ele que cria o registro TXT no DNS).
+  const ownerTokenRead = await B.from("store_domains")
+    .select("verification_token, status, last_error")
+    .eq("hostname", HOST_B)
+    .single();
+  assert(
+    "dono lê o próprio token + status (fluxo de configuração DNS)",
+    !ownerTokenRead.error &&
+      ownerTokenRead.data?.verification_token === domB.data?.verification_token &&
+      ownerTokenRead.data?.status === "pending" &&
+      ownerTokenRead.data?.last_error == null,
+    errorDetail(ownerTokenRead),
+  );
+
   // ── RPC store_by_hostname: fail-closed e sem campos privados ─────────────
   // O domínio de A está 'failed' desde o update do dono acima.
   const resolveFailed = await asAnon.rpc("store_by_hostname", {
