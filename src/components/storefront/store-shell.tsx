@@ -267,11 +267,13 @@ export async function StoreShell({
         {!isCheckout && (
           /* Hierarquia do rodapé: identidade da loja → selos de
              capacidade → links de políticas → moeda + crédito da
-             plataforma. Tudo centrado e compacto; a folga inferior
-             reserva o espaço do botão flutuante de WhatsApp (cantos
-             seguros) para nada ficar coberto no mobile. */
+             plataforma. Tudo centrado e COMPACTO: espaçamentos internos
+             pequenos (pt-4 / gap-3 mobile) para o rodapé ocupar o mínimo
+             vertical possível. A folga inferior NÃO é respiração — é o
+             piso de altura do botão flutuante de WhatsApp (topo em64px +
+             safe-area) para nada ficar coberto no mobile. */
           <footer className="border-t border-[var(--sf-border)]">
-            <div className="mx-auto flex w-full max-w-[var(--sf-container)] flex-col items-center gap-4 px-4 pb-[calc(4.5rem_+_env(safe-area-inset-bottom))] pt-6 sm:gap-5 sm:px-6 sm:pb-8">
+            <div className="mx-auto flex w-full max-w-[var(--sf-container)] flex-col items-center gap-3 px-4 pb-[calc(4.5rem_+_env(safe-area-inset-bottom))] pt-4 sm:gap-4 sm:px-6 sm:pb-6">
               {/* identidade do comerciante — âncora do rodapé (presente,
                   porém subordinada ao cabeçalho: texto pequeno) */}
               <p className="max-w-full truncate text-sm font-semibold text-[var(--sf-fg)]">
@@ -311,7 +313,7 @@ export async function StoreShell({
                   href="https://elicani.site"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[var(--sf-border)] bg-[var(--sf-surface)] px-2.5 py-1 opacity-80 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)]"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[var(--sf-border)] bg-[var(--sf-surface)] px-2.5 py-0.5 opacity-80 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-primary)]"
                 >
                   <Logo
                     variant="mono"
