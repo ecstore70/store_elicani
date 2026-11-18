@@ -174,16 +174,18 @@ function Block({
           // Moldura ORIENTADA PELA FONTE (não fixa): Short (/shorts/) →
           // 9:16; forma sem dica de orientação → fallback 16:9. Usa a
           // MESMA fórmula do vídeo nativo (videoFrameStyle) — um só
-          // conceito de proporção para todo vídeo da vitrine.
+          // conceito de proporção para todo vídeo da vitrine. O embed
+          // nasce com autoplay+mute (mudo é o que o browser permite sem
+          // interação); o `allow` concede a permissão ao iframe.
           <div
             className={`relative mx-auto overflow-hidden bg-black ${RADIUS}`}
             style={videoFrameStyle(resolveYoutubeAspect(block.media_url ?? ""))}
           >
             <iframe
-              src={youtubeEmbedUrl(youtubeId, false)}
+              src={youtubeEmbedUrl(youtubeId, true)}
               title={block.caption ?? "YouTube"}
               loading="lazy"
-              allow="encrypted-media; picture-in-picture"
+              allow="autoplay; encrypted-media; picture-in-picture"
               allowFullScreen
               className="absolute inset-0 h-full w-full border-0"
             />

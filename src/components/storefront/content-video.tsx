@@ -18,7 +18,10 @@ import type { StorefrontStrings } from "@/lib/storefront/strings";
  *   escondido); voltou → retoma com o estado de som escolhido (se o
  *   browser bloquear reprodução com som, silencia e tenta de novo);
  * • a primeira reprodução é SEMPRE muda — `muted` é garantido antes de
- *   `play()`, exigência das políticas de autoplay do browser;
+ *   `play()`, exigência das políticas de autoplay do browser; o atributo
+ *   HTML `autoplay` (+ `muted` + `playsInline`) já declara a intenção no
+ *   próprio `<video>` (funciona mesmo sem JS) e o observer continua
+ *   entrando/saindo da viewport;
  * • inline no mobile (`playsInline`), `preload="metadata"`: só os bytes
  *   do bloco são baixados quando ele se aproxima da viewport;
  * • sem controles nativos grandes: botão próprio de som no canto;
@@ -120,6 +123,7 @@ export function ContentVideo({
               ref={ref}
               data-content-video="1"
               src={src}
+              autoPlay
               muted={muted}
               playsInline
               preload="metadata"
