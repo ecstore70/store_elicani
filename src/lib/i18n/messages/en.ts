@@ -338,7 +338,6 @@ export const en = {
   "storefront.followUs": "Follow us",
   "storefront.poweredBy": "Powered by Elicani",
   "storefront.sealCatalog": "Online catalog",
-  "storefront.sealMenu": "Online menu",
   "storefront.sealOrders": "Orders via WhatsApp",
   "storefront.sealSupport": "Direct support",
   "storefront.openCartAria": "Open cart",

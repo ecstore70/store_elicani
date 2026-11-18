@@ -322,7 +322,6 @@ export const zhHans: Messages = {
   "storefront.followUs": "关注我们",
   "storefront.poweredBy": "由 Elicani 提供支持",
   "storefront.sealCatalog": "在线目录",
-  "storefront.sealMenu": "在线菜单",
   "storefront.sealOrders": "WhatsApp 订单",
   "storefront.sealSupport": "直接联系",
   "storefront.openCartAria": "打开购物车",

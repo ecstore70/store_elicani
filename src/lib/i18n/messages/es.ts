@@ -334,7 +334,6 @@ export const es: Messages = {
   "storefront.followUs": "Síguenos",
   "storefront.poweredBy": "Funciona con Elicani",
   "storefront.sealCatalog": "Catálogo online",
-  "storefront.sealMenu": "Menú en línea",
   "storefront.sealOrders": "Pedidos por WhatsApp",
   "storefront.sealSupport": "Atención directa",
   "storefront.openCartAria": "Abrir carrito",

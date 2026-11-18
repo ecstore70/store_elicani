@@ -336,7 +336,6 @@ export const ptPT: Messages = {
   "storefront.followUs": "Siga-nos",
   "storefront.poweredBy": "Powered by Elicani",
   "storefront.sealCatalog": "Catálogo online",
-  "storefront.sealMenu": "Ementa online",
   "storefront.sealOrders": "Pedidos via WhatsApp",
   "storefront.sealSupport": "Contacto direto",
   "storefront.openCartAria": "Abrir carrinho",

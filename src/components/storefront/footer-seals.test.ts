@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -8,17 +8,26 @@ import { fileURLToPath } from "node:url";
  * Contrato visual do RODAPÉ — lê as fontes (o runner não parseia JSX)
  * para garantir, como regressão, que:
  *
- *  • o selo é SVG puro com texto acessível, não interativo, sem emoji e
- *    inteiramente temático (variáveis --sf-*);
- *  • os três selos usam os textos i18n (com a variação restaurante do
- *    template já existente) e são compactos/responsivos;
+ *  • os três selos são as ARTES PNG FORNECIDAS copiadas para
+ *    `public/brand/` (nada depende do caminho Android de origem, nada
+ *    recriado em SVG/ícone/emoji);
+ *  • o `alt` vem do i18n e descreve o que cada selo comunica;
+ *  • layout responsivo sem distorção (altura fixa, largura automática,
+ *    object-contain, quebra 2+1 em telas estreitas);
  *  • a hierarquia identidade → selos → links → moeda → Powered by
  *    Elicani está preservada, com folga para o botão flutuante de
  *    WhatsApp (safe-area) — e o botão continua lá.
  */
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
+const PROJECT = path.resolve(HERE, "../../..");
 const EMOJI = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
+
+const SEALS = [
+  "elicani-seal-catalogo-online.png",
+  "elicani-seal-pedidos-whatsapp.png",
+  "elicani-seal-contacto-direto.png",
+] as const;
 
 function read(name: string): string {
   return readFileSync(path.join(HERE, name), "utf8");
@@ -33,56 +42,91 @@ function footerSlice(source: string): string {
   return source.slice(start, end);
 }
 
-describe("selo — implementação vetorial", () => {
-  const src = read("store-seal.tsx");
+/** Caminhos .ts/.tsx do código (onde um dependência em runtime apareceria). */
+function sourceFiles(dir: string, out: string[] = []): string[] {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) sourceFiles(full, out);
+    else if (/\.(ts|tsx)$/.test(entry.name)) out.push(full);
+  }
+  return out;
+}
 
-  it("SVG com role=img + rótulo (texto legível por leitor de tela)", () => {
-    assert.match(src, /role="img"/);
-    assert.match(src, /aria-label=\{text\}/);
-    assert.match(src, /viewBox="0 0 100 100"/);
+describe("selos — artes fornecidas importadas para o projeto", () => {
+  it("os três PNGs existem em public/brand/ com tamanho web razoável", () => {
+    for (const name of SEALS) {
+      const file = path.join(PROJECT, "public/brand", name);
+      assert.ok(existsSync(file), `asset ausente: ${name}`);
+      const bytes = readFileSync(file);
+      assert.deepEqual(
+        [...bytes.subarray(0, 8)],
+        [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
+        `${name} deve ser PNG`,
+      );
+      assert.ok(
+        statSync(file).size < 600_000,
+        `${name} grande demais para o rodapé`,
+      );
+    }
   });
 
-  it("informativo: sem link, sem botão, sem interação", () => {
+  it("nenhum código depende do caminho Android de origem", () => {
+    const offenders = sourceFiles(path.join(PROJECT, "src"))
+      .filter((file) => !file.includes(".test.")) // teste não é runtime
+      .filter((file) => readFileSync(file, "utf8").includes("/storage/emulated"));
+    assert.deepEqual(offenders, [], "runtime não pode ler o armazenamento local");
+  });
+
+  it("o desenho não foi recriado (sem SVG/emoji/ícone no lugar da arte)", () => {
+    const src = read("footer-seals.tsx");
+    assert.ok(!EMOJI.test(src), "emoji encontrado nos selos");
+    assert.ok(!src.includes("<svg"), "selos devem ser as imagens fornecidas");
+    assert.ok(!existsSync(path.join(HERE, "store-seal.tsx")), "SVG recriado voltou");
+    assert.ok(
+      !existsSync(path.join(PROJECT, "src/lib/storefront/seal-layout.ts")),
+      "geometria SVG recriada voltou",
+    );
+  });
+
+  it("informativos: sem link, sem botão, sem interação", () => {
+    const src = read("footer-seals.tsx");
     assert.ok(!/<a[\s>]/.test(src), "selo não pode ser clicável");
     assert.ok(!/<button/.test(src), "selo não pode ser clicável");
     assert.ok(!src.includes("onClick"), "selo não pode ser clicável");
-  });
-
-  it("nada de emoji — o desenho é roseta + anéis + texto via fórmula", () => {
-    assert.ok(!EMOJI.test(src), "emoji encontrado no selo");
-    assert.match(src, /layoutSeal/);
-    assert.match(src, /ROSETTE_PATH/);
-    assert.match(src, /textPath/);
-  });
-
-  it("cores inteiramente temáticas (nenhuma cor fixa no componente)", () => {
-    assert.match(src, /var\(--sf-primary\)/);
-    assert.match(src, /var\(--sf-fg\)/);
-    assert.ok(!/#[0-9a-fA-F]{3,8}/.test(src), "cor hex fixa no selo");
   });
 });
 
 describe("selos do rodapé — composição", () => {
   const src = read("footer-seals.tsx");
 
-  it("três selos com textos i18n (catálogo/cardápio, pedidos, contacto)", () => {
-    assert.match(src, /strings\.sealCatalog/);
-    assert.match(src, /strings\.sealMenu/);
-    assert.match(src, /strings\.sealOrders/);
-    assert.match(src, /strings\.sealSupport/);
-    assert.equal(src.match(/<StoreSeal/g)?.length, 1, "um só mapeamento → 3 selos");
+  it("renderiza as três artes via next/image, uma por linha do mapa", () => {
+    assert.match(src, /import Image from "next\/image"/);
+    assert.equal(src.match(/src: "\/brand\/elicani-seal-/g)?.length, 3, "três selos");
+    assert.match(src, /width: 452/, "dimensões intrínsecas p/ evitar layout shift");
+    assert.match(src, /height: 400/);
+    assert.match(src, /sizes=/, "entrega responsiva otimizada");
   });
 
-  it("variante restaurante vem do template EXISTENTE (sem sistema novo)", () => {
-    assert.match(src, /template === "restaurant"/);
+  it("alt do i18n descreve o que cada selo comunica (sem rótulo vazio)", () => {
+    assert.match(src, /alt: strings\.sealCatalog/);
+    assert.match(src, /alt: strings\.sealOrders/);
+    assert.match(src, /alt: strings\.sealSupport/);
+    assert.ok(!/alt:\s*"(badge|seal|image\d*)"/i.test(src), "alt genérico proibido");
+    assert.ok(!src.includes("sealMenu"), "arte fixa: sem variação por template");
+  });
+
+  it("arte fixa para qualquer tipo de loja (sem sistema de categoria novo)", () => {
+    assert.ok(!src.includes("template"), "nenhum acoplamento a template");
     assert.ok(!src.includes("category"), "nenhum sistema de categoria novo");
   });
 
-  it("compactos e responsivos: fileira no mobile, maiores no desktop", () => {
-    assert.match(src, /size-\[5\.25rem\] sm:size-24/);
+  it("responsivo sem distorção: altura fixa, largura automática, contain", () => {
+    assert.match(src, /h-\[5\.25rem\]/, "compacto no mobile");
+    assert.match(src, /sm:h-24/, "maior no desktop");
+    assert.match(src, /w-auto/, "largura segue a proporção original");
+    assert.match(src, /object-contain/, "sem esticar/cortar a arte");
     assert.match(src, /flex-wrap/, "quebra para 2+1 em telas estreitas");
     assert.match(src, /justify-center/);
-    assert.ok(!EMOJI.test(src));
   });
 });
 
@@ -101,6 +145,14 @@ describe("rodapé — hierarquia, safe-area e WhatsApp", () => {
     for (let i = 1; i < order.length; i++) {
       assert.ok(order[i - 1] < order[i], `posição ${i} fora de ordem: [${order}]`);
     }
+  });
+
+  it("selos do rodapé sem acoplamento ao template da loja", () => {
+    assert.match(
+      shell,
+      /<FooterSeals strings=\{strings\} \/>/,
+      "FooterSeals recebe apenas as strings",
+    );
   });
 
   it("identidade presente e crédito da plataforma menor que ela", () => {

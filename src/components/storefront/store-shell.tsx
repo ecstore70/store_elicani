@@ -278,9 +278,9 @@ export async function StoreShell({
                 {store.name}
               </p>
 
-              {/* selos de capacidade — acabamento vetorial (SVG puro,
-                  cores do tema, informativos e não clicáveis) */}
-              <FooterSeals strings={strings} template={theme.template} />
+              {/* selos de capacidade — artes PNG fornecidas (public/brand),
+                  otimizadas, informativos e não clicáveis */}
+              <FooterSeals strings={strings} />
 
               {/* Políticas da loja — apenas links com conteúdo publicado
                   (calculados acima); centrados, texto pequeno. */}

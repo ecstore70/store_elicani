@@ -339,7 +339,6 @@ export const ptBR: Messages = {
   "storefront.followUs": "Siga-nos",
   "storefront.poweredBy": "Powered by Elicani",
   "storefront.sealCatalog": "Catálogo online",
-  "storefront.sealMenu": "Cardápio online",
   "storefront.sealOrders": "Pedidos via WhatsApp",
   "storefront.sealSupport": "Contato direto",
   "storefront.openCartAria": "Abrir carrinho",

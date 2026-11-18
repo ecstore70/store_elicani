@@ -335,7 +335,6 @@ export const ar: Messages = {
   "storefront.followUs": "تابعنا",
   "storefront.poweredBy": "مدعوم من Elicani",
   "storefront.sealCatalog": "كتالوج إلكتروني",
-  "storefront.sealMenu": "قائمة إلكترونية",
   "storefront.sealOrders": "طلبات عبر واتساب",
   "storefront.sealSupport": "تواصل مباشر",
   "storefront.openCartAria": "فتح السلة",

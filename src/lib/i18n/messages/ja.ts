@@ -333,7 +333,6 @@ export const ja: Messages = {
   "storefront.followUs": "フォローする",
   "storefront.poweredBy": "Elicani 提供",
   "storefront.sealCatalog": "オンラインカタログ",
-  "storefront.sealMenu": "オンラインメニュー",
   "storefront.sealOrders": "ご注文はWhatsApp",
   "storefront.sealSupport": "直接連絡",
   "storefront.openCartAria": "カートを開く",
