@@ -329,10 +329,13 @@ export async function StoreShell({
         )}
 
         {/* CTA de WhatsApp sempre à mão — UMA única cápsula flutuante
-            (ícone + "comprar agora" no mesmo link) no canto inferior
-            direito, com pulso suave contínuo (`.sf-wa-cta`; o bloco
-            global de `prefers-reduced-motion` do globals.css zera a
-            animação). Nunca no checkout: a barra fixa do CTA ocupa o
+            (ícone + "comprar agora" no mesmo link) no MESMO lado
+            esquerdo do antigo botão circular (start-4 — a expansão
+            cresce para a direita a partir do círculo original), fundo
+            verde do WhatsApp (#008069) e pulso suave contínuo
+            (`.sf-wa-cta`; o bloco global de `prefers-reduced-motion` do
+            globals.css zera a animação). Nunca no checkout: a barra
+            fixa do CTA ocupa o
             rodapé e nada da vitrine pode aparecer por cima dos campos.
             `bottom` + altura de 48px respeitam a safe-area (a folga do
             rodapé cobre o intervalo — nenhum selo/link/crédito fica
@@ -343,12 +346,12 @@ export async function StoreShell({
             target="_blank"
             rel="noreferrer"
             aria-label={strings.whatsappBuyAria}
-            className="fixed bottom-[calc(1rem_+_env(safe-area-inset-bottom))] end-4 z-40 inline-flex items-center gap-2.5 rounded-full border border-[var(--sf-border)] bg-[var(--sf-primary)] py-1.5 pl-1.5 pr-4 shadow-lg transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-on-primary)] sm:bottom-[calc(1.5rem_+_env(safe-area-inset-bottom))] sm:end-6 sm:pr-5 sf-wa-cta"
+            className="fixed bottom-[calc(1rem_+_env(safe-area-inset-bottom))] start-4 z-40 inline-flex items-center gap-2.5 rounded-full border border-[var(--sf-border)] bg-[#008069] py-1.5 pl-1.5 pr-4 shadow-lg transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sf-fg)] sm:bottom-[calc(1.5rem_+_env(safe-area-inset-bottom))] sm:start-6 sm:pr-5 sf-wa-cta"
           >
-            <span className="flex size-9 items-center justify-center rounded-full bg-[var(--sf-on-primary)]">
+            <span className="flex size-9 items-center justify-center rounded-full bg-white">
               <WhatsAppIcon className="size-5" />
             </span>
-            <span className="text-sm font-bold tracking-wide text-[var(--sf-on-primary)] sm:text-base">
+            <span className="text-sm font-bold tracking-wide text-white sm:text-base">
               {strings.whatsappBuy}
             </span>
           </a>

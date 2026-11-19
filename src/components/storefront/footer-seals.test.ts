@@ -191,8 +191,9 @@ describe("rodapé — hierarquia, safe-area e WhatsApp", () => {
     assert.ok(!shell.includes("size-12"), "antigo botão circular eliminado");
   });
 
-  it("cápsula no canto inferior direito, safe-area e pulso suave", () => {
-    assert.match(shell, /end-4 z-40/, "inferior direito (logical end)");
+  it("cápsula no mesmo lado esquerdo original, safe-area e pulso suave", () => {
+    assert.match(shell, /start-4 z-40/, "lado esquerdo idêntico ao botão circular");
+    assert.match(shell, /sm:start-6/, "mesmo offset desktop do original");
     assert.match(
       shell,
       /bottom-\[calc\(1rem_\+_env\(safe-area-inset-bottom\)\)\]/,
@@ -206,6 +207,13 @@ describe("rodapé — hierarquia, safe-area e WhatsApp", () => {
       /prefers-reduced-motion: reduce/,
       "reduced-motion global zera a animação",
     );
+  });
+
+  it("fundo verde do WhatsApp (nada de azul) com contraste garantido", () => {
+    assert.match(shell, /bg-\[#008069\]/, "verde profissional da identidade WhatsApp");
+    assert.ok(!shell.includes("bg-[var(--sf-primary)]"), "sem fundo azul primário");
+    assert.match(shell, /text-white/, "texto em branco sobre o verde");
+    assert.match(shell, /rounded-full/, "formato cápsula preservado");
   });
 
   it("checkout continua sem rodapé e sem botão flutuante", () => {
