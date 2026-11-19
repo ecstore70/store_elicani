@@ -157,6 +157,10 @@ export default async function ProductPage({ params }: Props) {
   );
   const discount = discountPercent(product.price, product.promo_price);
 
+  // Contexto do CTA flutuante desta página: o produto ESTA rota exibe
+  // (dados já carregados aqui — sem nova consulta), com o preço vigente
+  // (promo > normal) e a URL canónica. Só esta rota passa a prop;
+  // home/catálogo/documentos ficam sem produto (CTA neutro).
   return (
     <StoreShell
       store={store}
@@ -164,6 +168,11 @@ export default async function ProductPage({ params }: Props) {
       languageLabel={t("locale.changeLanguage")}
       strings={strings}
       theme={theme}
+      whatsappProduct={{
+        name: product.name,
+        price: product.promo_price ?? product.price,
+        url: productUrl,
+      }}
     >
       {/* Entidade PRODUTO em JSON-LD — só o que esta página mostra:
           nome, descrição, imagem, preço vigente (promo > normal),

@@ -14,6 +14,10 @@ import {
   type SelectedOption,
 } from "@/lib/storefront/product-options";
 import type { StorefrontStrings } from "@/lib/storefront/strings";
+import {
+  buildProductInquiryMessage,
+  productInquiryHref,
+} from "@/lib/storefront/product-inquiry";
 import { ProductOptionSelector } from "./product-option-selector";
 import { useCart } from "./cart-provider";
 
@@ -108,9 +112,17 @@ export function ProductPurchase({
     cart.add(product, chosenOptions, qty);
   };
 
-  const orderText = `*${storeName}*\n${product.name} — ${formatCurrency(unitPrice, currency, locale)}\n${productUrl}`;
+  // Mesmo construtor da mensagem do CTA flutuante (formato único).
+  const orderText = buildProductInquiryMessage({
+    storeName,
+    productName: product.name,
+    price: unitPrice,
+    currency,
+    locale,
+    productUrl,
+  });
   const inquiryHref = whatsappHref
-    ? `${whatsappHref}?text=${encodeURIComponent(orderText)}`
+    ? productInquiryHref(whatsappHref, orderText)
     : null;
 
   return (

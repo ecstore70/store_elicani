@@ -223,3 +223,63 @@ describe("rodapé — hierarquia, safe-area e WhatsApp", () => {
     assert.match(shell, /\{!isCheckout && whatsappHref && \(/);
   });
 });
+
+describe("CTA — contexto do produto da página atual", () => {
+  const shell = read("store-shell.tsx");
+  const productPage = readFileSync(
+    path.join(PROJECT, "src/app/store/[slug]/products/[productId]/page.tsx"),
+    "utf8",
+  );
+
+  it("shell aceita a prop opcional e monta o href com o construtor único", () => {
+    assert.match(shell, /whatsappProduct\??:/, "prop opcional de contexto");
+    assert.match(shell, /buildProductInquiryMessage/, "mensagem pelo construtor compartilhado");
+    assert.match(shell, /productInquiryHref/, "href pelo construtor compartilhado");
+    assert.match(shell, /href=\{whatsappCtaHref/, "CTA usa o href contextual");
+    // sem contexto (ou incompleto) → o mesmo wa.me neutro de sempre.
+    assert.match(shell, /: whatsappHref;/, "fallback neutro: sem produto, sem mensagem");
+  });
+
+  it("contexto SÓ no CTA — link de contacto da loja permanece neutro", () => {
+    assert.equal(
+      shell.match(/href=\{whatsappCtaHref/g)?.length,
+      1,
+      "apenas o CTA flutuante recebe o contexto do produto",
+    );
+    assert.match(shell, /href=\{whatsappHref\}/, "link de contacto continua wa.me puro");
+  });
+
+  it("a página de produto passa o produto real: nome, preço vigente e URL", () => {
+    assert.match(productPage, /whatsappProduct=\{\{/, "prop passada pela rota de produto");
+    assert.match(productPage, /name: product\.name/, "nome real do produto em exibição");
+    assert.match(
+      productPage,
+      /price: product\.promo_price \?\? product\.price/,
+      "preço atual = promoção quando existe, senão preço normal",
+    );
+    assert.match(productPage, /url: productUrl/, "URL canónica da própria página");
+  });
+
+  it("nenhuma outra rota associa produto ao CTA (home/catálogo neutros)", () => {
+    const callers = sourceFiles(path.join(PROJECT, "src/app")).filter((file) =>
+      readFileSync(file, "utf8").includes("<StoreShell"),
+    );
+    const withProduct = callers
+      .filter((file) => readFileSync(file, "utf8").includes("whatsappProduct="))
+      .map((file) => path.relative(PROJECT, file));
+    assert.deepEqual(
+      withProduct,
+      ["src/app/store/[slug]/products/[productId]/page.tsx"],
+      "só a página de produto passa contexto — nenhum produto inventado nas outras rotas",
+    );
+  });
+
+  it("painel de compra reutiliza o MESMO construtor (uma geração só)", () => {
+    const purchase = read("product-purchase.tsx");
+    assert.match(purchase, /buildProductInquiryMessage/, "painel usa o construtor compartilhado");
+    assert.ok(
+      !purchase.includes("`*${storeName}*\\n${product.name}"),
+      "template inline antigo eliminado (sem segunda geração de mensagem)",
+    );
+  });
+});

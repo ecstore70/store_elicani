@@ -15,6 +15,10 @@ import { hasPublicStoreFaq } from "@/lib/stores/queries";
 import type { PublicStore } from "@/lib/stores/types";
 import type { StorefrontStrings } from "@/lib/storefront/strings";
 import type { StorefrontTheme } from "@/lib/storefront/theme";
+import {
+  buildProductInquiryMessage,
+  productInquiryHref,
+} from "@/lib/storefront/product-inquiry";
 
 /**
  * Chrome da vitrine pública, em DOIS modos:
@@ -42,6 +46,7 @@ export async function StoreShell({
   strings,
   theme,
   variant = "storefront",
+  whatsappProduct,
   children,
 }: {
   store: PublicStore;
@@ -54,6 +59,21 @@ export async function StoreShell({
    * vitrine). Default `storefront` = página normal da loja.
    */
   variant?: "storefront" | "checkout";
+  /**
+   * Contexto do produto ABERTO nesta página — passado APENAS pela página
+   * de produto, com os dados reais já carregados pela própria página
+   * (servidor; nunca estado guardado entre navegações). O CTA flutuante
+   * então abre o `wa.me` com nome, preço atual e URL do produto exibido
+   * (mesma mensagem do painel de compra). Sem prop (home, catálogo,
+   * documentos) o CTA fica NEUTRO: nenhum produto associado.
+   */
+  whatsappProduct?: {
+    name: string;
+    /** Preço atual (promoção quando existe), em unidade da loja. */
+    price: number;
+    /** URL canónica da página do produto. */
+    url: string;
+  } | null;
   children: ReactNode;
 }) {
   const isCheckout = variant === "checkout";
@@ -61,6 +81,33 @@ export async function StoreShell({
   const whatsappHref = whatsappDigits
     ? `https://wa.me/${whatsappDigits}`
     : null;
+
+  // Contexto do produto da PÁGINA ATUAL (prop vinda do servidor): com ele,
+  // o href do CTA flutuante ganha a mensagem de interesse no produto
+  // exibido; sem ele — ou com dado incompleto — o href continua neutro
+  // (`wa.me` puro, sem produto algum). Nada é lembrado entre páginas:
+  // cada rota renderiza o seu próprio href.
+  const productContext =
+    whatsappProduct &&
+    whatsappProduct.name.trim() &&
+    whatsappProduct.url.trim() &&
+    Number.isFinite(whatsappProduct.price)
+      ? whatsappProduct
+      : null;
+  const whatsappCtaHref =
+    whatsappHref && productContext
+      ? productInquiryHref(
+          whatsappHref,
+          buildProductInquiryMessage({
+            storeName: store.name,
+            productName: productContext.name,
+            price: productContext.price,
+            currency: store.currency,
+            locale,
+            productUrl: productContext.url,
+          }),
+        )
+      : whatsappHref;
 
   // Links sociais configurados (apenas os DOIS campos existentes na base,
   // sem campos novos nem sistema duplicado), deduplicados por URL. O ícone
@@ -334,15 +381,18 @@ export async function StoreShell({
             cresce para a direita a partir do círculo original), fundo
             verde do WhatsApp (#008069) e pulso suave contínuo
             (`.sf-wa-cta`; o bloco global de `prefers-reduced-motion` do
-            globals.css zera a animação). Nunca no checkout: a barra
-            fixa do CTA ocupa o
+            globals.css zera a animação). Clique: na página de produto
+            (`whatsappProduct` → `whatsappCtaHref`) leva a mensagem com
+            nome/preço/URL do produto exibido; em qualquer outra página
+            fica neutro, sem produto associado. Nunca no checkout: a
+            barra fixa do CTA ocupa o
             rodapé e nada da vitrine pode aparecer por cima dos campos.
             `bottom` + altura de 48px respeitam a safe-area (a folga do
             rodapé cobre o intervalo — nenhum selo/link/crédito fica
             embaixo dele). */}
         {!isCheckout && whatsappHref && (
           <a
-            href={whatsappHref}
+            href={whatsappCtaHref ?? undefined}
             target="_blank"
             rel="noreferrer"
             aria-label={strings.whatsappBuyAria}
