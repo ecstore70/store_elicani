@@ -332,6 +332,8 @@ export const zhHans: Messages = {
   "storefront.productDescription": "商品描述",
   "storefront.relatedProducts": "猜你喜欢",
   "storefront.whatsappContact": "通过 WhatsApp 聊天",
+  "storefront.whatsappBuy": "立即购买",
+  "storefront.whatsappBuyAria": "通过 WhatsApp 立即购买",
   "storefront.optionsRequired": "请选择一个选项以继续",
   "storefront.checkout": "去结算",
   "storefront.continueShopping": "继续购物",

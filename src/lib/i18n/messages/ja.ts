@@ -343,6 +343,8 @@ export const ja: Messages = {
   "storefront.productDescription": "商品説明",
   "storefront.relatedProducts": "おすすめ商品",
   "storefront.whatsappContact": "WhatsAppでチャット",
+  "storefront.whatsappBuy": "今すぐ購入",
+  "storefront.whatsappBuyAria": "WhatsAppで今すぐ購入",
   "storefront.optionsRequired": "オプションを選択してください",
   "storefront.checkout": "購入手続きへ",
   "storefront.continueShopping": "買い物を続ける",

@@ -176,13 +176,35 @@ describe("rodapé — hierarquia, safe-area e WhatsApp", () => {
     );
   });
 
-  it("botão flutuante de WhatsApp preservado e com safe-area própria", () => {
+  it("CTA flutuante único do WhatsApp: uma só cápsula clicável", () => {
     assert.match(shell, /whatsappHref &&/, "botão de WhatsApp não pode sumir");
-    assert.match(shell, /WhatsAppIcon className="size-7"/);
+    // um único elemento flutuante fixo no shell (nada de duplicar)
+    assert.equal(
+      shell.match(/fixed bottom-\[calc/g)?.length,
+      1,
+      "apenas um CTA flutuante de WhatsApp",
+    );
+    // ícone + texto dentro do MESMO <a> (um só link, uma só ação)
+    assert.match(shell, /aria-label=\{strings\.whatsappBuyAria\}/);
+    assert.match(shell, /\{strings\.whatsappBuy\}/);
+    assert.match(shell, /WhatsAppIcon className="size-5"/);
+    assert.ok(!shell.includes("size-12"), "antigo botão circular eliminado");
+  });
+
+  it("cápsula no canto inferior direito, safe-area e pulso suave", () => {
+    assert.match(shell, /end-4 z-40/, "inferior direito (logical end)");
     assert.match(
       shell,
       /bottom-\[calc\(1rem_\+_env\(safe-area-inset-bottom\)\)\]/,
       "bottom do botão deve respeitar a safe-area",
+    );
+    assert.match(shell, /sf-wa-cta/, "classe do pulso aplicada");
+    const css = readFileSync(path.join(PROJECT, "src/app/globals.css"), "utf8");
+    assert.match(css, /@keyframes sf-wa-cta-pulse/, "keyframes do pulso");
+    assert.match(
+      css,
+      /prefers-reduced-motion: reduce/,
+      "reduced-motion global zera a animação",
     );
   });
 

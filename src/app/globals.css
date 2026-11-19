@@ -156,3 +156,27 @@
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * CTA flutuante do WhatsApp (cápsula da vitrine): pulso suave e
+ * contínuo — cresce devagar → volta ao normal → pequena pausa →
+ * repete. Sem bounce, shake, rotação ou movimento lateral; o
+ * crescimento é mínimo (4,5%). A regra global `prefers-reduced-motion`
+ * acima derruba a animação para quem pedir menos movimento.
+ */
+@keyframes sf-wa-cta-pulse {
+  0% {
+    transform: scale(1);
+  }
+  18% {
+    transform: scale(1.045);
+  }
+  36%,
+  100% {
+    transform: scale(1);
+  }
+}
+
+.sf-wa-cta {
+  animation: sf-wa-cta-pulse 2.4s ease-in-out infinite;
+}

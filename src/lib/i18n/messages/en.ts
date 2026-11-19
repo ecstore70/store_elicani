@@ -348,6 +348,8 @@ export const en = {
   "storefront.productDescription": "Description",
   "storefront.relatedProducts": "You may also like",
   "storefront.whatsappContact": "Chat on WhatsApp",
+  "storefront.whatsappBuy": "BUY NOW",
+  "storefront.whatsappBuyAria": "Buy now on WhatsApp",
   "storefront.optionsRequired": "Choose an option to continue",
   "storefront.checkout": "Checkout",
   "storefront.continueShopping": "Continue shopping",

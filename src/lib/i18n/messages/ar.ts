@@ -345,6 +345,8 @@ export const ar: Messages = {
   "storefront.productDescription": "الوصف",
   "storefront.relatedProducts": "قد يعجبك أيضاً",
   "storefront.whatsappContact": "الدردشة عبر WhatsApp",
+  "storefront.whatsappBuy": "اشتر الآن",
+  "storefront.whatsappBuyAria": "اشتر الآن عبر واتساب",
   "storefront.optionsRequired": "اختر خياراً للمتابعة",
   "storefront.checkout": "إتمام الطلب",
   "storefront.continueShopping": "متابعة التسوق",

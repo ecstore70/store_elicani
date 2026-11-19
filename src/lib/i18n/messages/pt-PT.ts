@@ -346,6 +346,8 @@ export const ptPT: Messages = {
   "storefront.productDescription": "Descrição",
   "storefront.relatedProducts": "Também pode gostar",
   "storefront.whatsappContact": "Falar no WhatsApp",
+  "storefront.whatsappBuy": "COMPRAR AGORA",
+  "storefront.whatsappBuyAria": "Comprar agora pelo WhatsApp",
   "storefront.optionsRequired": "Escolha uma opção para continuar",
   "storefront.checkout": "Finalizar compra",
   "storefront.continueShopping": "Continuar a comprar",
