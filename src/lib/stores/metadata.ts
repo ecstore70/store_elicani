@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 // Relativa com extensão (estilo de ./resolve.ts): os testes rodam em
 // node --test puro, sem o resolver de aliases do bundler.
 import { productSlugOrId } from "../catalog/product-slug.ts";
+import { categorySlugOrId } from "../catalog/category-slug.ts";
 import type { PublicStore } from "./types";
 import { storePublicUrl } from "./resolve.ts";
 
@@ -24,8 +25,9 @@ import { storePublicUrl } from "./resolve.ts";
  *                          espelho da primeira mídia) → capa/logo da loja →
  *                          og:image da plataforma.
  *  • títulos             → loja = nome da loja (absoluto, sem template
- *                          "%s · Elicani"); produto = "Produto · Loja"
- *                          (produto + contexto do comerciante).
+ *                          "%s · Elicani"); categoria = "Categoria · Loja"
+ *                          (contexto do comerciante); produto =
+ *                          "Produto · Loja".
  *  • canonical           → URL de subdomínio preferida, idêntica à do
  *                          sitemap (evita divergência canônico/sitemap).
  *
@@ -97,6 +99,13 @@ export type ProductIdentity = {
   image_url: string | null;
 };
 
+/** Categoria com os campos usados na resolução de metadados. */
+export type CategoryIdentity = {
+  id: string;
+  slug?: string | null;
+  name: string;
+};
+
 type IconDescriptor = { url: string; type?: string; sizes?: string };
 type OgImage = { url: string; alt: string };
 
@@ -139,6 +148,15 @@ export function storeCanonicalUrl(slug: string): string {
  */
 export function productCanonicalUrl(slug: string, idOrSlug: string): string {
   return `${storePublicUrl(slug)}/store/${slug}/products/${idOrSlug}`;
+}
+
+/**
+ * URL canônica de categoria — `/store/{slug}/categories/{id-ou-slug}` no
+ * subdomínio. O segmento final é o SLUG quando existe (UUID só como
+ * fallback): mesma fórmula de chips, breadcrumb, OG e sitemap.
+ */
+export function categoryCanonicalUrl(slug: string, idOrSlug: string): string {
+  return `${storePublicUrl(slug)}/store/${slug}/categories/${idOrSlug}`;
 }
 
 /**
@@ -327,6 +345,54 @@ export function buildProductMetadata(
     productSlugOrId(product),
   );
   const images = resolveProductOgImages(store, product);
+  const icons = resolveStoreIcons(store);
+
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical },
+    ...(icons ? { icons } : {}),
+    openGraph: {
+      type: "website",
+      siteName: store.name,
+      title,
+      description,
+      url: canonical,
+      images,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: images.map((image) => image.url),
+    },
+  };
+}
+
+/**
+ * Metadados do nível CATEGORIA. Título absoluto "{Categoria} · {Loja}"
+ * (contexto do comerciante, nunca o template da plataforma), canonical no
+ * subdomínio PRÓPRIO com o prefixo `/store/{slug}/categories/…` — mesma
+ * fórmula do produto — e ícones/OG/twitter resolvidos pela identidade da
+ * loja dona (nenhum asset da plataforma entra aqui).
+ *
+ * Categorias não têm descrição própria: o fallback "{Categoria} — {Loja}"
+ * é ÚNICO por categoria (nunca repete a meta description da home da loja).
+ */
+export function buildCategoryMetadata(
+  store: StoreIdentity,
+  category: CategoryIdentity,
+): Metadata {
+  const title = `${category.name} · ${store.name}`;
+  const description = truncateMetaDescription(
+    null,
+    `${category.name} — ${store.name}`,
+  );
+  const canonical = categoryCanonicalUrl(
+    store.slug,
+    categorySlugOrId(category),
+  );
+  const images = resolveStoreOgImages(store);
   const icons = resolveStoreIcons(store);
 
   return {

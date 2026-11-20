@@ -529,6 +529,7 @@ export const ptBR: Messages = {
   "landing.footerNav": "Links do rodapé",
   "landing.navFeatures": "Recursos",
   "landing.navHow": "Como funciona",
+  "landing.navStores": "Lojas",
   "landing.signIn": "Entrar",
   "landing.createStore": "Criar sua loja",
   "landing.openMenu": "Abrir menu",
@@ -732,6 +733,13 @@ export const ptBR: Messages = {
   "delivery.markOnTheWay": "Marcar como a caminho",
   "delivery.markDelivered": "Marcar como entregue",
   "delivery.markFailed": "Marcar como falhou",
+
+  // ── diretório público de lojas (/stores — plataforma) ──────────────────
+  "stores.title": "Lojas",
+  "stores.intro":
+    "Explore as lojas ativas publicadas na Elicani. Cada loja funciona no seu próprio endereço, com catálogo e categorias próprios.",
+  "stores.empty":
+    "Ainda não há lojas publicadas — novas vitrines aparecem aqui assim que forem ativadas.",
 
   // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
   "legal.terms": "Termos de Uso",

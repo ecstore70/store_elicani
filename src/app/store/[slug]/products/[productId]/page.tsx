@@ -21,9 +21,11 @@ import { normalizeLocale } from "@/lib/i18n/config";
 import { getLocaleChoice, getTranslator } from "@/lib/i18n/locale";
 import { createTranslator } from "@/lib/i18n/translate";
 import { normalizeAppearance } from "@/lib/stores/appearance";
+import { categorySlugOrId } from "@/lib/catalog/category-slug";
 import { productSlugOrId } from "@/lib/catalog/product-slug";
 import {
   buildProductMetadata,
+  categoryCanonicalUrl,
   productCanonicalUrl,
   storeCanonicalUrl,
 } from "@/lib/stores/metadata";
@@ -156,6 +158,12 @@ export default async function ProductPage({ params }: Props) {
     store.slug,
     productSlugOrId(product),
   );
+  // Camada intermediária do grafo loja → categoria → produto: só quando
+  // o produto realmente pertence a uma categoria ATIVA (`category` vem do
+  // catálogo já filtrado — nunca fabrica breadcrumb).
+  const categoryUrl = category
+    ? categoryCanonicalUrl(store.slug, categorySlugOrId(category))
+    : null;
   const discount = discountPercent(product.price, product.promo_price);
 
   // Contexto do CTA flutuante desta página: o produto ESTA rota exibe
@@ -206,7 +214,8 @@ export default async function ProductPage({ params }: Props) {
         }}
       />
       {/* BreadcrumbList espelha o breadcrumb VISUAL logo abaixo
-          (loja → produto) — markup = conteúdo visível. */}
+          (loja → [categoria] → produto) — markup = conteúdo visível; a
+          categoria só entra quando o produto pertence a uma ATIVA. */}
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -218,9 +227,19 @@ export default async function ProductPage({ params }: Props) {
               name: store.name,
               item: storeUrl,
             },
+            ...(categoryUrl && category
+              ? [
+                  {
+                    "@type": "ListItem",
+                    position: 2,
+                    name: category.name,
+                    item: categoryUrl,
+                  },
+                ]
+              : []),
             {
               "@type": "ListItem",
-              position: 2,
+              position: categoryUrl ? 3 : 2,
               name: product.name,
               item: productUrl,
             },
@@ -238,6 +257,19 @@ export default async function ProductPage({ params }: Props) {
             </Link>
           </li>
           <li aria-hidden="true">/</li>
+          {category && categoryUrl ? (
+            <>
+              <li>
+                <Link
+                  href={`/store/${store.slug}/categories/${categorySlugOrId(category)}`}
+                  className="underline-offset-4 hover:text-[var(--sf-fg)] hover:underline"
+                >
+                  {category.name}
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+            </>
+          ) : null}
           <li aria-current="page" className="min-w-0 truncate text-[var(--sf-fg)]">
             {product.name}
           </li>

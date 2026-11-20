@@ -46,6 +46,7 @@ export async function StoreShell({
   strings,
   theme,
   variant = "storefront",
+  storeNameAsHeading = false,
   whatsappProduct,
   children,
 }: {
@@ -59,6 +60,16 @@ export async function StoreShell({
    * vitrine). Default `storefront` = página normal da loja.
    */
   variant?: "storefront" | "checkout";
+  /**
+   * `true` SÓ na HOME da loja: o nome do comerciante vira o `<h1>`
+   * semântico da página (exatamente UM h1 meaningful no storefront root),
+   * reaproveitando a MESMA classe do `<p>` — o Tailwind preflight faz os
+   * headings herdarem font-size/peso, então o visual não muda em nada.
+   * Nas demais páginas (produto, categoria, documentos) o cabeçalho
+   * continua `<p>` para o `<h1>` da própria página (ex.: nome do
+   * produto) ser o único.
+   */
+  storeNameAsHeading?: boolean;
   /**
    * Contexto do produto ABERTO nesta página — passado APENAS pela página
    * de produto, com os dados reais já carregados pela própria página
@@ -208,9 +219,15 @@ export async function StoreShell({
                   ) : null}
 
                   <div className="min-w-0">
-                    <p className="truncate text-base font-semibold">
-                      {store.name}
-                    </p>
+                    {storeNameAsHeading ? (
+                      <h1 className="truncate text-base font-semibold">
+                        {store.name}
+                      </h1>
+                    ) : (
+                      <p className="truncate text-base font-semibold">
+                        {store.name}
+                      </p>
+                    )}
                     {store.description && (
                       <p className="truncate text-sm text-[var(--sf-muted)]">
                         {store.description}

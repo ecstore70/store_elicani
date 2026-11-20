@@ -148,6 +148,42 @@ export async function getPublicStoreBySlug(slug: string): Promise<PublicStore | 
   return data;
 }
 
+/** Resumo de loja para o cartão do diretório público /stores. */
+export type PublicStoreSummary = Pick<
+  PublicStore,
+  "id" | "name" | "slug" | "description" | "logo_url" | "banner_url"
+>;
+
+/**
+ * Lojas ATIVAS para o diretório público /stores — a ponte crawlável
+ * plataforma → lojas (o sitemap não é a única relação entre elas).
+ *
+ * Cliente SEM SESSÃO (anon): o RLS público devolve só lojas ativas e o
+ * filtro `.eq("is_active", true)` é redundante de propósito (defesa em
+ * profundidade, igual ao sitemap). Campos mínimos de cartão, selecionados
+ * explicitamente (nada de "*") — `owner_id` em especial nunca sai daqui.
+ * Ordenação estável por nome: mesmos dados → mesma ordem.
+ *
+ * Sem cache (espelho das queries públicas da vitrine): a página
+ * `/stores` é `instant = false` e reflete ativações/desativações a cada
+ * requisição, sem rebuild.
+ */
+export async function listActivePublicStores(): Promise<PublicStoreSummary[]> {
+  const supabase = createPublicClient();
+
+  const { data, error } = await supabase
+    .from("stores")
+    .select("id, name, slug, description, logo_url, banner_url")
+    .eq("is_active", true)
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to list public stores: ${error.message}`);
+  }
+
+  return data ?? [];
+}
+
 /**
  * Itens de FAQ PÚBLICOS de uma loja (vitrine + visibilidade do link no
  * rodapé). O RLS público só devolve itens de lojas ATIVAS; a página

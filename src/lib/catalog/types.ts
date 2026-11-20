@@ -34,7 +34,7 @@ export type PublicProduct = Pick<
 
 export type PublicCategory = Pick<
   Category,
-  "id" | "name" | "sort_order" | "is_active"
+  "id" | "name" | "slug" | "sort_order" | "is_active"
 >;
 
 /** Item da galeria exposto à vitrine — sem id nem tenant (só tipo + URL). */

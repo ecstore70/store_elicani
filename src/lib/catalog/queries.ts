@@ -20,7 +20,7 @@ import type {
 const PRODUCT_PUBLIC_FIELDS =
   "id, category_id, name, description, price, promo_price, slug, image_url, is_available, is_featured, sort_order";
 
-const CATEGORY_PUBLIC_FIELDS = "id, name, sort_order, is_active";
+const CATEGORY_PUBLIC_FIELDS = "id, name, slug, sort_order, is_active";
 
 /** Catálogo completo de uma loja ativa, ordenado pelo comerciante. */
 export async function getPublicCatalog(storeId: string): Promise<StoreCatalog> {

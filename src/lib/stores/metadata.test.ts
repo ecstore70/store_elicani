@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  buildCategoryMetadata,
   buildProductMetadata,
   buildStoreMetadata,
   PLATFORM_ICONS,
   PLATFORM_OG_IMAGE,
+  categoryCanonicalUrl,
   productCanonicalUrl,
   resolveProductOgImages,
   resolveStoreIconUrl,
@@ -372,5 +374,69 @@ describe("buildStoreSubpageMetadata — documentos da loja (terms/privacy/faq)",
     const rawA = JSON.stringify(metaA);
     assert.ok(rawA.includes("cafe-aurora") && !rawA.includes("atelie-costura"));
     assert.notEqual(metaA.alternates?.canonical, metaB.alternates?.canonical);
+  });
+});
+
+describe("buildCategoryMetadata — nível categoria", () => {
+  const store = makeStore({
+    name: "Café Aurora",
+    slug: "cafe-aurora",
+    logo_url: "https://cdn/aurora-logo.png",
+  });
+  const category = {
+    id: "3f9d1b7e-5c2a-4d8f-9b6e-1a2c3d4e5f60",
+    name: "Grãos",
+  };
+
+  it("título = 'Categoria · Loja' (contexto do comerciante, absoluto)", () => {
+    const meta = buildCategoryMetadata(store, { ...category, slug: "graos" });
+    assert.deepEqual(meta.title, { absolute: "Grãos · Café Aurora" });
+    assert.equal(meta.openGraph?.siteName, "Café Aurora");
+    assert.equal(meta.openGraph?.title, "Grãos · Café Aurora");
+    assert.equal(meta.twitter?.title, "Grãos · Café Aurora");
+    // Nunca o template "%s · Elicani" numa URL de loja.
+    assert.ok(!JSON.stringify(meta.title).includes("Elicani"));
+  });
+
+  it("description única da categoria (não repete a da home da loja)", () => {
+    const meta = buildCategoryMetadata(store, { ...category, slug: "graos" });
+    assert.equal(meta.description, "Grãos — Café Aurora");
+    // A home da loja tem a SUA description — as duas páginas nunca
+    // podem compartilhar a mesma meta description.
+    const home = buildStoreMetadata(store);
+    assert.notEqual(meta.description, home.description);
+  });
+
+  it("canonical = subdomínio + /store/{slug}/categories/{id-ou-slug}", () => {
+    const withSlug = buildCategoryMetadata(store, { ...category, slug: "graos" });
+    const expected = `https://cafe-aurora.${DOMAIN}/store/cafe-aurora/categories/graos`;
+    assert.equal(withSlug.alternates?.canonical, expected);
+    assert.equal(categoryCanonicalUrl("cafe-aurora", "graos"), expected);
+    assert.equal(withSlug.openGraph?.url, expected);
+
+    // Slug null → UUID canônico (fallback honesto, mesma fórmula do sitemap)
+    const withoutSlug = buildCategoryMetadata(store, category);
+    assert.equal(
+      withoutSlug.alternates?.canonical,
+      `https://cafe-aurora.${DOMAIN}/store/cafe-aurora/categories/${category.id}`,
+    );
+  });
+
+  it("isolamento: categoria de A nunca aponta para B (dois tenants)", () => {
+    const other = makeStore({ slug: "atelie-costura" });
+    const metaA = buildCategoryMetadata(store, { ...category, slug: "graos" });
+    const metaB = buildCategoryMetadata(other, { ...category, slug: "graos" });
+
+    const rawA = JSON.stringify(metaA);
+    assert.ok(rawA.includes("cafe-aurora") && !rawA.includes("atelie-costura"));
+    assert.notEqual(metaA.alternates?.canonical, metaB.alternates?.canonical);
+    assert.deepEqual(metaA.title, { absolute: "Grãos · Café Aurora" });
+  });
+
+  it("ícones/OG = identidade da loja dona (nunca a plataforma)", () => {
+    const meta = buildCategoryMetadata(store, { ...category, slug: "graos" });
+    assert.match(JSON.stringify(meta.icons), /aurora-logo\.png\?/);
+    assert.ok(imageUrls(meta.openGraph?.images)[0].includes("aurora-logo"));
+    assert.ok(!JSON.stringify(meta.icons).includes("elicani-"));
   });
 });

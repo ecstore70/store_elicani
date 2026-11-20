@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense, type ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth/session";
@@ -8,6 +9,21 @@ import { requireUser } from "@/lib/auth/session";
  * prerender — ver `instant` em route segment config.
  */
 export const instant = false;
+
+/**
+ * Metadados da área PRIVADA (dashboard + onboarding): `index: false,
+ * follow: false` como DEFESA EM PROFUNDIDADE — o proxy já redireciona
+ * visitantes sem sessão para /login (que também é noindex), mas a
+ * diretiva garante que, se alguma barreira ceder, o conteúdo do painel
+ * nunca entre no índice.
+ *
+ * O robots.txt continua PERMITINDO /app: bloquear por robots.txt
+ * esconderia esta diretiva noindex (armadilha clássica — a página seria
+ * indexada às cegas). Filosofia registrada em src/app/robots.ts.
+ */
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 /**
  * Guarda de autenticação de toda a área /app.

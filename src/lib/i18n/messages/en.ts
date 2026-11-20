@@ -527,6 +527,7 @@ export const en = {
   "landing.footerNav": "Footer links",
   "landing.navFeatures": "Features",
   "landing.navHow": "How it works",
+  "landing.navStores": "Stores",
   "landing.signIn": "Sign in",
   "landing.createStore": "Create your store",
   "landing.openMenu": "Open menu",
@@ -730,6 +731,13 @@ export const en = {
   "delivery.markOnTheWay": "Mark as on the way",
   "delivery.markDelivered": "Mark as delivered",
   "delivery.markFailed": "Mark as failed",
+
+  // ── diretório público de lojas (/stores — plataforma) ──────────────────
+  "stores.title": "Stores",
+  "stores.intro":
+    "Browse active storefronts published on Elicani. Every store runs on its own address with its own catalog and categories.",
+  "stores.empty":
+    "No stores are published yet — new storefronts appear here as soon as merchants activate them.",
 
   // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
   "legal.terms": "Terms of Use",

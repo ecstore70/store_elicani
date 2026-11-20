@@ -4,6 +4,12 @@
  * Responsabilidades da Fase 1:
  *  0. Redirecionar valorfacil.elicani.site → valorfacil.blogspot.com
  *     (blog externo no Blogger; 301 permanente preservando caminho e query);
+ *  0b. Manter /terms, /privacy, /faq e /stores no host de MARKETING
+ *      (conteúdo institucional; alinhado à metadataBase, à canônica e ao
+ *      sitemap);
+ *  0c. Forma canônica da loja: {qualquer host da família}/store/{slug}/…
+ *      → {slug}.{domain}/… (301 permanente — o apex duplicava o conteúdo
+ *      do subdomínio; rel=canonical fica como segunda rede de segurança);
  *  1. Encaminhar {slug}.{NEXT_PUBLIC_STORE_DOMAIN}/ → /store/[slug]
  *     (arquitetura de wildcard pronta para o storefront público);
  *  1b. Distinguir loja INEXISTENTE (404 real) de loja INATIVA: a inativa
@@ -17,11 +23,16 @@
  *  1d. Responder 404 real em /store/{slug}/terms|privacy|faq quando a loja
  *     não existe ou o documento não está publicado (o rodapé só mostra
  *     links com conteúdo); loja inativa → estado indisponível;
+ *  1e. Responder 404 real em /store/{slug}/categories/{id-ou-slug} quando a
+ *     loja não existe, a categoria não existe/pertence a outra loja ou está
+ *     INATIVA (desativada some da vitrine); 301 da forma UUID para a slug;
+ *     loja inativa → estado indisponível;
  *  2. Redirecionar www → domínio principal;
  *  2b. Manter páginas de auth (/login, /signup, …) no host canônico —
  *      evita o split dos cookies PKCE entre alias e host do app;
- *  2c. Manter /terms, /privacy, /faq no host de MARKETING (conteúdo
- *      institucional; alinhado à metadataBase, à canônica e ao sitemap);
+ *  2c. Manter /terms, /privacy, /faq, /stores no host de MARKETING
+ *      (conteúdo institucional; alinhado à metadataBase, à canônica e ao
+ *      sitemap);
  *  3. Renovar a sessão Supabase (refresh dos cookies);
  *  4. Proteger rotas /app e redirecionar usuário logado fora de /login.
  *
@@ -34,6 +45,11 @@ import type { Database } from "@/lib/database.types";
 import { getMarketingUrl, getSiteUrl, getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 import { isSafeInternalPath } from "@/lib/safe-redirect";
 import { extractStoreSlug, getStoreDomain } from "@/lib/stores/resolve";
+import {
+  isPlatformOwnerSlugException,
+  isReservedSlug,
+  validateSlugFormat,
+} from "@/lib/stores/slug";
 
 /**
  * Consulta pública (chave anon) que responde o STATUS do catálogo de um slug:
@@ -185,6 +201,67 @@ async function lookupStoreProduct(
   }
 }
 
+/**
+ * Resolve a categoria na loja ATIVA por SLUG ou UUID (mesma convenção de
+ * produto — ver src/lib/catalog/category-slug.ts).
+ *
+ * `found: false` (→ 404 real) para categoria inexistente, pertencente a
+ * OUTRA loja (URL cruzada) ou INATIVA (desativada some da vitrine — o
+ * mesmo contrato dos documentos não publicados); falha em aberto em erro
+ * de rede/DB (`found: true, slug: null` — a página revalida e NADA é
+ * redirecionado no escuro).
+ *
+ * `slug` devolvido habilita o 301 da forma antiga (UUID) para a forma
+ * canônica (slug) — chamador em proxy().
+ */
+type CategoryLookup = { found: boolean; slug: string | null };
+
+async function lookupStoreCategory(
+  storeSlug: string,
+  categoryParam: string,
+): Promise<CategoryLookup> {
+  try {
+    const publicClient = createServerClient<Database>(getSupabaseUrl(), getSupabaseAnonKey(), {
+      cookies: { getAll: () => [], setAll: () => {} },
+    });
+    const { data: store, error: storeError } = await publicClient
+      .from("stores")
+      .select("id")
+      .eq("slug", storeSlug)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (storeError) return { found: true, slug: null }; // falha em aberto
+    if (!store) return { found: false, slug: null };
+
+    // UUID → tenta por id primeiro; slug → por slug (id vence em empate).
+    // `is_active` explícito: categoria desativada sai da vitrine → 404.
+    if (UUID_PATTERN.test(categoryParam)) {
+      const { data: byId, error: idError } = await publicClient
+        .from("categories")
+        .select("id, slug")
+        .eq("id", categoryParam)
+        .eq("store_id", store.id)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (idError) return { found: true, slug: null };
+      if (byId) return { found: true, slug: byId.slug };
+    }
+
+    const { data: bySlug, error: slugError } = await publicClient
+      .from("categories")
+      .select("id, slug")
+      .eq("slug", categoryParam)
+      .eq("store_id", store.id)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (slugError) return { found: true, slug: null };
+    if (bySlug) return { found: true, slug: bySlug.slug };
+    return { found: false, slug: null };
+  } catch {
+    return { found: true, slug: null }; // falha em aberto
+  }
+}
+
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname, search } = request.nextUrl;
   const host = request.headers.get("host") ?? "";
@@ -226,14 +303,14 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     return NextResponse.redirect(url);
   }
 
-  // ── 0b. documentos da plataforma só no host de MARKETING ───────────────
+  // ── 0b. documentos + diretório da plataforma só no host de MARKETING ───
   //
-  // /terms, /privacy e /faq são conteúdo institucional da Elicani: o
-  // rodapé da landing liga /terms (host de marketing) e a metadataBase,
-  // as canônicas e o sitemap usam getMarketingUrl — o redirect tem de
-  // apontar para ESSE host, senão a canônica (marketing) redireciona
-  // para si própria via host do app (cadeia circular) e cada clique do
-  // rodapé pula de domínio. Servidos sob um subdomínio de LOJA
+  // /terms, /privacy, /faq e /stores são conteúdo institucional da
+  // Elicani: o rodapé da landing liga /terms (host de marketing) e a
+  // metadataBase, as canônicas e o sitemap usam getMarketingUrl — o
+  // redirect tem de apontar para ESSE host, senão a canônica (marketing)
+  // redireciona para si própria via host do app (cadeia circular) e cada
+  // clique do rodapé pula de domínio. Servidos sob um subdomínio de LOJA
   // misturariam identidades (conteúdo institucional com cara de loja) —
   // qualquer host ≠ marketing recebe 307 para o host de marketing.
   // As demais rotas (landing, /app, vitrine) não são afetadas.
@@ -241,11 +318,47 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const isPlatformDocPath =
     pathname === "/terms" ||
     pathname === "/privacy" ||
-    pathname === "/faq";
+    pathname === "/faq" ||
+    pathname === "/stores";
   if (isPlatformDocPath && hostname !== marketingHost) {
     const url = request.nextUrl.clone();
     url.hostname = marketingHost;
     return NextResponse.redirect(url);
+  }
+
+  // ── 0c. forma canônica da loja: {host da família}/store/{slug}/… → … ───
+  //
+  // A identidade preferida do comerciante é o SUBDOMÍNIO (canonical, OG e
+  // sitemap usam storePublicUrl). O apex e os demais hosts da família
+  // (www, app, subdomínio de OUTRA loja) servem hoje o MESMO conteúdo em
+  // /store/{slug}/… — duplicata. Consolidamos com 301 permanente para
+  // {slug}.{domain} preservando caminho e query (rel=canonical fica como
+  // segunda rede de segurança, como pedido).
+  //
+  // Sem loop: no destino extractStoreSlug(host) === slug → a regra não
+  // dispara. Slugs que não podem virar subdomínio (reservados/inválidos)
+  // caem nos ramos de status existentes (404 real). Hosts FORA da família
+  // (localhost, previews do Vercel) não entram na regra — o dev local e os
+  // ambientes de preview servem como sempre.
+  const storePathMatch = /^\/store\/([^/]+)(\/.*)?$/.exec(pathname);
+  if (storePathMatch && domain !== "localhost") {
+    const pathSlug = storePathMatch[1];
+    const inStoreFamily =
+      hostname === domain ||
+      hostname === marketingHost ||
+      hostname.endsWith(`.${domain}`);
+    const slugCanBeSubdomain =
+      validateSlugFormat(pathSlug) === null &&
+      (!isReservedSlug(pathSlug) || isPlatformOwnerSlugException(pathSlug));
+    if (
+      inStoreFamily &&
+      slugCanBeSubdomain &&
+      extractStoreSlug(hostname, domain) !== pathSlug
+    ) {
+      const url = request.nextUrl.clone();
+      url.hostname = `${pathSlug}.${domain}`;
+      return NextResponse.redirect(url, 301);
+    }
   }
 
   // ── 1. www → domínio principal ─────────────────────────────────────────
@@ -313,6 +426,40 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
       if (published === false) {
         const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
         return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
+      }
+    }
+  }
+
+  // ── 1e. categorias: /store/{slug}/categories/{id-ou-slug} ──────────────
+  //
+  // Mesma armadilha dos ramos 1c/1d (soft-404 sob cacheComponents/PPR):
+  // sem este check, um notFound() da página de categoria cairia no hole
+  // dinâmico com status 200. O check cobre: loja INEXISTENTE (404 real),
+  // categoria INEXISTENTE ou de OUTRA loja (URL cruzada — nunca vazar
+  // dado de tenant) e categoria INATIVA (desativada some da vitrine, o
+  // mesmo contrato dos documentos não publicados). Loja INATIVA não é
+  // 404: a página renderiza o estado indisponível (200 + noindex).
+  // 301 da forma antiga (UUID) para a forma canônica (slug). Falha em
+  // aberto → a página revalida (nada é redirecionado no escuro).
+  const categoryPath = /^\/store\/([^/]+)\/categories\/([^/]+)\/?$/.exec(pathname);
+  if (categoryPath) {
+    const status = await getStoreStatus(categoryPath[1]);
+    if (status === "missing") {
+      const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
+      return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
+    }
+    if (status === "active") {
+      const lookup = await lookupStoreCategory(categoryPath[1], categoryPath[2]);
+      if (!lookup.found) {
+        const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
+        return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
+      }
+      // 301 da forma ANTIGA (UUID) para a forma canônica (slug), no MESMO
+      // host (espelho do ramo 1c). Slug atual já passa direto (sem loop).
+      if (lookup.slug && UUID_PATTERN.test(categoryPath[2])) {
+        const url = request.nextUrl.clone();
+        url.pathname = `/store/${categoryPath[1]}/categories/${lookup.slug}`;
+        return NextResponse.redirect(url, 301);
       }
     }
   }

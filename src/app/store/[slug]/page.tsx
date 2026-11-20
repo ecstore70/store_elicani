@@ -97,6 +97,7 @@ export default async function StorefrontPage({ params }: Props) {
       languageLabel={t("locale.changeLanguage")}
       strings={strings}
       theme={theme}
+      storeNameAsHeading
     >
       {/* Entidade LOJA em JSON-LD — identidade própria do comerciante,
           distinta da plataforma. Só fatos visíveis nesta página: nome,

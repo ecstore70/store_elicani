@@ -40,9 +40,9 @@ export const SAMPLE_APPEARANCE = {
 } as const;
 
 export const SAMPLE_CATEGORIES: PublicCategory[] = [
-  { id: "c-apparel", name: "Apparel", sort_order: 0, is_active: true },
-  { id: "c-accessories", name: "Accessories", sort_order: 1, is_active: true },
-  { id: "c-shoes", name: "Shoes", sort_order: 2, is_active: true },
+  { id: "c-apparel", name: "Apparel", slug: null, sort_order: 0, is_active: true },
+  { id: "c-accessories", name: "Accessories", slug: null, sort_order: 1, is_active: true },
+  { id: "c-shoes", name: "Shoes", slug: null, sort_order: 2, is_active: true },
 ];
 
 export const SAMPLE_PRODUCTS: PublicProduct[] = [

@@ -46,6 +46,9 @@ export default async function MarketingLayout({
   const links: MenuLink[] = [
     { href: "/#features", label: t("landing.navFeatures") },
     { href: "/#how-it-works", label: t("landing.navHow") },
+    // Diretório de lojas: a ponte crawlável plataforma → /stores → loja
+    // (o MESMO array alimenta cabeçalho, menu mobile e rodapé).
+    { href: "/stores", label: t("landing.navStores") },
   ];
 
   // Documentos legais da PLATAFORMA — usados APENAS no rodapé (o array

@@ -27,6 +27,7 @@ import {
 } from "./page-blocks";
 import { validateProductValues } from "./validate";
 import { slugifyProductName, uniqueProductSlug } from "./product-slug";
+import { slugifyCategoryName, uniqueCategorySlug } from "./category-slug";
 import {
   emptyProductFormValues,
   type CategoryFormState,
@@ -555,9 +556,23 @@ export async function createCategoryAction(
   }
 
   const supabase = await createClient();
+
+  // Slug estável gerado UMA vez na criação (renomes não alteram a URL) —
+  // mesmo algoritmo e escopo por loja dos produtos (ver category-slug.ts).
+  // ASCII → null: a categoria publica pelo UUID (fallback honesto).
+  const { data: siblings } = await supabase
+    .from("categories")
+    .select("slug")
+    .eq("store_id", store.id);
+  const takenSlugs = new Set(
+    (siblings ?? []).flatMap((row) => (row.slug ? [row.slug] : [])),
+  );
+  const slugBase = slugifyCategoryName(name);
+  const slug = slugBase ? uniqueCategorySlug(slugBase, takenSlugs) : null;
+
   const { error } = await supabase
     .from("categories")
-    .insert({ store_id: store.id, name });
+    .insert({ store_id: store.id, name, slug });
 
   if (error) {
     return categoryState(

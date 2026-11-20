@@ -506,6 +506,7 @@ export const zhHans: Messages = {
   "landing.footerNav": "页脚链接",
   "landing.navFeatures": "功能",
   "landing.navHow": "使用方法",
+  "landing.navStores": "商店",
   "landing.signIn": "登录",
   "landing.createStore": "创建您的店铺",
   "landing.openMenu": "打开菜单",
@@ -698,6 +699,13 @@ export const zhHans: Messages = {
   "delivery.markOnTheWay": "标记为配送中",
   "delivery.markDelivered": "标记为已送达",
   "delivery.markFailed": "标记为失败",
+
+  // ── diretório público de lojas (/stores — plataforma) ──────────────────
+  "stores.title": "商店",
+  "stores.intro":
+    "浏览 Elicani 上已发布的活跃店铺。每家店铺都有自己的地址、商品目录和分类。",
+  "stores.empty":
+    "还没有发布的商店——新店铺启用后会出现在这里。",
 
   // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
   "legal.terms": "使用条款",

@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Search } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import type {
   PublicCategory,
   PublicProduct,
 } from "@/lib/catalog/types";
+import { categorySlugOrId } from "@/lib/catalog/category-slug";
 import { productSlugOrId } from "@/lib/catalog/product-slug";
 import type {
   ImageRatio,
@@ -26,6 +28,11 @@ import { ProductCard, ProductRow } from "./product-card";
  *
  * Busca: filtra o CONJUNTO de produtos já carregado (mesmos dados do
  * catálogo) — nada de infraestrutura de busca separada.
+ *
+ * Categorias: na vitrine real (com `storeSlug`) os chips são LINKS reais
+ * para `/store/{slug}/categories/{id-ou-slug}` (navegação indexável,
+ * aprimoramento progressivo); no preview/landing continuam botões de
+ * filtro client-side — mesmo visual nos dois modos.
  */
 
 export type CatalogAppearance = {
@@ -44,6 +51,7 @@ export function StorefrontCatalog({
   onAdd,
   readOnly,
   storeSlug,
+  activeCategoryId: initialCategoryId,
 }: {
   products: PublicProduct[];
   categories: PublicCategory[];
@@ -59,10 +67,17 @@ export function StorefrontCatalog({
    * (`/store/{slug}/products/{id}`). O preview não envia → cards inertes.
    */
   storeSlug?: string;
+  /**
+   * Categoria ATUAL da página (rota `/store/{slug}/categories/…`) — o
+   * chip correspondente fica ativo (`aria-current`). Só tem efeito em
+   * modo link (com `storeSlug`); no preview/landing o filtro continua
+   * em estado local.
+   */
+  activeCategoryId?: string;
 }) {
   const cart = useOptionalCart();
   const [query, setQuery] = useState("");
-  const [activeCategoryId, setActiveCategoryId] = useState<string>("all");
+  const [filterCategoryId, setFilterCategoryId] = useState<string>("all");
 
   const handleAdd = (product: PublicProduct) => {
     if (readOnly) return;
@@ -70,6 +85,17 @@ export function StorefrontCatalog({
   };
 
   const classes = TEMPLATE_CLASSES[appearance.template];
+
+  // Chips de categoria como LINKS REAIS na vitrine real (com slug): a
+  // navegação de categoria vira URL indexável
+  // (`/store/{slug}/categories/{id-ou-slug}`) — aprimoramento progressivo
+  // que preserva o visual e o comportamento dos chips. Sem slug (preview
+  // da landing/painel) os chips continuam botões de filtro client-side.
+  const categoryIndexHref =
+    !readOnly && storeSlug ? `/store/${storeSlug}` : null;
+  const activeCategoryId = categoryIndexHref
+    ? (initialCategoryId ?? "all")
+    : filterCategoryId;
 
   const featured = useMemo(
     () =>
@@ -143,6 +169,14 @@ export function StorefrontCatalog({
       </div>
     );
 
+  /** Visual dos chips idêntico ao original (mesmas classes, ativo/inativo). */
+  const chipClass = (active: boolean) =>
+    `rounded-[var(--sf-btn-radius)] px-3 py-1.5 text-sm transition-colors ${classes.chip} ${
+      active
+        ? "bg-[var(--sf-primary)] font-medium text-[var(--sf-on-primary)]"
+        : "bg-[var(--sf-surface)] text-[var(--sf-fg)] hover:opacity-80"
+    }`;
+
   return (
     <div className="space-y-[var(--sf-section-gap)]">
       {/* busca */}
@@ -162,40 +196,57 @@ export function StorefrontCatalog({
         />
       </div>
 
-      {/* categorias */}
+      {/* categorias — na vitrine real os chips são LINKS reais
+          (/store/{slug}/categories/{id-ou-slug}): navegação crawlável
+          preservando o visual; sem slug (preview) mantêm-se os botões
+          de filtro client-side de sempre. */}
       {categories.length > 0 && (
         <nav aria-label={strings.categories}>
           <ul className="flex flex-wrap gap-2">
             <li>
-              <button
-                type="button"
-                onClick={() => !readOnly && setActiveCategoryId("all")}
-                aria-pressed={activeCategoryId === "all"}
-                className={`rounded-[var(--sf-btn-radius)] px-3 py-1.5 text-sm transition-colors ${classes.chip} ${
-                  activeCategoryId === "all"
-                    ? "bg-[var(--sf-primary)] font-medium text-[var(--sf-on-primary)]"
-                    : "bg-[var(--sf-surface)] text-[var(--sf-fg)] hover:opacity-80"
-                }`}
-              >
-                {strings.allProducts}
-              </button>
+              {categoryIndexHref ? (
+                <Link
+                  href={categoryIndexHref}
+                  aria-current={activeCategoryId === "all" ? "page" : undefined}
+                  className={chipClass(activeCategoryId === "all")}
+                >
+                  {strings.allProducts}
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => !readOnly && setFilterCategoryId("all")}
+                  aria-pressed={activeCategoryId === "all"}
+                  className={chipClass(activeCategoryId === "all")}
+                >
+                  {strings.allProducts}
+                </button>
+              )}
             </li>
             {categories.map((category) => {
               const active = category.id === activeCategoryId;
               return (
                 <li key={category.id}>
-                  <button
-                    type="button"
-                    onClick={() => !readOnly && setActiveCategoryId(category.id)}
-                    aria-pressed={active}
-                    className={`rounded-[var(--sf-btn-radius)] px-3 py-1.5 text-sm transition-colors ${classes.chip} ${
-                      active
-                        ? "bg-[var(--sf-primary)] font-medium text-[var(--sf-on-primary)]"
-                        : "bg-[var(--sf-surface)] text-[var(--sf-fg)] hover:opacity-80"
-                    }`}
-                  >
-                    {category.name}
-                  </button>
+                  {categoryIndexHref ? (
+                    <Link
+                      href={`${categoryIndexHref}/categories/${categorySlugOrId(category)}`}
+                      aria-current={active ? "page" : undefined}
+                      className={chipClass(active)}
+                    >
+                      {category.name}
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        !readOnly && setFilterCategoryId(category.id)
+                      }
+                      aria-pressed={active}
+                      className={chipClass(active)}
+                    >
+                      {category.name}
+                    </button>
+                  )}
                 </li>
               );
             })}

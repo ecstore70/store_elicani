@@ -525,6 +525,7 @@ export const ar: Messages = {
   "landing.footerNav": "روابط التذييل",
   "landing.navFeatures": "المزايا",
   "landing.navHow": "كيف يعمل",
+  "landing.navStores": "المتاجر",
   "landing.signIn": "تسجيل الدخول",
   "landing.createStore": "أنشئ متجرك",
   "landing.openMenu": "فتح القائمة",
@@ -728,6 +729,13 @@ export const ar: Messages = {
   "delivery.markOnTheWay": "وضع كفي الطريق",
   "delivery.markDelivered": "وضع كتم التسليم",
   "delivery.markFailed": "وضع كفشل",
+
+  // ── diretório público de lojas (/stores — plataforma) ──────────────────
+  "stores.title": "المتاجر",
+  "stores.intro":
+    "تصفّح المتاجر النشطة المنشورة على Elicani. لكل متجر عنوانه ومجموعته وفئاته الخاصة.",
+  "stores.empty":
+    "لا توجد متاجر منشورة بعد — تظهر المتاجر الجديدة هنا فور تفعيلها.",
 
   // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
   "legal.terms": "شروط الاستخدام",

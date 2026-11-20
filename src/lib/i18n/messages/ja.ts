@@ -523,6 +523,7 @@ export const ja: Messages = {
   "landing.footerNav": "フッターリンク",
   "landing.navFeatures": "機能",
   "landing.navHow": "使い方",
+  "landing.navStores": "ストア",
   "landing.signIn": "ログイン",
   "landing.createStore": "ストアを作成",
   "landing.openMenu": "メニューを開く",
@@ -726,6 +727,13 @@ export const ja: Messages = {
   "delivery.markOnTheWay": "配送中にする",
   "delivery.markDelivered": "配達済みにする",
   "delivery.markFailed": "失敗としてマーク",
+
+  // ── diretório público de lojas (/stores — plataforma) ──────────────────
+  "stores.title": "ストア",
+  "stores.intro":
+    "Elicani で公開されているアクティブなストアをご覧ください。各ストアには固有のアドレス、カタログ、カテゴリーがあります。",
+  "stores.empty":
+    "まだ公開中のストアはありません。新しく有効化されるとここに表示されます。",
 
   // ── termos/privacidade/FAQ (plataforma + loja) ─────────────────────────
   "legal.terms": "利用規約",
