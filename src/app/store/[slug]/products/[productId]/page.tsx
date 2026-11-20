@@ -7,6 +7,7 @@ import { StoreEvent } from "@/components/storefront/store-event";
 import { StoreShell } from "@/components/storefront/store-shell";
 import { ProductGallery } from "@/components/storefront/product-gallery";
 import { ProductPurchase } from "@/components/storefront/product-purchase";
+import { ProductShare } from "@/components/storefront/product-share";
 import { PageContent } from "@/components/storefront/page-content";
 import { RelatedProducts } from "@/components/storefront/related-products";
 import { JsonLd } from "@/components/shared/json-ld";
@@ -336,6 +337,15 @@ export default async function ProductPage({ params }: Props) {
             strings={strings}
             currency={store.currency}
             locale={locale}
+          />
+
+          {/* compartilhar ESTA página de produto — dados canónicos já
+              carregados pela rota (servidor), válidos para qualquer
+              loja da plataforma; ação separada do CTA de WhatsApp. */}
+          <ProductShare
+            productName={product.name}
+            productUrl={productUrl}
+            strings={strings}
           />
 
           {product.description && (

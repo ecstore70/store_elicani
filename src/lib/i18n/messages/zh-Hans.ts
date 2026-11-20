@@ -335,6 +335,8 @@ export const zhHans: Messages = {
   "storefront.whatsappBuy": "立即购买",
   "storefront.whatsappBuyAria": "通过 WhatsApp 立即购买",
   "storefront.optionsRequired": "请选择一个选项以继续",
+  "storefront.shareProduct": "分享产品",
+  "storefront.linkCopied": "链接已复制",
   "storefront.checkout": "去结算",
   "storefront.continueShopping": "继续购物",
   "storefront.customerName": "您的姓名",

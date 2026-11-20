@@ -347,6 +347,8 @@ export const es: Messages = {
   "storefront.whatsappBuy": "COMPRAR AHORA",
   "storefront.whatsappBuyAria": "Comprar ahora por WhatsApp",
   "storefront.optionsRequired": "Elige una opción para continuar",
+  "storefront.shareProduct": "Compartir producto",
+  "storefront.linkCopied": "Enlace copiado",
   "storefront.checkout": "Finalizar compra",
   "storefront.continueShopping": "Seguir comprando",
   "storefront.customerName": "Tu nombre",

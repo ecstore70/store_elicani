@@ -352,6 +352,8 @@ export const ptBR: Messages = {
   "storefront.whatsappBuy": "COMPRAR AGORA",
   "storefront.whatsappBuyAria": "Comprar agora pelo WhatsApp",
   "storefront.optionsRequired": "Escolha uma opção para continuar",
+  "storefront.shareProduct": "Compartilhar produto",
+  "storefront.linkCopied": "Link copiado",
   "storefront.checkout": "Finalizar compra",
   "storefront.continueShopping": "Continuar comprando",
   "storefront.customerName": "Seu nome",

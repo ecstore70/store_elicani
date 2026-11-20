@@ -346,6 +346,8 @@ export const ja: Messages = {
   "storefront.whatsappBuy": "今すぐ購入",
   "storefront.whatsappBuyAria": "WhatsAppで今すぐ購入",
   "storefront.optionsRequired": "オプションを選択してください",
+  "storefront.shareProduct": "商品を共有",
+  "storefront.linkCopied": "リンクをコピーしました",
   "storefront.checkout": "購入手続きへ",
   "storefront.continueShopping": "買い物を続ける",
   "storefront.customerName": "お名前",

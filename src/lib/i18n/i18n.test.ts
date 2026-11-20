@@ -83,6 +83,8 @@ describe("tradutor", () => {
       "storefront.checkoutRequired",
       "storefront.sealCatalog",
       "storefront.whatsappBuy",
+      "storefront.shareProduct",
+      "storefront.linkCopied",
       "products.sectionPageContent",
       "reports.empty",
       "reports.kpiAvgOrder",

@@ -351,6 +351,8 @@ export const en = {
   "storefront.whatsappBuy": "BUY NOW",
   "storefront.whatsappBuyAria": "Buy now on WhatsApp",
   "storefront.optionsRequired": "Choose an option to continue",
+  "storefront.shareProduct": "Share product",
+  "storefront.linkCopied": "Link copied",
   "storefront.checkout": "Checkout",
   "storefront.continueShopping": "Continue shopping",
   "storefront.customerName": "Your name",

@@ -54,6 +54,8 @@ export type StorefrontStrings = {
   whatsappBuy: string;
   whatsappBuyAria: string;
   optionsRequired: string;
+  shareProduct: string;
+  linkCopied: string;
   // ── checkout (sheet) ───────────────────────────────────────────────
   checkout: string;
   continueShopping: string;
@@ -152,6 +154,8 @@ export function buildStorefrontStrings(t: Translator): StorefrontStrings {
     whatsappBuy: t("storefront.whatsappBuy"),
     whatsappBuyAria: t("storefront.whatsappBuyAria"),
     optionsRequired: t("storefront.optionsRequired"),
+    shareProduct: t("storefront.shareProduct"),
+    linkCopied: t("storefront.linkCopied"),
     checkout: t("storefront.checkout"),
     continueShopping: t("storefront.continueShopping"),
     customerName: t("storefront.customerName"),

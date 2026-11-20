@@ -348,6 +348,8 @@ export const ar: Messages = {
   "storefront.whatsappBuy": "اشتر الآن",
   "storefront.whatsappBuyAria": "اشتر الآن عبر واتساب",
   "storefront.optionsRequired": "اختر خياراً للمتابعة",
+  "storefront.shareProduct": "مشاركة المنتج",
+  "storefront.linkCopied": "تم نسخ الرابط",
   "storefront.checkout": "إتمام الطلب",
   "storefront.continueShopping": "متابعة التسوق",
   "storefront.customerName": "اسمك",
