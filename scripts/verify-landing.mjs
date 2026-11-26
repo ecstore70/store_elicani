@@ -15,12 +15,6 @@
  *
  * Credenciais: nenhuma — páginas públicas.
  */
-import { readFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
-import path from "node:path";
-
-const ROOT = process.cwd();
-
 let passed = 0;
 let failed = 0;
 
@@ -40,25 +34,15 @@ function assert(label, condition, detail) {
   else bad(label, detail);
 }
 
-async function loadEnv() {
-  const file = path.join(ROOT, ".env.local");
-  if (!existsSync(file)) return;
-  for (const line of (await readFile(file, "utf8")).split("\n")) {
-    const match = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
-    if (!match) continue;
-    const [, key, raw] = match;
-    if (process.env[key] !== undefined) continue;
-    process.env[key] = raw.replace(/^["']|["']$/g, "");
-  }
-}
-
 /** Ocorrências de uma agulha no texto (≥ 2 = visível + JSON-LD). */
 function count(text, needle) {
   return text.split(needle).length - 1;
 }
 
-await loadEnv();
-const BASE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://elicani.site").replace(
+// Produção por omissão — NEXT_PUBLIC_SITE_URL é localhost em .env.local
+// (valor de dev) e NÃO serve para verificação remota. Override p/ smoke:
+//   VERIFY_BASE_URL=http://localhost:3100 npm run verify:landing
+const BASE = (process.env.VERIFY_BASE_URL ?? "https://elicani.site").replace(
   /\/$/,
   "",
 );
