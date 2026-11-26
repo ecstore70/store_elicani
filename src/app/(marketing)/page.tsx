@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
  * Structure (spec de landing):
  *  1. hero (2 colunas)      2. trust strip        3. features (6)
  *  4. como funciona (3)     5. showcase da vitrine (componentes REAIS)
- *  6. preview do dashboard  7. CTA final
+ *  6. preview do dashboard  7. comparação (objeções)  8. CTA final
  *
  * Toda a copy vem das chaves `landing.*` via o tradutor existente — nada de
  * texto em inglês/português hardcoded nos componentes. Os visuais de produto
@@ -94,6 +94,37 @@ const TRUST: readonly MessageKey[] = [
   "landing.trust3",
   "landing.trust4",
   "landing.trust5",
+];
+
+/**
+ * Linhas da tabela de comparação — Elicani vs. catálogo do WhatsApp vs.
+ * site próprio. Só comparações honestas: cada célula continua verdadeira
+ * mesmo sem a Elicani (nenhum benefício inventado).
+ */
+const COMPARE_ROWS: readonly {
+  labelKey: MessageKey;
+  cells: readonly [MessageKey, MessageKey, MessageKey];
+}[] = [
+  {
+    labelKey: "landing.compareRow1",
+    cells: ["landing.compareR1A", "landing.compareR1B", "landing.compareR1C"],
+  },
+  {
+    labelKey: "landing.compareRow2",
+    cells: ["landing.compareR2A", "landing.compareR2B", "landing.compareR2C"],
+  },
+  {
+    labelKey: "landing.compareRow3",
+    cells: ["landing.compareR3A", "landing.compareR3B", "landing.compareR3C"],
+  },
+  {
+    labelKey: "landing.compareRow4",
+    cells: ["landing.compareR4A", "landing.compareR4B", "landing.compareR4C"],
+  },
+  {
+    labelKey: "landing.compareRow5",
+    cells: ["landing.compareR5A", "landing.compareR5B", "landing.compareR5C"],
+  },
 ];
 
 const STEP_NUMBER_CLASSES = [
@@ -384,7 +415,86 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* ── 7. CTA final ────────────────────────────────────────────────── */}
+      {/* ── 7. Comparação (objeções) ───────────────────────────────────── */}
+      <section
+        aria-labelledby="compare-title"
+        className="border-t border-border/70 py-16 sm:py-20"
+      >
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2
+              id="compare-title"
+              className="text-2xl font-semibold tracking-tight sm:text-3xl"
+            >
+              {t("landing.compareTitle")}
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+              {t("landing.compareSubtitle")}
+            </p>
+          </div>
+
+          {/* Quatro colunas não cabem no mobile — rolagem horizontal em
+              vez de espremer o texto até ilegível. */}
+          <div className="mt-10 overflow-x-auto">
+            <table className="w-full min-w-[44rem] border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th
+                    scope="col"
+                    className="py-3 pe-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                  >
+                    {t("landing.compareColFeature")}
+                  </th>
+                  <th
+                    scope="col"
+                    className="py-3 pe-4 text-xs font-semibold uppercase tracking-wide text-brand-primary"
+                  >
+                    {t("landing.compareColElicani")}
+                  </th>
+                  <th
+                    scope="col"
+                    className="py-3 pe-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                  >
+                    {t("landing.compareColWhats")}
+                  </th>
+                  <th
+                    scope="col"
+                    className="py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                  >
+                    {t("landing.compareColOwn")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARE_ROWS.map((row) => (
+                  <tr
+                    key={row.labelKey}
+                    className="border-b border-border/60 align-top"
+                  >
+                    <th
+                      scope="row"
+                      className="py-3.5 pe-4 font-medium text-foreground"
+                    >
+                      {t(row.labelKey)}
+                    </th>
+                    <td className="py-3.5 pe-4 font-medium text-foreground">
+                      {t(row.cells[0])}
+                    </td>
+                    <td className="py-3.5 pe-4 text-muted-foreground">
+                      {t(row.cells[1])}
+                    </td>
+                    <td className="py-3.5 text-muted-foreground">
+                      {t(row.cells[2])}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 8. CTA final ────────────────────────────────────────────────── */}
       <section aria-labelledby="cta-title" className="py-16 sm:py-20">
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-2xl bg-brand-dark px-6 py-14 text-center sm:px-12 sm:py-16">

@@ -12,6 +12,7 @@
     "test:rls": "node scripts/verify-rls.mjs",
     "verify:render": "node scripts/verify-render.mjs",
     "verify:dashboard": "node scripts/verify-dashboard.mjs",
+    "verify:landing": "node scripts/verify-landing.mjs",
     "db:push": "node scripts/db-push.mjs"
   },
   "dependencies": {

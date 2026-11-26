@@ -264,9 +264,12 @@ const PAYMENT_OPTIONS = [
 function Confirmation({
   strings,
   storeHref,
+  trackingHref,
 }: {
   strings: StorefrontStrings;
   storeHref: string;
+  /** Capability URL do seguimento — presente quando o id foi capturado. */
+  trackingHref: string | null;
 }) {
   return (
     <div className="mx-auto max-w-md">
@@ -279,6 +282,14 @@ function Confirmation({
         <p className="mt-1.5 text-sm text-[var(--sf-muted)]">
           {strings.checkoutNote}
         </p>
+        {trackingHref && (
+          <Link
+            href={trackingHref}
+            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-[var(--sf-btn-radius)] border border-[var(--sf-card-border)] px-4 py-2.5 text-sm font-medium text-[var(--sf-fg)] hover:bg-[var(--sf-surface)]"
+          >
+            {strings.orderTrack}
+          </Link>
+        )}
         <Link href={storeHref} className={`${BUTTON_CLASSES} mt-5`}>
           {strings.continueShopping}
         </Link>
@@ -327,7 +338,16 @@ export function CheckoutView({
   const storeHref = `/store/${storeSlug}`;
 
   if (checkout.sent) {
-    return <Confirmation strings={strings} storeHref={storeHref} />;
+    const trackingHref = checkout.lastOrderId
+      ? `/store/${storeSlug}/order/${checkout.lastOrderId}`
+      : null;
+    return (
+      <Confirmation
+        strings={strings}
+        storeHref={storeHref}
+        trackingHref={trackingHref}
+      />
+    );
   }
 
   if (items.length === 0) {

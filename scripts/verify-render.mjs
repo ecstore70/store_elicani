@@ -326,7 +326,6 @@ try {
   );
   if (!host) throw new Error("sem host com o código novo");
 
-  const origin = { origin: host, referer: `${host}/` };
   const page = (p) => `${host}${p}`;
 
   // ── 5. Sem sessão → redireciona para /login ─────────────────────────────
@@ -466,6 +465,116 @@ try {
     noLeak(bogusOrder, ["Render Cliente", "Produto Render"]),
     `${bogusOrder.status}`,
   );
+
+  // ── 7b. página PÚBLICA de seguimento da encomenda ──────────────────────
+  //
+  // /store/{slug}/order/{uuid} é uma capability URL (o uuid é a
+  // autorização): sempre noindex e devolve SÓ estado/totais/itens —
+  // nunca PII do cliente. 404 real (ramo 1f do proxy) para uuid
+  // malformado, encomenda inexistente, encomenda de OUTRA loja e loja
+  // inexistente; loja INATIVA → estado indisponível (200 + noindex),
+  // nunca 404. Os GETs seguem redirects de propósito: a forma canônica
+  // 301 → subdomínio da loja.
+  const getFollow = async (url) => {
+    const response = await fetch(url, {
+      headers: { accept: "text/html,application/xhtml+xml" },
+    });
+    return { status: response.status, text: await response.text() };
+  };
+
+  const trackUrl = page(`/store/${SLUG}/order/${orderPending.id}`);
+  const track = await getFollow(trackUrl);
+  const trackReference = `#${orderPending.id.slice(0, 6).toUpperCase()}`;
+  assert(
+    "seguimento: 200 com referência, estado e itens",
+    track.status === 200 &&
+      track.text.includes(trackReference) &&
+      track.text.includes("Pending") &&
+      track.text.includes("Produto Render"),
+    `${track.status}`,
+  );
+  assert(
+    "seguimento: sempre noindex",
+    track.status === 200 && track.text.includes("noindex"),
+    `${track.status}`,
+  );
+  assert(
+    "seguimento: NUNCA PII do cliente (nome, telefone, morada)",
+    !track.text.includes("Render Cliente Um") &&
+      !track.text.includes("+258840000911") &&
+      !track.text.includes("Rua 1"),
+    "PII presente no corpo",
+  );
+
+  const trackCancelled = await getFollow(
+    page(`/store/${SLUG}/order/${orderCancelled.id}`),
+  );
+  assert(
+    "seguimento: cancelada mostra o aviso, não a linha do tempo",
+    trackCancelled.status === 200 && trackCancelled.text.includes("Cancelled"),
+    `${trackCancelled.status}`,
+  );
+
+  const trackBogus = await getFollow(
+    page(`/store/${SLUG}/order/00000000-0000-4000-8000-000000000000`),
+  );
+  assert(
+    "seguimento: uuid inexistente → 404 real",
+    trackBogus.status === 404,
+    `${trackBogus.status}`,
+  );
+
+  const trackMalformed = await getFollow(
+    page(`/store/${SLUG}/order/nao-e-uuid`),
+  );
+  assert(
+    "seguimento: uuid malformado → 404 real",
+    trackMalformed.status === 404,
+    `${trackMalformed.status}`,
+  );
+
+  if (foreign) {
+    const trackForeign = await getFollow(
+      page(`/store/${SLUG}/order/${foreign.id}`),
+    );
+    assert(
+      "seguimento: encomenda de OUTRA loja → 404, sem dados alheios",
+      trackForeign.status === 404 &&
+        !trackForeign.text.includes(foreign.customer_name ?? "§-sem-nome"),
+      `${trackForeign.status}`,
+    );
+  }
+
+  // Slug RESERVADO (não vira subdomínio no ramo 0c → sem redirect).
+  const trackMissingStore = await getFollow(
+    page(`/store/www/order/${orderPending.id}`),
+  );
+  assert(
+    "seguimento: loja inexistente → 404 real",
+    trackMissingStore.status === 404,
+    `${trackMissingStore.status}`,
+  );
+
+  // Loja INATIVA não é 404: estado indisponível (200 + noindex), sem dados.
+  await asService
+    .from("stores")
+    .update({ is_active: false })
+    .eq("id", storeId);
+  try {
+    const trackInactive = await getFollow(trackUrl);
+    assert(
+      "seguimento: loja inativa → indisponível (200, sem dados)",
+      trackInactive.status === 200 &&
+        trackInactive.text.includes("This catalog is currently unavailable.") &&
+        !trackInactive.text.includes("Render Cliente"),
+      `${trackInactive.status}`,
+    );
+  } finally {
+    await asService
+      .from("stores")
+      .update({ is_active: true })
+      .eq("id", storeId);
+  }
 
   // ── 8. Server actions SEM JavaScript (formulários progressivos) ─────────
   // Os formulários de mudança de estado vivem no detalhe da encomenda

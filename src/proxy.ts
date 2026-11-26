@@ -27,6 +27,10 @@
  *     loja não existe, a categoria não existe/pertence a outra loja ou está
  *     INATIVA (desativada some da vitrine); 301 da forma UUID para a slug;
  *     loja inativa → estado indisponível;
+ *  1f. Responder 404 real em /store/{slug}/order/{uuid} quando a loja não
+ *     existe ou a encomenda não existe/pertence a outra loja (capability
+ *     URL do comprador — nunca vazar estado de tenant); loja inativa →
+ *     estado indisponível;
  *  2. Redirecionar www → domínio principal;
  *  2b. Manter páginas de auth (/login, /signup, …) no host canônico —
  *      evita o split dos cookies PKCE entre alias e host do app;
@@ -262,6 +266,35 @@ async function lookupStoreCategory(
   }
 }
 
+/**
+ * A encomenda existe para ESTA loja? (página de seguimento do comprador)
+ *
+ * Usa a MESMA função pública da página (`order_public_status`, SECURITY
+ * DEFINER, sem PII). `found: false` (→ 404 real) para uuid malformado
+ * (nem query) ou encomenda inexistente/pertencente a OUTRA loja (URL
+ * cruzada — nunca vazar estado de tenant); falha em aberto em erro de
+ * rede/DB (`found: true` — a página revalida e decide por conta própria).
+ */
+async function lookupOrderPublic(
+  storeSlug: string,
+  orderId: string,
+): Promise<{ found: boolean }> {
+  if (!UUID_PATTERN.test(orderId)) return { found: false };
+  try {
+    const publicClient = createServerClient<Database>(getSupabaseUrl(), getSupabaseAnonKey(), {
+      cookies: { getAll: () => [], setAll: () => {} },
+    });
+    const { data, error } = await publicClient.rpc("order_public_status", {
+      p_store_slug: storeSlug,
+      p_order_id: orderId,
+    });
+    if (error) return { found: true }; // falha em aberto
+    return { found: data !== null };
+  } catch {
+    return { found: true }; // falha em aberto
+  }
+}
+
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname, search } = request.nextUrl;
   const host = request.headers.get("host") ?? "";
@@ -460,6 +493,31 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
         const url = request.nextUrl.clone();
         url.pathname = `/store/${categoryPath[1]}/categories/${lookup.slug}`;
         return NextResponse.redirect(url, 301);
+      }
+    }
+  }
+
+  // ── 1f. estado da encomenda: /store/{slug}/order/{uuid} ────────────────
+  //
+  // Mesma armadilha dos ramos 1c/1d/1e (soft-404 sob cacheComponents/PPR):
+  // sem este check, o notFound() da página de seguimento cairia no hole
+  // dinâmico com status 200. O check cobre: loja INEXISTENTE (404 real),
+  // uuid malformado (sem query) e encomenda INEXISTENTE ou de OUTRA loja
+  // (URL cruzada — nunca vazar estado de tenant). Loja INATIVA não é
+  // 404: a página renderiza o estado indisponível (200 + noindex). Falha
+  // em aberto → a página revalida (nada é redirecionado no escuro).
+  const orderPath = /^\/store\/([^/]+)\/order\/([^/]+)\/?$/.exec(pathname);
+  if (orderPath) {
+    const status = await getStoreStatus(orderPath[1]);
+    if (status === "missing") {
+      const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
+      return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
+    }
+    if (status === "active") {
+      const lookup = await lookupOrderPublic(orderPath[1], orderPath[2]);
+      if (!lookup.found) {
+        const rewrite = NextResponse.rewrite(new URL("/_not-found", request.url));
+        return new NextResponse(rewrite.body, { status: 404, headers: rewrite.headers });
       }
     }
   }

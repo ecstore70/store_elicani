@@ -1,6 +1,8 @@
+import { createPublicClient } from "@/lib/supabase/public";
 import { createClient } from "@/lib/supabase/server";
 import { isOrderStatus, isUuid, sanitizeSearchTerm } from "./search";
 import type { OrderStatus } from "./search";
+import { parseOrderTracking, type OrderTracking } from "./tracking";
 
 /**
  * Leituras do módulo ENCOMENDAS (painel).
@@ -9,6 +11,10 @@ import type { OrderStatus } from "./search";
  * (linha = loja própria) é a autoridade; a loja ativa é reforçada com
  * `eq("store_id", …)` para nunca sequer pedir linhas de outra loja.
  * Nada disto chega ao navegador sem passar pelas páginas RSC.
+ *
+ * Única exceção pública: `getOrderTracking` (página de seguimento do
+ * comprador) — capability URL por uuid, via RPC SECURITY DEFINER que
+ * devolve só estado/totais/itens, nunca PII do cliente.
  */
 
 /** Linha leve da LISTA — só o que a lista mostra. */
@@ -162,6 +168,35 @@ export async function getOrderDetail(
     throw new Error(`Falha ao carregar encomenda: ${error.message}`);
   }
   return data as OrderDetailRow | null;
+}
+
+/**
+ * Estado público da encomenda — página `/store/{slug}/order/{uuid}`.
+ *
+ * O RLS de `orders` é do dono, por isso a leitura passa pelo RPC
+ * `order_public_status` (SECURITY DEFINER) que devolve APENAS estado,
+ * totais e itens (sem nome/telefone/morada/notas/pagamento). A posse do
+ * uuid (capability URL, 122 bits) é a autorização; encomenda de OUTRA
+ * loja → `null` → 404.
+ *
+ * Erro de rede/DB → lança (página honesta, 500) — a ausência real é
+ * `null`, que o chamador traduz em `notFound()`.
+ */
+export async function getOrderTracking(
+  storeSlug: string,
+  orderId: string,
+): Promise<OrderTracking | null> {
+  if (!isUuid(orderId)) return null;
+
+  const supabase = createPublicClient();
+  const { data, error } = await supabase.rpc("order_public_status", {
+    p_store_slug: storeSlug,
+    p_order_id: orderId,
+  });
+  if (error) {
+    throw new Error(`Falha ao resolver estado da encomenda: ${error.message}`);
+  }
+  return parseOrderTracking(data);
 }
 
 /** Rótulo i18n do estado (para quem preferir mapear aqui). */

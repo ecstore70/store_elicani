@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * FAQ da PLATAFORMA — 11 perguntas com respostas baseadas APENAS em
+ * FAQ da PLATAFORMA — 14 perguntas com respostas baseadas APENAS em
  * funcionalidade real do produto (catálogo, pedidos via WhatsApp, sem
  * processamento de pagamentos, sem canal de contacto inventado).
  *
@@ -63,6 +63,11 @@ const FAQ: readonly { question: string; answer: string }[] = [
       "The order is summarized in a WhatsApp message sent to the store's WhatsApp number. The merchant then sees and manages the order in their dashboard, and keeps the customer conversation going on WhatsApp.",
   },
   {
+    question: "How can a customer follow their order?",
+    answer:
+      "After sending the order, the customer sees a tracking link on the confirmation screen. Opening it shows the current status of the order — confirmed, on the way, delivered — plus the items and totals. No account is needed, and the page never shows personal details such as the customer's phone or address.",
+  },
+  {
     question: "Does Elicani process payments?",
     answer:
       "No. Elicani does not handle payments. Prices, payment methods and any financial arrangement are agreed directly between the customer and the merchant.",
@@ -71,6 +76,16 @@ const FAQ: readonly { question: string; answer: string }[] = [
     question: "What is WhatsApp's role in the order flow?",
     answer:
       "WhatsApp is the channel where the order arrives at the merchant and where the customer and merchant continue the conversation. Elicani prepares the order message; the conversation itself happens on WhatsApp.",
+  },
+  {
+    question: "Why not just use WhatsApp's own catalog?",
+    answer:
+      "WhatsApp's catalog keeps products inside the chat: there are no web pages for customers to find on Google, no dashboard for orders, and every order still arrives as a message to answer by hand. Elicani gives the merchant a public storefront that search engines can index and orders organized in a dashboard — while the order still reaches the merchant's WhatsApp.",
+  },
+  {
+    question: "Why not build my own website?",
+    answer:
+      "You can, but a website means hosting, a domain, updates and an order flow to build and maintain before the first sale. Elicani is a storefront plus a dashboard that a merchant sets up in minutes, with the order flow already connected to WhatsApp.",
   },
   {
     question: "Can merchants customize their storefront?",

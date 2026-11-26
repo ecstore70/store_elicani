@@ -215,6 +215,9 @@ export type CheckoutContextValue = {
   orderError: string | null;
   /** Pedido enviado — a rota mostra a confirmação. */
   sent: boolean;
+  /** Id da encomenda gravada no último envio com sucesso — habilita o
+   *  link de seguimento (`/store/{slug}/order/{id}`) na confirmação. */
+  lastOrderId: string | null;
   /** Envio em curso (gravação aguardada) — CTA desativado. */
   submitting: boolean;
   /** CTA habilitado só com nome + telefone + localização prontos. */
@@ -258,6 +261,7 @@ export function CheckoutProvider({
   const [errors, setErrors] = useState<CheckoutErrors>({});
   const [orderError, setOrderError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [lastOrderId, setLastOrderId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Guarda SÍNCRONA do duplo toque: o estado React só muda no render
   // seguinte — dois toques rápidos passariam por `isSubmitting` puro.
@@ -396,6 +400,9 @@ export function CheckoutProvider({
     // fórmula da coluna gerada `reference`) — entra no cabeçalho da
     // mensagem para o comerciante associar a conversa ao pedido no painel.
     const orderRef = result.orderId.slice(0, 6).toUpperCase();
+    // Guarda o id ANTES de limpar token/rascunho: é a chave do link de
+    // seguimento que a confirmação mostra ao comprador (capability URL).
+    setLastOrderId(result.orderId);
 
     const paymentLabel =
       current.payment === "cash"
@@ -455,6 +462,7 @@ export function CheckoutProvider({
     errors,
     orderError,
     sent,
+    lastOrderId,
     submitting: isSubmitting,
     canSubmit: isCheckoutComplete(form),
     money: (amount) => formatCurrency(amount, currency, locale),

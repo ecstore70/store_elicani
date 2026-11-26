@@ -646,6 +646,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      order_public_status: {
+        Args: { p_order_id: string; p_store_slug: string }
+        Returns: Json
+      }
       owns_store_folder: { Args: { object_path: string }; Returns: boolean }
       record_event: {
         Args: { p_event: string; p_product_id?: string; p_store_id: string }
